@@ -788,8 +788,11 @@ ni hosting de base de datos dentro del alcance del MVP.
 
 -   Cada integrante del equipo ejecuta su propia instancia local de
     MySQL en su equipo de desarrollo.
--   La base de datos se llama `motorix` (nombre sugerido; configurable
-    por variable de entorno).
+-   La base de datos se llama `motorix_v2` y la de pruebas
+    `motorix_v2_test` (configurables por variable de entorno). Los
+    nombres con sufijo `_v2` aíslan este proyecto del prototipo
+    anterior (`proyectMototrix`), que usa `motorix` y `motorix_test`
+    en el mismo equipo.
 -   Todo el esquema y los datos iniciales se definen mediante scripts
     SQL dentro de la carpeta `database/` del repositorio, de modo que
     cualquier integrante pueda recrear la base de datos desde cero.
@@ -817,7 +820,7 @@ DB_HOST=localhost
 DB_PORT=3306
 DB_USER=
 DB_PASSWORD=
-DB_NAME=motorix
+DB_NAME=motorix_v2
 ```
 
 -   `.env.example` debe incluir estas variables sin valores sensibles.
@@ -1278,7 +1281,7 @@ Antes de asumirlas como definitivas, el equipo debe decidir:
     placa es única y el número de serie es opcional pero único si se captura;
     el administrador inicial se crea con `server/scripts/create-admin.js`.
 -   **Pruebas automatizadas**: Jest + supertest en el backend (unit,
-    integración y contrato, contra la base `motorix_test`) y `flutter test`
+    integración y contrato, contra la base `motorix_v2_test`) y `flutter test`
     en el frontend (providers y widgets).
 -   **Ramas y commits**: una rama por feature (`NNN-nombre-en-minusculas`)
     y Conventional Commits con la descripción en español.

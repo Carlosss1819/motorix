@@ -22,7 +22,7 @@ database/
   `DB_USER`, `DB_PASSWORD`, `DB_NAME`) desde `server/.env`.
 - La aplicación usa el usuario dedicado `motorix_app`; **nunca** `root`.
 - Motor InnoDB, llaves foráneas y codificación `utf8mb4`.
-- Las pruebas usan la base `motorix_test`, jamás la base principal.
+- Las pruebas usan la base `motorix_v2_test`, jamás la base principal.
 
 ## Crear el entorno local
 

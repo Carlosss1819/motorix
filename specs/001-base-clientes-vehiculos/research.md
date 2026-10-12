@@ -100,10 +100,10 @@ resolvieron con la constitución, `docs/project-context.md` y las aclaraciones d
 ## R‑08: Estrategia de pruebas
 
 - **Decisión**: Jest (unitarias) + Jest + supertest (integración y contrato) contra la
-  base `motorix_test`; `flutter test` para providers y widgets; cobertura mínima de
+  base `motorix_v2_test`; `flutter test` para providers y widgets; cobertura mínima de
   lógica de negocio: roles/permisos, login usuario o correo, duplicados, política de
   contraseña, RN‑1 (vehículo sin propietario).
-- **Rationale**: Principio VII y decisiones resueltas; `motorix_test` protege la base
+- **Rationale**: Principio VII y decisiones resueltas; `motorix_v2_test` protege la base
   principal.
 - **Alternativas consideradas**: pruebas solo manuales (descartado: el DoD exige pruebas);
   Cypress/E2E (fuera del alcance definido).

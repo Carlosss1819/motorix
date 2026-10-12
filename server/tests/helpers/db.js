@@ -1,4 +1,4 @@
-// Preparacion idempotente de la base de pruebas: crea motorix_test si no existe y
+// Preparacion idempotente de la base de pruebas: crea motorix_v2_test si no existe y
 // aplica las migraciones y seeds del repositorio. Nunca toca la base principal.
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';

@@ -134,7 +134,7 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 - El backend DEBE probarse con Jest (unitarias) y con Jest + supertest (integración y
   contrato); el frontend con las pruebas propias de Flutter.
 - Las pruebas de integración del backend DEBEN ejecutarse contra una base de datos
-  de prueba (`motorix_test`), nunca contra la base principal.
+  de prueba (`motorix_v2_test`), nunca contra la base principal.
 - Toda lógica de negocio (transiciones de estado de órdenes, stock, mantenimientos,
   permisos) DEBE tener pruebas.
 - NO se marca una historia como terminada solo porque existe la interfaz: DEBE funcionar
@@ -229,7 +229,7 @@ asumirlas como definitivas:
   `database/migrations/`, ejecutados por scripts idempotentes con registro en
   `schema_migrations`.
 - **Pruebas automatizadas**: Jest + supertest en backend (unit, integración y contrato
-  contra `motorix_test`); `flutter test` en frontend.
+  contra `motorix_v2_test`); `flutter test` en frontend.
 - **Ramas y commits**: `NNN-<nombre-en-minusculas>` por feature y Conventional Commits
   con la descripción en español.
 - **Login**: acepta usuario o correo electrónico en el mismo campo, para todos los roles.

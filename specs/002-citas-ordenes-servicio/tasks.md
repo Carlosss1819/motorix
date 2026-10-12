@@ -13,7 +13,7 @@ usuario), [research.md](research.md), [data-model.md](data-model.md),
 
 **Tests**: Se incluyen tareas de prueba porque la constitución (Principio VII) exige
 pruebas para toda lógica de negocio y el criterio CA‑8 del Sprint 2 pide explícitamente
-pruebas de la máquina de transiciones. Se ejecutan contra `motorix_test`, nunca contra
+pruebas de la máquina de transiciones. Se ejecutan contra `motorix_v2_test`, nunca contra
 la base principal.
 
 **Organization**: Las tareas están agrupadas por historia de usuario para permitir
@@ -69,7 +69,7 @@ implementación y pruebas independientes.
 ### Tests for User Story 1
 
 - [X] T009 [P] [US1] Prueba de contrato de `POST`/`GET /api/service-orders` en server/tests/contract/service-orders.test.js (201, listado paginado, 400 sin motivo, 404 vehículo inexistente)
-- [X] T010 [P] [US1] Prueba de integración de creación y detalle contra `motorix_test` en server/tests/integration/service-orders.test.js (incluye vehículo que no pertenece al cliente y kilometraje sin corrección → `400`)
+- [X] T010 [P] [US1] Prueba de integración de creación y detalle contra `motorix_v2_test` en server/tests/integration/service-orders.test.js (incluye vehículo que no pertenece al cliente y kilometraje sin corrección → `400`)
 
 ### Implementation for User Story 1
 
@@ -101,7 +101,7 @@ implementación y pruebas independientes.
 ### Tests for User Story 2
 
 - [ ] T025 [P] [US2] Prueba de contrato de `/api/appointments` en server/tests/contract/appointments.test.js (201, `409` de conflicto, `200` con `confirmar: true`, `403` para `MECHANIC`)
-- [ ] T026 [P] [US2] Prueba de integración de citas contra `motorix_test` en server/tests/integration/appointments.test.js (cancelación con motivo opcional, recepción con precarga y detección de `NO_PRESENTADA`)
+- [ ] T026 [P] [US2] Prueba de integración de citas contra `motorix_v2_test` en server/tests/integration/appointments.test.js (cancelación con motivo opcional, recepción con precarga y detección de `NO_PRESENTADA`)
 
 ### Implementation for User Story 2
 
@@ -279,7 +279,7 @@ implementación y pruebas independientes.
 ```text
 # Lanzar juntas las pruebas de US1:
 Task: "Prueba de contrato de POST/GET /api/service-orders en server/tests/contract/service-orders.test.js"
-Task: "Prueba de integración de creación y detalle contra motorix_test en server/tests/integration/service-orders.test.js"
+Task: "Prueba de integración de creación y detalle contra motorix_v2_test en server/tests/integration/service-orders.test.js"
 
 # Lanzar juntas las piezas independientes de US1:
 Task: "Crear server/models/service_order.js"

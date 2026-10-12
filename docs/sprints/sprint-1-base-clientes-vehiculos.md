@@ -92,7 +92,7 @@ Estas decisiones ya estan resueltas para el MVP y NO deben reabrirse sin aprobac
 - **Acceso a datos desde Node.js**: driver `mysql2` directo, sin ORM ni query builder. Debe ser compatible con ES Modules.
 - **MySQL local**: instalacion nativa, no Docker, con usuario dedicado `motorix_app`.
 - **Herramienta de migraciones**: scripts SQL numerados e inmutables en `database/migrations/`, ejecutados por scripts idempotentes con registro en `schema_migrations`.
-- **Pruebas**: Jest + supertest en backend (unit, integracion y contrato contra `motorix_test`); `flutter test` en frontend.
+- **Pruebas**: Jest + supertest en backend (unit, integracion y contrato contra `motorix_v2_test`); `flutter test` en frontend.
 
 Decisiones que si se resuelven en `/speckit.clarify` para este sprint:
 
@@ -110,6 +110,6 @@ Decisiones que si se resuelven en `/speckit.clarify` para este sprint:
 - MySQL local, InnoDB, llaves foraneas, `utf8mb4`.
 - Login acepta usuario o correo electronico en el mismo campo.
 - Toda pantalla del frontend sigue `docs/design-system.md`.
-- Pruebas de integracion contra `motorix_test`, nunca contra la base principal.
+- Pruebas de integracion contra `motorix_v2_test`, nunca contra la base principal.
 - Los seeds del sprint DEBEN incluir datos de ejemplo suficientes para que la aplicacion muestre informacion al arrancar. La base no puede quedar vacia tras la instalacion.
 - Los seeds DEBEN ser idempotentes: si se corren de nuevo, no duplican registros.

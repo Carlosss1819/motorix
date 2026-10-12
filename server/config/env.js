@@ -40,7 +40,7 @@ export const config = {
     port: toNumber(process.env.DB_PORT, 3306),
     user: process.env.DB_USER ?? 'motorix_app',
     password: process.env.DB_PASSWORD ?? '',
-    database: process.env.DB_NAME ?? 'motorix',
+    database: process.env.DB_NAME ?? 'motorix_v2',
   },
   jwt: {
     // Secreto solo de desarrollo local; en cualquier despliegue real DEBE venir del entorno.

@@ -11,7 +11,7 @@ description: "Lista de tareas para la implementación de la funcionalidad"
 data-model.md, contracts/, quickstart.md
 
 **Tests**: Incluidos porque la constitución (Principio VII) exige pruebas de toda la
-lógica de negocio (Jest + supertest contra `motorix_test`; `flutter test`).
+lógica de negocio (Jest + supertest contra `motorix_v2_test`; `flutter test`).
 
 **Organization**: Las tareas están agrupadas por historia de usuario para permitir
 implementación y prueba independientes.
@@ -41,7 +41,7 @@ US6 del sprint), `[US4]` edición de clientes, `[US2]` gestión de usuarios.
 - [X] T004 [P] Configure .gitignore to exclude .env and database/data/ at .gitignore
 - [X] T005 [P] Create .env.example with DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME without secrets in server/.env.example
 - [X] T006 [P] Create database/ skeleton with migrations/, seeds/, scripts/ and README.md in database/README.md
-- [X] T007 Configure Jest and supertest scripts pointing to motorix_test database in server/package.json
+- [X] T007 Configure Jest and supertest scripts pointing to motorix_v2_test database in server/package.json
 - [ ] T008 [P] Configure ESLint for backend and analysis_options.yaml for Flutter in server/eslint.config.js and client/analysis_options.yaml
 
 ---
@@ -84,7 +84,7 @@ verificar acceso y denegación con credenciales inválidas y con sesión expirad
 > **NOTE: Estas pruebas DEBEN fallar antes de implementar**
 
 - [X] T023 [P] [US1] Contract test for POST /api/auth/login covering username, email, invalid credentials (401) and locked account (423) in server/tests/contract/auth.test.js
-- [X] T024 [P] [US1] Integration test for login flow, lockout after 5 failed attempts (15 min) and 30-minute inactivity expiry against motorix_test in server/tests/integration/auth.test.js
+- [X] T024 [P] [US1] Integration test for login flow, lockout after 5 failed attempts (15 min) and 30-minute inactivity expiry against motorix_v2_test in server/tests/integration/auth.test.js
 - [X] T025 [P] [US1] Unit test for password policy (min 8 chars, uppercase, lowercase, number) and identifier detection by "@" in server/tests/unit/auth.validators.test.js
 
 ### Implementation for User Story 1
@@ -115,7 +115,7 @@ lista y abrir su ficha con la lista de vehículos (vacía al inicio).
 > **NOTE: Estas pruebas DEBEN fallar antes de implementar**
 
 - [X] T035 [P] [US3] Contract test for GET and POST /api/clients covering required name/phone, optional email and search parameter in server/tests/contract/clients.test.js
-- [X] T036 [P] [US3] Integration test for register then query client against motorix_test in server/tests/integration/clients.test.js
+- [X] T036 [P] [US3] Integration test for register then query client against motorix_v2_test in server/tests/integration/clients.test.js
 - [X] T037 [P] [US3] Unit test for client validation: "nombre y teléfono obligatorios, correo opcional" and repeated phone warning flow in server/tests/unit/client.validator.test.js
 
 ### Implementation for User Story 2
@@ -148,7 +148,7 @@ verificar el rechazo.
 > **NOTE: Estas pruebas DEBEN fallar antes de implementar**
 
 - [X] T048 [P] [US5] Contract test for POST /api/vehicles covering missing owner (400 "Seleccione el propietario"), duplicate plates (409) and duplicate VIN (409) in server/tests/contract/vehicles.test.js
-- [X] T049 [P] [US5] Integration test for client then vehicle then association query against motorix_test in server/tests/integration/vehicles.test.js
+- [X] T049 [P] [US5] Integration test for client then vehicle then association query against motorix_v2_test in server/tests/integration/vehicles.test.js
 - [X] T050 [P] [US5] Unit test for vehicle validation: mileage >= 0 and VIN unique when provided in server/tests/unit/vehicle.validator.test.js
 
 ### Implementation for User Story 3
@@ -181,7 +181,7 @@ dato cambia y los vehículos siguen asociados; cancelar y verificar que nada cam
 > **NOTE: Estas pruebas DEBEN fallar antes de implementar**
 
 - [X] T062 [P] [US4] Contract test for PUT /api/clients/:id covering success (200), invalid data (400) and vehicles preserved in response in server/tests/contract/clients-edit.test.js
-- [X] T063 [P] [US4] Integration test for edit client keeping associated vehicles against motorix_test in server/tests/integration/clients-edit.test.js
+- [X] T063 [P] [US4] Integration test for edit client keeping associated vehicles against motorix_v2_test in server/tests/integration/clients-edit.test.js
 
 ### Implementation for User Story 4
 
@@ -207,7 +207,7 @@ desde `admin` y verificar que su sesión abierta se cierra de inmediato.
 > **NOTE: Estas pruebas DEBEN fallar antes de implementar**
 
 - [X] T068 [P] [US2] Contract test for /api/users covering 403 for non-admin roles, 409 for duplicate username or email and 201 on create in server/tests/contract/users.test.js
-- [X] T069 [P] [US2] Integration test for deactivation closing an open session immediately and role change applying on next request against motorix_test in server/tests/integration/users.test.js
+- [X] T069 [P] [US2] Integration test for deactivation closing an open session immediately and role change applying on next request against motorix_v2_test in server/tests/integration/users.test.js
 - [X] T070 [P] [US2] Unit test for role and status transitions with immediate effect in server/tests/unit/user.service.test.js
 
 ### Implementation for User Story 5
@@ -232,7 +232,7 @@ desde `admin` y verificar que su sesión abierta se cierra de inmediato.
 - [ ] T079 [P] Review all screens against docs/design-system.md: tokens without hardcoded values, transitions 150/200/250 ms, empty/loading/error/success states in client/lib/screens/
 - [ ] T080 [P] Verify mandatory confirmations: logout, leaving forms with unsaved changes, deactivating records in client/lib/widgets/
 - [X] T081 [P] Verify no secrets in repository and .env ignored with .env.example containing DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME (SC-006) at .gitignore and server/.env.example
-- [ ] T082 Run complete automated suites: npm test in server/ and flutter test in client/ (all green against motorix_test)
+- [ ] T082 Run complete automated suites: npm test in server/ and flutter test in client/ (all green against motorix_v2_test)
 - [ ] T083 Run quickstart.md validation scenarios V1 through V9 end-to-end per specs/001-base-clientes-vehiculos/quickstart.md
 - [X] T084 [P] Update root README.md and database/README.md with environment setup and execution steps in README.md and database/README.md
 - [ ] T085 Confirm MECHANIC access decision (R-04) with the team and update docs/project-context.md accordingly per constitution Principle I in docs/project-context.md

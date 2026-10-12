@@ -20,7 +20,7 @@ param(
   [string]$DbPort = '3306',
   [string]$DbUser = 'motorix_app',
   [string]$DbPassword = $env:MOTORIX_DB_PASSWORD,
-  [string]$DbName = 'motorix',
+  [string]$DbName = 'motorix_v2',
   [switch]$Seeds,
   [string]$MigrationsDir,
   [string]$SeedsDir

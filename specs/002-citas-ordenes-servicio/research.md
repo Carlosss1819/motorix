@@ -15,7 +15,7 @@ kilometraje), resuelto aquí a partir de `spec.md`, `docs/project-context.md` y
 
 - **Decisión**: sin dependencias ni estructuras nuevas. Se agregan archivos a las capas
   existentes de `server/` y `client/`; las pruebas siguen con Jest + supertest contra
-  `motorix_test` y `flutter test`.
+  `motorix_v2_test` y `flutter test`.
 - **Rationale**: la constitución (Principios II y III) fija el stack; repetir el patrón
   de Sprint 1 (routes → controllers → services → models, con `validate` + `authorize`)
   reduce el riesgo y mantiene la coherencia de la API.

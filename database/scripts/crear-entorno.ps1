@@ -17,8 +17,8 @@ param(
   [string]$AdminPassword = $env:MYSQL_ROOT_PASSWORD,
   [string]$DbHost = 'localhost',
   [string]$DbPort = '3306',
-  [string]$DbName = 'motorix',
-  [string]$TestDbName = 'motorix_test',
+  [string]$DbName = 'motorix_v2',
+  [string]$TestDbName = 'motorix_v2_test',
   [string]$AppUser = 'motorix_app',
   [string]$AppPassword = $env:MOTORIX_DB_PASSWORD
 )

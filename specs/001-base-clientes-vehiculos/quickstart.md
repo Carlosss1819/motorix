@@ -91,7 +91,7 @@ contraseña) y `423` cuenta bloqueada 15 minutos en el intento 6.
 | Ámbito | Comando | Esperado |
 |--------|---------|----------|
 | Backend unit | `npm test` en `server/` (Jest) | Todas pasan |
-| Backend integración/contrato | `npm run test:integration` en `server/` (Jest + supertest contra `motorix_test`) | Todas pasan; nunca contra la base principal |
+| Backend integración/contrato | `npm run test:integration` en `server/` (Jest + supertest contra `motorix_v2_test`) | Todas pasan; nunca contra la base principal |
 | Frontend | `flutter test` en `client/` | Todas pasan |
 
 ### V9 — Instalación limpia (SC‑005, FR‑020)

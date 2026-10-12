@@ -109,7 +109,7 @@ con estado y mecánico; mensaje de "sin actividades" (y no un error) cuando no h
 | Capa | Comando | Cobertura exigida del sprint |
 |------|---------|------------------------------|
 | Unitarias (backend) | `cd server && npm run test:unit` | Máquina de transiciones (todas las válidas y varias inválidas, CA‑8), validadores de cita y orden, permisos por transición |
-| Integración y contrato (backend) | `cd server && npm run test:integration` | Citas y órdenes de extremo a extremo contra `motorix_test` (nunca la base principal) |
+| Integración y contrato (backend) | `cd server && npm run test:integration` | Citas y órdenes de extremo a extremo contra `motorix_v2_test` (nunca la base principal) |
 | Backend completo + lint | `cd server && npm test` y `cd server && npm run lint` | Sin regresiones del Sprint 1 |
 | Frontend | `cd client && flutter test` | Providers y widgets nuevos de citas y órdenes |
 

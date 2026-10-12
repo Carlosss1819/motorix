@@ -29,7 +29,7 @@ motorix/
 ### 1. Base de datos
 
 ```powershell
-# Crea las bases 'motorix' y 'motorix_test' y el usuario dedicado motorix_app
+# Crea las bases 'motorix_v2' y 'motorix_v2_test' y el usuario dedicado motorix_app
 ./database/scripts/crear-entorno.ps1 -AdminPassword '<contraseña de root>'
 
 # Aplica migraciones y datos de ejemplo (idempotente)
@@ -53,7 +53,7 @@ cd server
 Copy-Item .env.example .env   # y completa tus valores locales
 npm install
 npm start                      # API en http://localhost:3000/api
-npm test                       # suite completa contra motorix_test
+npm test                       # suite completa contra motorix_v2_test
 npm run lint                   # ESLint
 ```
 
@@ -72,7 +72,7 @@ flutter run -d windows --dart-define=API_BASE_URL=http://localhost:3000/api
 - Commits con **Conventional Commits** en español (p. ej.
   `feat(clients): agregar validación de teléfono duplicado`).
 - Ningún secreto en el repositorio: `.env` está ignorado y `.env.example` no contiene valores reales.
-- Pruebas escritas en español, ejecutadas contra `motorix_test` (nunca contra la base principal).
+- Pruebas escritas en español, ejecutadas contra `motorix_v2_test` (nunca contra la base principal).
 
 ## Documentación útil
 

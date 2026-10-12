@@ -16,7 +16,7 @@ localmente y demostrable de extremo a extremo.
 Enfoque técnico: backend Node.js LTS + Express en ES Modules con capa `services/` para
 la lógica de negocio, driver `mysql2` directo y migraciones SQL inmutables; frontend
 Flutter + Material Design 3 con tema propio y Provider, siguiendo `docs/design-system.md`;
-validación de entradas con `zod` y pruebas con Jest + supertest (contra `motorix_test`) y
+validación de entradas con `zod` y pruebas con Jest + supertest (contra `motorix_v2_test`) y
 `flutter test`. Detalle de decisiones en [research.md](research.md).
 
 ## Contexto Técnico
@@ -30,10 +30,10 @@ Frontend: Flutter Material Design 3, Provider, `google_fonts`, `data_table_2` (2
 
 **Storage**: MySQL local (InnoDB, `utf8mb4`, llaves foráneas), esquema en
 `database/migrations/` y `database/seeds/` con registro en `schema_migrations`; usuario
-dedicado `motorix_app`; base de pruebas `motorix_test`
+dedicado `motorix_app`; base de pruebas `motorix_v2_test`
 
 **Testing**: Jest (unitarias) y Jest + supertest (integración y contrato) en el backend
-contra `motorix_test`; `flutter test` (providers y widgets) en el frontend
+contra `motorix_v2_test`; `flutter test` (providers y widgets) en el frontend
 
 **Target Platform**: Aplicación Flutter con prioridad en escritorio (Windows/web) y
 backend Node.js corriendo en la máquina local de cada integrante
@@ -64,7 +64,7 @@ diseño de la Fase 1.*
 | IV | Seguridad | PASS | Contraseñas con hash (costo 10), secretos solo por variables de entorno, permisos validados en backend, entradas con `zod`, sin trazas internas al usuario |
 | V | Integridad de las reglas de negocio | PASS | RN‑1 (sin vehículo sin propietario), RN‑5/RN‑15 (permisos en backend), RN‑16 (login usuario o correo), RN‑17 (política de contraseña). Las RN de inventario/pagos no aplican en este sprint |
 | VI | API consistente y manejo de errores | PASS | Rutas REST coherentes, respuestas JSON consistentes, códigos HTTP apropiados, middlewares de autenticación/autorización/validación, errores centralizados en español (ver [contracts/](contracts/)) |
-| VII | Pruebas | PASS | Jest + supertest contra `motorix_test` (nunca la base principal), `flutter test`; pruebas de lógica de negocio (roles, duplicados, política de contraseña) |
+| VII | Pruebas | PASS | Jest + supertest contra `motorix_v2_test` (nunca la base principal), `flutter test`; pruebas de lógica de negocio (roles, duplicados, política de contraseña) |
 | VIII | UX/UI profesional y sencilla | PASS | Todas las pantallas siguen `docs/design-system.md`: Material 3 con `ThemeData` propio, tokens (sin valores sueltos), confirmaciones obligatorias, estados vacío/cargando/error/éxito, 0 librerías extra de componentes |
 
 **Resultado del gate inicial**: PASS con 1 acción correctiva documentada (gate I).
@@ -120,7 +120,7 @@ server/                    # Backend Node.js + Express (ES Modules)
 ├── validators/             # Esquemas zod, mensajes en español
 ├── utils/
 ├── scripts/                # create-admin.js
-├── tests/unit|integration|contract/   # Jest + supertest (motorix_test)
+├── tests/unit|integration|contract/   # Jest + supertest (motorix_v2_test)
 ├── package.json            # "type": "module"
 └── .env.example             # DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME
 

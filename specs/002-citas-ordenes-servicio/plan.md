@@ -37,10 +37,10 @@ backend, siempre en ES Modules (`"type": "module"`)
 `order_labor`, `order_parts` en `database/migrations/002_citas_ordenes_servicio.sql`
 (script nuevo e inmutable, la migración 001 no se toca); datos de ejemplo en
 `database/seeds/002_ejemplos_citas_ordenes.sql` (idempotentes, ids fijos); base de
-pruebas `motorix_test`
+pruebas `motorix_v2_test`
 
 **Testing**: Jest (unitarias de la máquina de estados y validadores) y Jest + supertest
-(integración y contrato) en el backend contra `motorix_test`; `flutter test` en el
+(integración y contrato) en el backend contra `motorix_v2_test`; `flutter test` en el
 frontend (providers y widgets nuevos)
 
 **Target Platform**: Aplicación Flutter con prioridad en escritorio (Windows/web) y
@@ -74,7 +74,7 @@ diseño de la Fase 1.*
 | IV | Seguridad | PASS | Endpoints protegidos con `authenticate` + `authorize`; validación de payloads con `zod`; permisos por transición comprobados en backend (RN‑15); mensajes de error en español sin trazas; sin secretos |
 | V | Integridad de las reglas de negocio | PASS | RN‑01/RN‑02 (orden exige cliente y vehículo existentes), RN‑03/RN‑04 (kilometraje de entrada validado contra la última orden, con corrección explícita), RN‑05 (solo usuarios autorizados modifican órdenes), RN‑06 (repuestos ligados a la orden; salida de inventario queda para el Sprint 3), RN‑09 (orden `ENTREGADO` no se modifica ni elimina) |
 | VI | API consistente y manejo de errores | PASS | Rutas nuevas coherentes con las del Sprint 1 (`/api/appointments`, `/api/service-orders`), respuestas JSON en español con claves en español, códigos HTTP apropiados (`409` para conflictos de cita), errores centralizados (ver [contracts/](contracts/)) |
-| VII | Pruebas | PASS | Jest + supertest contra `motorix_test`; pruebas unitarias de la máquina de estados (CA‑8) y de validadores; `flutter test` para providers y widgets nuevos; ninguna historia se da por terminada solo con interfaz |
+| VII | Pruebas | PASS | Jest + supertest contra `motorix_v2_test`; pruebas unitarias de la máquina de estados (CA‑8) y de validadores; `flutter test` para providers y widgets nuevos; ninguna historia se da por terminada solo con interfaz |
 | VIII | UX/UI profesional y sencilla | PASS | Pantallas nuevas sobre `docs/design-system.md` (Material 3 con `ThemeData` propio y tokens, sin valores sueltos); confirmaciones obligatorias para cancelar citas y para entregar/cambiar estado de órdenes; estados vacío/cargando/error/éxito; 0 librerías extra de componentes |
 
 **Resultado del gate inicial**: PASS con 1 acción correctiva documentada (gate I).

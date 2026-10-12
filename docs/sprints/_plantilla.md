@@ -80,6 +80,6 @@ NO lo pongas dentro de specs/ (esa carpeta la genera Spec Kit).
 - MySQL local, InnoDB, llaves foraneas, `utf8mb4`.
 - Login acepta usuario o correo electronico en el mismo campo.
 - Toda pantalla del frontend sigue `docs/design-system.md`.
-- Pruebas de integracion contra `motorix_test`, nunca contra la base principal.
+- Pruebas de integracion contra `motorix_v2_test`, nunca contra la base principal.
 - Los seeds del sprint DEBEN incluir datos de ejemplo suficientes para que la aplicacion muestre informacion al arrancar. La base no puede quedar vacia tras la instalacion.
 - Los seeds DEBEN ser idempotentes: si se corren de nuevo, no duplican registros.
