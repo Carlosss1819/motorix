@@ -108,6 +108,15 @@ export async function updateVehicle(id, { brand, model, year, plates, vin, curre
   return findById(id);
 }
 
+// Actualiza el kilometraje del vehículo solo si el valor nuevo es mayor
+// (regla R-08: el historial y el mantenimiento usan el kilometraje vigente).
+export async function refreshCurrentMileage(id, mileage) {
+  await query(
+    'UPDATE vehicles SET current_mileage = ? WHERE id = ? AND current_mileage < ?',
+    [mileage, id, mileage],
+  );
+}
+
 // Vehiculos de un cliente (usado en el detalle de cliente, FR-014).
 export async function listByClient(clientId) {
   const rows = await query(
