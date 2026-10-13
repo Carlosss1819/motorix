@@ -369,15 +369,15 @@ quickstart)
 
 ### Tests for User Story 7
 
-- [ ] T059 [P] [US7] Escribir `server/tests/unit/order-parts-stock.test.js` para las
+- [X] T059 [P] [US7] Escribir `server/tests/unit/order-parts-stock.test.js` para las
   reglas puras de stock (cálculo de `stock_after`, rechazo de cantidad ≤ 0)
-- [ ] T060 [P] [US7] Escribir la prueba de contrato
+- [X] T060 [P] [US7] Escribir la prueba de contrato
   `server/tests/contract/order-parts.test.js` para
   `POST/DELETE /api/service-orders/:id/refacciones` **y sus alias heredados**
   `/repuestos` (misma respuesta, R‑07): `201/200`, `409 STOCK_INSUFICIENTE`,
   `409 REFACCION_INACTIVA`, `404 REFACCION_NO_ENCONTRADA`, `403` de `mecanico` en
   orden ajena
-- [ ] T061 [P] [US7] Escribir la prueba de integración
+- [X] T061 [P] [US7] Escribir la prueba de integración
   `server/tests/integration/order-parts-stock.test.js`: salida con transacción,
   reposición al retirar con motivo "Reposición por retiro de la orden #<id>",
   fila heredada sin `part_id` (retiro sin movimiento), orden cerrada → 409 y el caso
@@ -386,14 +386,14 @@ quickstart)
 
 ### Implementation for User Story 7
 
-- [ ] T062 [US7] Reescribir `addPart`/`removePart` en
+- [X] T062 [US7] Reescribir `addPart`/`removePart` en
   `server/services/service_order.service.js`: alta exige `partId` de refacción activa
   (FR‑023), `cantidad` ≥ 1, bloqueo `FOR UPDATE` + validación de stock + `ROLLBACK`
   con `STOCK_INSUFICIENTE` (R‑08), inserción de la fila con `description` copiado del
   catálogo y movimiento `SALIDA` con la orden en la misma transacción (FR‑024, RN‑7);
   `removePart` repone stock con `ENTRADA` de reposición (FR‑026, R‑09) o solo elimina
   la fila heredada; ambos con el guard `assertOrderOpenForContent`
-- [ ] T063 [US7] Ampliar `server/routes/service_orders.routes.js`: rutas
+- [X] T063 [US7] Ampliar `server/routes/service_orders.routes.js`: rutas
   `POST/DELETE /:id/refacciones[/:refaccionId]` con
   `authorize('ADMIN','RECEPTIONIST','MECHANIC')` (FR‑027) y sus alias
   `/:id/repuestos[/:repuestoId]` apuntando al mismo handler (R‑07)
