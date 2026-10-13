@@ -60,6 +60,9 @@ export async function list(filters) {
   const { page, perPage } = normalizarPaginacion(filters);
   const { rows, total } = await listParts({
     search: filters.buscar,
+    // `?stockBajo=true` (US8, R-10): solo refacciones con stock_actual
+    // <= stock_minimo y stock_minimo > 0.
+    lowStock: filters.stockBajo === 'true',
     active: filters.activa === undefined ? undefined : filters.activa === 'true',
     page,
     perPage,
