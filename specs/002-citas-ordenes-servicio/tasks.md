@@ -184,17 +184,17 @@ implementación y pruebas independientes.
 
 ### Tests for User Story 5
 
-- [ ] T061 [P] [US5] Prueba unitaria de la máquina de estados en server/tests/unit/order-transitions.test.js: todas las transiciones válidas del mapa R‑02, varias inválidas (p. ej. `RECIBIDO → ENTREGADO`, retroceso desde `TERMINADO`) y la matriz de permisos por rol R‑03 (CA‑8)
-- [ ] T062 [P] [US5] Prueba de contrato de `POST /api/service-orders/:id/estado` en server/tests/contract/service-order-status.test.js (`200`, `403` fuera de rol, `409` transición inválida con mensaje claro)
+- [X] T061 [P] [US5] Prueba unitaria de la máquina de estados en server/tests/unit/order-transitions.test.js: todas las transiciones válidas del mapa R‑02, varias inválidas (p. ej. `RECIBIDO → ENTREGADO`, retroceso desde `TERMINADO`) y la matriz de permisos por rol R‑03 (CA‑8)
+- [X] T062 [P] [US5] Prueba de contrato de `POST /api/service-orders/:id/estado` en server/tests/contract/service-order-status.test.js (`200`, `403` fuera de rol, `409` transición inválida con mensaje claro)
 
 ### Implementation for User Story 5
 
-- [ ] T063 [US5] Implementar en server/services/service_order.service.js el mapa de transiciones (`RECIBIDO → DIAGNOSTICO`; `DIAGNOSTICO → EN_REPARACION|ESPERANDO_REFACCION|TERMINADO`; `EN_REPARACION → ESPERANDO_REFACCION|TERMINADO`; `ESPERANDO_REFACCION → DIAGNOSTICO|EN_REPARACION|TERMINADO`; `TERMINADO → ENTREGADO`; `ENTREGADO → ninguna`) y la matriz de permisos FR‑022: mecánico asignado o `ADMIN` en el bloque medio, `RECEPTIONIST`/`ADMIN` en ingreso y entrega, `409` con los estados permitidos cuando la transición es inválida
-- [ ] T064 [US5] Registrar cada transición en `order_status_history` con `from_status`, `to_status`, `changed_by` y `changed_at` (FR‑015) y llenar `delivery_date` al pasar a `ENTREGADO`, en server/services/service_order.service.js y server/models/service_order.js
-- [ ] T065 [US5] Implementar `POST /api/service-orders/:id/estado` con body `{ estado, nota }` en server/controllers/service_orders.controller.js y server/routes/service_orders.routes.js (authenticate + authorize + validate)
-- [ ] T066 [US5] Agregar las acciones de estado en client/lib/screens/service_order_detail_screen.dart según rol y estado actual, con confirmación obligatoria para entregar/cerrar y mensajes de éxito/error (Principio VIII)
-- [ ] T067 [US5] Mostrar el historial de cambios (estado, usuario, fecha) en client/lib/screens/service_order_detail_screen.dart y exponerlo en client/lib/services/service_orders_service.dart
-- [ ] T068 [P] [US5] Prueba flutter test de las acciones de estado por rol en client/test/order_status_actions_test.dart
+- [X] T063 [US5] Implementar en server/services/service_order.service.js el mapa de transiciones (`RECIBIDO → DIAGNOSTICO`; `DIAGNOSTICO → EN_REPARACION|ESPERANDO_REFACCION|TERMINADO`; `EN_REPARACION → ESPERANDO_REFACCION|TERMINADO`; `ESPERANDO_REFACCION → DIAGNOSTICO|EN_REPARACION|TERMINADO`; `TERMINADO → ENTREGADO`; `ENTREGADO → ninguna`) y la matriz de permisos FR‑022: mecánico asignado o `ADMIN` en el bloque medio, `RECEPTIONIST`/`ADMIN` en ingreso y entrega, `409` con los estados permitidos cuando la transición es inválida
+- [X] T064 [US5] Registrar cada transición en `order_status_history` con `from_status`, `to_status`, `changed_by` y `changed_at` (FR‑015) y llenar `delivery_date` al pasar a `ENTREGADO`, en server/services/service_order.service.js y server/models/service_order.js
+- [X] T065 [US5] Implementar `POST /api/service-orders/:id/estado` con body `{ estado, nota }` en server/controllers/service_orders.controller.js y server/routes/service_orders.routes.js (authenticate + authorize + validate)
+- [X] T066 [US5] Agregar las acciones de estado en client/lib/screens/service_order_detail_screen.dart según rol y estado actual, con confirmación obligatoria para entregar/cerrar y mensajes de éxito/error (Principio VIII)
+- [X] T067 [US5] Mostrar el historial de cambios (estado, usuario, fecha) en client/lib/screens/service_order_detail_screen.dart y exponerlo en client/lib/services/service_orders_service.dart
+- [X] T068 [P] [US5] Prueba flutter test de las acciones de estado por rol en client/test/order_status_actions_test.dart
 
 **Checkpoint**: el flujo completo del sprint es demostrable de extremo a extremo
 
