@@ -5,6 +5,7 @@ import { usersRoutes } from './users.routes.js';
 import { clientsRoutes } from './clients.routes.js';
 import { vehiclesRoutes } from './vehicles.routes.js';
 import { serviceOrdersRoutes } from './service_orders.routes.js';
+import { appointmentsRoutes } from './appointments.routes.js';
 
 export const apiRoutes = Router();
 
@@ -13,3 +14,4 @@ apiRoutes.use('/users', usersRoutes);
 apiRoutes.use('/clients', clientsRoutes);
 apiRoutes.use('/vehicles', vehiclesRoutes);
 apiRoutes.use('/service-orders', serviceOrdersRoutes);
+apiRoutes.use('/appointments', appointmentsRoutes);
