@@ -102,4 +102,79 @@ class ServiceOrdersService {
     final dynamic data = await _api.get('/users/mechanics');
     return asList(data).map(MechanicOption.fromJson).toList();
   }
+
+  /// POST /api/service-orders/:id/diagnostico. `borrador` deja el texto sin
+  /// confirmar (FR-011) y el backend rechaza con `409` las órdenes
+  /// entregadas (FR-016).
+  Future<void> saveDiagnosis({
+    required int id,
+    required String texto,
+    required bool borrador,
+  }) async {
+    await _api.post(
+      '/service-orders/$id/diagnostico',
+      body: <String, dynamic>{'texto': texto, 'borrador': borrador},
+    );
+  }
+
+  /// POST /api/service-orders/:id/servicios: crea el servicio con su partida
+  /// de mano de obra en la misma transacción (FR-012, R-13).
+  Future<void> addService({
+    required int id,
+    required String descripcion,
+    required int duracionMinutos,
+    num? precio,
+  }) async {
+    await _api.post(
+      '/service-orders/$id/servicios',
+      body: <String, dynamic>{
+        'descripcion': descripcion,
+        'duracionMinutos': duracionMinutos,
+        'precio': ?precio,
+      },
+    );
+  }
+
+  /// DELETE /api/service-orders/:id/servicios/:servicioId: baja del servicio
+  /// con la mano de obra asociada (el backend responde `409` si la orden ya
+  /// fue entregada, FR-016).
+  Future<void> removeService({
+    required int id,
+    required int servicioId,
+  }) async {
+    await _api.delete('/service-orders/$id/servicios/$servicioId');
+  }
+
+  /// POST /api/service-orders/:id/repuestos: solo registra el repuesto junto
+  /// a la orden; el inventario se valida en el Sprint 3 (RN-06).
+  Future<void> addPart({
+    required int id,
+    required String descripcion,
+    required int cantidad,
+  }) async {
+    await _api.post(
+      '/service-orders/$id/repuestos',
+      body: <String, dynamic>{'descripcion': descripcion, 'cantidad': cantidad},
+    );
+  }
+
+  /// DELETE /api/service-orders/:id/repuestos/:repuestoId.
+  Future<void> removePart({
+    required int id,
+    required int repuestoId,
+  }) async {
+    await _api.delete('/service-orders/$id/repuestos/$repuestoId');
+  }
+
+  /// POST /api/service-orders/:id/recomendaciones: recomendaciones para la
+  /// entrega (FR-013).
+  Future<void> saveRecommendations({
+    required int id,
+    required String texto,
+  }) async {
+    await _api.post(
+      '/service-orders/$id/recomendaciones',
+      body: <String, dynamic>{'texto': texto},
+    );
+  }
 }

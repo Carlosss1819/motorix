@@ -74,6 +74,8 @@ class ApiClient {
   Future<dynamic> patch(String path, {Object? body}) =>
       _send('PATCH', path, body: body);
 
+  Future<dynamic> delete(String path) => _send('DELETE', path);
+
   Uri _buildUri(String path, [Map<String, String>? query]) {
     final Uri base = Uri.parse('$baseUrl$path');
     if (query == null || query.isEmpty) {
@@ -126,6 +128,8 @@ class ApiClient {
           response = await _client
               .patch(uri, headers: headers, body: encodedBody)
               .timeout(_timeout);
+        case 'DELETE':
+          response = await _client.delete(uri, headers: headers).timeout(_timeout);
         default:
           throw ApiException('Método HTTP no soportado: $method');
       }

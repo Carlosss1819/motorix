@@ -17,13 +17,13 @@ class OrderLabor {
   const OrderLabor({
     required this.id,
     required this.duracionMinutos,
-    required this.precio,
+    this.precio,
   });
 
   factory OrderLabor.fromJson(Map<String, dynamic> json) => OrderLabor(
         id: asInt(json['id']),
         duracionMinutos: asInt(json['duracionMinutos']),
-        precio: asNum(json['precio']),
+        precio: json['precio'] == null ? null : asNum(json['precio']),
       );
 
   final int id;
@@ -31,8 +31,9 @@ class OrderLabor {
   /// Duración en minutos de la mano de obra.
   final int duracionMinutos;
 
-  /// Precio de la mano de obra; el backend lo entrega como texto decimal.
-  final num precio;
+  /// Precio de la mano de obra; `null` cuando se registró sin precio
+  /// (el campo es opcional, contrato de la US4).
+  final num? precio;
 }
 
 /// Servicio facturable agregado a la orden (HU4).

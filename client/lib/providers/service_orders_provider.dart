@@ -205,4 +205,79 @@ class ServiceOrdersProvider extends ChangeNotifier {
 
   /// Lista los mecánicos activos para el selector de asignación (FR-009).
   Future<List<MechanicOption>> loadMechanics() => _service.listMechanics();
+
+  /// Refresca la ficha (si está cargada) y el listado después de cambiar el
+  /// contenido de la orden.
+  Future<void> _refrescarContenido(int id) async {
+    if (_selected?.id == id) {
+      _selected = await _service.detail(id);
+      notifyListeners();
+    }
+    await reload();
+  }
+
+  /// Guarda el diagnóstico (FR-011); con `borrador` queda sin confirmar y lo
+  /// que no se guarda se descarta en el cliente (FR-019). Lanza
+  /// [ApiException] con el `409` de una orden entregada (FR-016).
+  Future<void> saveDiagnosis({
+    required int id,
+    required String texto,
+    required bool borrador,
+  }) async {
+    await _service.saveDiagnosis(id: id, texto: texto, borrador: borrador);
+    await _refrescarContenido(id);
+  }
+
+  /// Agrega un servicio con su mano de obra en la misma transacción (R-13).
+  Future<void> addService({
+    required int id,
+    required String descripcion,
+    required int duracionMinutos,
+    num? precio,
+  }) async {
+    await _service.addService(
+      id: id,
+      descripcion: descripcion,
+      duracionMinutos: duracionMinutos,
+      precio: precio,
+    );
+    await _refrescarContenido(id);
+  }
+
+  /// Elimina un servicio de la orden con confirmación previa en la interfaz.
+  Future<void> removeService({
+    required int id,
+    required int servicioId,
+  }) async {
+    await _service.removeService(id: id, servicioId: servicioId);
+    await _refrescarContenido(id);
+  }
+
+  /// Registra un repuesto usado en la orden, sin tocar el inventario (RN-06).
+  Future<void> addPart({
+    required int id,
+    required String descripcion,
+    required int cantidad,
+  }) async {
+    await _service.addPart(id: id, descripcion: descripcion, cantidad: cantidad);
+    await _refrescarContenido(id);
+  }
+
+  /// Elimina un repuesto registrado en la orden.
+  Future<void> removePart({
+    required int id,
+    required int repuestoId,
+  }) async {
+    await _service.removePart(id: id, repuestoId: repuestoId);
+    await _refrescarContenido(id);
+  }
+
+  /// Guarda las recomendaciones para la entrega (FR-013).
+  Future<void> saveRecommendations({
+    required int id,
+    required String texto,
+  }) async {
+    await _service.saveRecommendations(id: id, texto: texto);
+    await _refrescarContenido(id);
+  }
 }
