@@ -56,11 +56,11 @@ class MaintenanceService {
         'tipoServicio': tipoServicio,
         if (fechaObjetivo != null && fechaObjetivo.isNotEmpty)
           'fechaObjetivo': fechaObjetivo,
-        if (kilometrajeObjetivo != null) 'kilometrajeObjetivo': kilometrajeObjetivo,
-        if (intervaloDias != null) 'intervaloDias': intervaloDias,
-        if (intervaloKm != null) 'intervaloKm': intervaloKm,
-        if (antelacionDias != null) 'antelacionDias': antelacionDias,
-        if (antelacionKm != null) 'antelacionKm': antelacionKm,
+        'kilometrajeObjetivo': ?kilometrajeObjetivo,
+        'intervaloDias': ?intervaloDias,
+        'intervaloKm': ?intervaloKm,
+        'antelacionDias': ?antelacionDias,
+        'antelacionKm': ?antelacionKm,
         if (notas != null && notas.isNotEmpty) 'notas': notas,
       },
     );
@@ -85,11 +85,11 @@ class MaintenanceService {
         'tipoServicio': tipoServicio,
         if (fechaObjetivo != null && fechaObjetivo.isNotEmpty)
           'fechaObjetivo': fechaObjetivo,
-        if (kilometrajeObjetivo != null) 'kilometrajeObjetivo': kilometrajeObjetivo,
-        if (intervaloDias != null) 'intervaloDias': intervaloDias,
-        if (intervaloKm != null) 'intervaloKm': intervaloKm,
-        if (antelacionDias != null) 'antelacionDias': antelacionDias,
-        if (antelacionKm != null) 'antelacionKm': antelacionKm,
+        'kilometrajeObjetivo': ?kilometrajeObjetivo,
+        'intervaloDias': ?intervaloDias,
+        'intervaloKm': ?intervaloKm,
+        'antelacionDias': ?antelacionDias,
+        'antelacionKm': ?antelacionKm,
         if (notas != null && notas.isNotEmpty) 'notas': notas,
       },
     );
@@ -108,8 +108,7 @@ class MaintenanceService {
       body: <String, Object?>{
         if (fechaServicio != null && fechaServicio.isNotEmpty)
           'fechaServicio': fechaServicio,
-        if (kilometrajeServicio != null)
-          'kilometrajeServicio': kilometrajeServicio,
+        'kilometrajeServicio': ?kilometrajeServicio,
       },
     );
     return Maintenance.fromJson(asMap(data));

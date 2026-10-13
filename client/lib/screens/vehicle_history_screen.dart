@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
-import '../models/enums.dart';
 import '../models/vehicle_history.dart';
 import '../providers/load_status.dart';
 import '../providers/vehicle_history_provider.dart';
@@ -123,7 +122,7 @@ class _VehicleHistoryScreenState extends State<VehicleHistoryScreen> {
         }
         return ListView.separated(
           itemCount: history.items.length,
-          separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.lg),
+          separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
           itemBuilder: (BuildContext context, int index) =>
               _buildEntryCard(history.items[index]),
         );

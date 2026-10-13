@@ -45,28 +45,6 @@ class _VehicleHistoryServiceFake extends VehicleHistoryService {
   }
 }
 
-/// Entrada de ejemplo con el detalle completo del servicio (FR-002).
-HistoryEntry _entrada({int ordenId = 10}) {
-  return HistoryEntry.fromJson(<String, dynamic>{
-    'ordenId': ordenId,
-    'fechaServicio': '2026-10-10',
-    'kilometraje': 45200,
-    'estadoOrden': 'TERMINADO',
-    'observaciones': 'Ruido al frenar',
-    'diagnostico': 'Pastillas delanteras desgastadas',
-    'recomendaciones': 'Revisar discos en el próximo servicio',
-    'servicios': <String>['Cambio de pastillas delanteras'],
-    'refacciones': <Map<String, dynamic>>[
-      <String, dynamic>{
-        'partId': 3,
-        'codigo': 'PAS-DEL01',
-        'nombre': 'Juego de pastillas delanteras',
-        'cantidad': 1,
-      },
-    ],
-  });
-}
-
 void main() {
   setUpAll(() {
     // En pruebas no se descargan fuentes desde internet.
