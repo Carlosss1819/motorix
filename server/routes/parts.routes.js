@@ -12,6 +12,8 @@ import {
   partSchema,
   partUpdateSchema,
   partsListQuerySchema,
+  partMovementSchema,
+  partsMovementsQuerySchema,
 } from '../validators/part.validator.js';
 import {
   listPartsHandler,
@@ -19,6 +21,8 @@ import {
   createPartHandler,
   updatePartHandler,
   deactivatePartHandler,
+  getPartMovementsHandler,
+  createPartMovementHandler,
 } from '../controllers/parts.controller.js';
 
 export const partsRoutes = Router();
@@ -38,6 +42,14 @@ partsRoutes.get(
   asyncHandler(getPartHandler),
 );
 
+// Historial de movimientos de una refacción (FR-030): los tres roles.
+partsRoutes.get(
+  '/:id/movements',
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  validate(partsMovementsQuerySchema, 'query'),
+  asyncHandler(getPartMovementsHandler),
+);
+
 // Escritura del catalogo: solo ADMIN (FR-022).
 partsRoutes.post(
   '/',
@@ -55,4 +67,13 @@ partsRoutes.post(
   '/:id/desactivar',
   authorize('ADMIN'),
   asyncHandler(deactivatePartHandler),
+);
+
+// Entradas y ajustes manuales solo ADMIN (FR-029); la SALIDA la genera el
+// uso en ordenes, por eso el esquema no la acepta.
+partsRoutes.post(
+  '/:id/movements',
+  authorize('ADMIN'),
+  validate(partMovementSchema),
+  asyncHandler(createPartMovementHandler),
 );

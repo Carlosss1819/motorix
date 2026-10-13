@@ -11,10 +11,16 @@ import {
   createPart,
   updatePart,
   deactivatePart,
+  lockStockForUpdate,
+  setStock,
 } from '../models/parts.js';
-import { insertMovement } from '../models/inventory_movement.js';
+import {
+  insertMovement,
+  listByPart,
+  findById as findMovementById,
+} from '../models/inventory_movement.js';
 import { getConnection } from '../config/db.js';
-import { conflict, notFound } from '../utils/errors.js';
+import { badRequest, conflict, notFound } from '../utils/errors.js';
 
 const MOTIVO_STOCK_INICIAL = 'Stock inicial';
 
@@ -73,6 +79,103 @@ export async function getById(id) {
     throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
   }
   return toApi(part);
+}
+
+// mysql2 devuelve DATETIME como objeto Date; el contrato history/parts pide
+// `YYYY-MM-DD HH:mm:ss` (mismo criterio que formatDate de los otros modelos).
+function formatDateTime(value) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  const pad = (number) => String(number).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+// Mapeo al formato del contrato (seccion GET /api/parts/:id/movements).
+function toMovementApi(movement) {
+  return {
+    id: movement.id,
+    tipo: movement.movementType,
+    cantidad: movement.quantity,
+    motivo: movement.reason,
+    ordenId: movement.serviceOrderId,
+    stockAfter: movement.stockAfter,
+    registradoPor: movement.createdByUsername ?? null,
+    fecha: formatDateTime(movement.createdAt),
+  };
+}
+
+// Historial auditable de una refacción (FR-030): orden descendente, filtro
+// por tipo y paginación R-10. 404 si la refacción no existe.
+export async function listMovements(partId, filters = {}) {
+  const part = await findById(partId);
+  if (!part) {
+    throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+  }
+
+  const { page, perPage } = normalizarPaginacion(filters);
+  const { rows, total } = await listByPart({
+    partId,
+    type: filters.tipo,
+    page,
+    perPage,
+  });
+
+  return {
+    elementos: rows.map(toMovementApi),
+    pagina: page,
+    paginas: Math.max(1, Math.ceil(total / perPage)),
+    total,
+  };
+}
+
+// Registro manual de ENTRADA (reabastecimiento) y AJUSTE (corrección) solo
+// por ADMIN (FR-029): la SALIDA la genera el uso en órdenes, nunca aquí.
+// Todo en transacción con bloqueo de fila para que el stock nunca quede
+// negativo (RN-8, R-08) y movimiento y stock sean el mismo commit.
+export async function registerMovement(partId, data, user) {
+  const part = await findById(partId);
+  if (!part) {
+    throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+  }
+
+  const motivo = data.motivo ? data.motivo.trim() : '';
+  if (data.tipo === 'AJUSTE' && !motivo) {
+    throw badRequest(
+      'El ajuste de inventario debe indicar el motivo del cambio',
+      'AJUSTE_SIN_MOTIVO',
+    );
+  }
+
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+    const stockActual = await lockStockForUpdate(connection, partId);
+    if (stockActual === null) {
+      await connection.rollback();
+      throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+    }
+
+    // ENTRADA y AJUSTE siempre aumentan el stock (contrato, seccion movements).
+    const stockAfter = stockActual + data.cantidad;
+    await setStock(connection, partId, stockAfter);
+    const movementId = await insertMovement(connection, {
+      partId,
+      movementType: data.tipo,
+      quantity: data.cantidad,
+      reason: motivo || null,
+      stockAfter,
+      createdBy: user.id,
+    });
+    await connection.commit();
+
+    const movement = await findMovementById(movementId);
+    return toMovementApi(movement);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 // El stock inicial se crea junto a su movimiento ENTRADA en UNA transaccion

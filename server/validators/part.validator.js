@@ -91,3 +91,36 @@ export const partsListQuerySchema = z.object({
   pagina: z.coerce.number().int().positive().optional(),
   porPagina: z.coerce.number().int().positive().max(50, 'No se muestran más de 50 registros por página').optional(),
 });
+
+// Registro manual de movimientos (FR-029): solo ENTRADA (reabastecimiento) y
+// AJUSTE (corrección). La SALIDA la genera el uso en órdenes, nunca una
+// llamada directa, por eso no es un valor aceptado aquí.
+export const partMovementSchema = z.object({
+  tipo: z.enum(['ENTRADA', 'AJUSTE'], {
+    errorMap: () => ({
+      message: 'El tipo de movimiento debe ser ENTRADA o AJUSTE',
+    }),
+  }),
+  cantidad: z
+    .coerce.number({ required_error: 'La cantidad es obligatoria', invalid_type_error: 'La cantidad debe ser un número' })
+    .int('La cantidad debe ser un número entero')
+    .positive('La cantidad debe ser un entero mayor a 0'),
+  motivo: z
+    .string({ invalid_type_error: 'El motivo debe ser texto' })
+    .trim()
+    .max(255, 'El motivo no puede exceder 255 caracteres')
+    .optional(),
+});
+
+// Listado del historial de movimientos (FR-030): filtro por tipo y paginación.
+export const partsMovementsQuerySchema = z.object({
+  tipo: z
+    .enum(['ENTRADA', 'SALIDA', 'AJUSTE'], {
+      errorMap: () => ({
+        message: 'El tipo de movimiento debe ser ENTRADA, SALIDA o AJUSTE',
+      }),
+    })
+    .optional(),
+  pagina: z.coerce.number().int().positive().optional(),
+  porPagina: z.coerce.number().int().positive().max(50, 'No se muestran más de 50 registros por página').optional(),
+});

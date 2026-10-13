@@ -10,6 +10,17 @@ export async function getPartHandler(req, res) {
   sendOk(res, await service.getById(Number(req.params.id)));
 }
 
+export async function getPartMovementsHandler(req, res) {
+  sendOk(res, await service.listMovements(Number(req.params.id), req.query));
+}
+
+export async function createPartMovementHandler(req, res) {
+  sendCreated(
+    res,
+    await service.registerMovement(Number(req.params.id), req.body, req.user),
+  );
+}
+
 export async function createPartHandler(req, res) {
   sendCreated(res, await service.create(req.body, req.user));
 }
