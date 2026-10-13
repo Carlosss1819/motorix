@@ -4,6 +4,7 @@
 import bcrypt from 'bcryptjs';
 import {
   listUsers,
+  listActiveMechanics,
   findById,
   findByUsername,
   findByEmail,
@@ -40,6 +41,12 @@ export function resolveStatusTransition(currentStatus, apiStatus) {
 export async function list() {
   const users = await listUsers();
   return users.map(toApi);
+}
+
+// Listado ligero de mecánicos activos para asignar órdenes desde recepción
+// (FR-009): el listado completo de usuarios sigue siendo solo de ADMIN.
+export async function listMechanics() {
+  return listActiveMechanics();
 }
 
 export async function create({ username, email, rol: role, contrasena: password }) {

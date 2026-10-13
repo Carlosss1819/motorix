@@ -1,9 +1,14 @@
-// Controlador de usuarios (gestion de cuentas, solo ADMIN).
-import { list, create, update } from '../services/user.service.js';
+// Controlador de usuarios (gestion de cuentas, solo ADMIN; la lista de
+// mecánicos activos también la usa recepción para asignar órdenes, FR-009).
+import { list, listMechanics, create, update } from '../services/user.service.js';
 import { sendOk, sendCreated } from '../utils/response.js';
 
 export async function listUsersHandler(req, res) {
   sendOk(res, await list());
+}
+
+export async function listMechanicsHandler(req, res) {
+  sendOk(res, await listMechanics());
 }
 
 export async function createUserHandler(req, res) {

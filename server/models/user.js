@@ -85,3 +85,12 @@ export async function setLoginFailures(id, failedLoginAttempts, lockedUntil) {
 export async function clearLoginFailures(id) {
   await setLoginFailures(id, 0, null);
 }
+
+// Mecánicos activos para el selector de asignación de órdenes (FR-009): solo
+// id y usuario, sin exponer datos del resto de cuentas.
+export async function listActiveMechanics() {
+  const rows = await query(
+    "SELECT id, username FROM users WHERE role = 'MECHANIC' AND status = 'ACTIVE' ORDER BY username",
+  );
+  return rows.map((row) => ({ id: row.id, username: row.username }));
+}
