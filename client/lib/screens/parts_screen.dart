@@ -15,6 +15,7 @@ import '../utils/formatters.dart';
 import '../utils/messages.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
+import '../widgets/status_chip.dart';
 import 'part_detail_screen.dart';
 import 'part_form_screen.dart';
 
@@ -148,6 +149,7 @@ class _PartsScreenState extends State<PartsScreen> {
   @override
   Widget build(BuildContext context) {
     final PartsProvider parts = context.watch<PartsProvider>();
+    final MotorixColors colors = context.motorixColors;
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -157,7 +159,38 @@ class _PartsScreenState extends State<PartsScreen> {
           Row(
             children: <Widget>[
               Expanded(child: _buildHeader(parts)),
-              if (_puedeEscribir)
+              const SizedBox(width: AppSpacing.md),
+              // Filtro de alertas (US8, SC-008): el backend solo devuelve
+              // las refacciones con stock_actual <= stock_minimo.
+              ChoiceChip(
+                key: const Key('filtro-stock-bajo'),
+                avatar: Icon(
+                  LucideIcons.triangleAlert,
+                  size: AppMetrics.iconSizeSmall,
+                  color:
+                      parts.soloStockBajo ? colors.danger : colors.textSecondary,
+                ),
+                label: const Text('Solo stock bajo'),
+                selected: parts.soloStockBajo,
+                onSelected: (bool seleccionado) =>
+                    _parts.setSoloStockBajo(seleccionado),
+                labelStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: parts.soloStockBajo
+                          ? colors.danger
+                          : colors.textPrimary,
+                    ),
+                selectedColor: colors.danger.withValues(alpha: 0.12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.panel),
+                  side: BorderSide(
+                    color:
+                        parts.soloStockBajo ? colors.danger : colors.outline,
+                  ),
+                ),
+                showCheckmark: false,
+              ),
+              if (_puedeEscribir) ...<Widget>[
+                const SizedBox(width: AppSpacing.md),
                 FilledButton.icon(
                   onPressed: _goToNew,
                   icon: const Icon(
@@ -166,6 +199,7 @@ class _PartsScreenState extends State<PartsScreen> {
                   ),
                   label: const Text('Nueva refacción'),
                 ),
+              ],
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -179,11 +213,13 @@ class _PartsScreenState extends State<PartsScreen> {
     );
   }
 
-  /// Contador del catálogo con el total del backend (el filtro de alertas de
-  /// stock bajo se agrega en la US8).
+  /// Contador del catálogo con el total del backend: con el filtro de
+  /// alertas activo (US8) el total ya sale filtrado de la API.
   Widget _buildHeader(PartsProvider parts) {
     return Text(
-      'Inventario · ${parts.total} refacciones',
+      parts.soloStockBajo
+          ? 'Inventario · ${parts.total} refacciones con stock bajo'
+          : 'Inventario · ${parts.total} refacciones',
       style: Theme.of(context).textTheme.titleMedium,
     );
   }
@@ -201,11 +237,15 @@ class _PartsScreenState extends State<PartsScreen> {
       case LoadStatus.ready:
         if (parts.items.isEmpty) {
           return EmptyView(
-            mensaje: parts.buscar.isEmpty
-                ? 'El inventario está vacío. Registra la primera refacción '
-                    'con el botón «Nueva refacción» y podrá usarse en las '
-                    'órdenes de servicio.'
-                : 'No hay refacciones que coincidan con la búsqueda.',
+            mensaje: parts.soloStockBajo
+                ? 'No hay refacciones con stock bajo. Cuando una refacción '
+                    'llegue a su stock mínimo aparecerá en esta lista de '
+                    'alertas.'
+                : parts.buscar.isEmpty
+                    ? 'El inventario está vacío. Registra la primera refacción '
+                        'con el botón «Nueva refacción» y podrá usarse en las '
+                        'órdenes de servicio.'
+                    : 'No hay refacciones que coincidan con la búsqueda.',
           );
         }
         return ListView.separated(
@@ -245,6 +285,12 @@ class _PartsScreenState extends State<PartsScreen> {
                       Expanded(
                         child: Text(part.nombre, style: textTheme.titleMedium),
                       ),
+                      // Semáforo de alerta (US8, SC-008): visible de un
+                      // vistazo al abrir el inventario.
+                      if (part.stockBajo) ...<Widget>[
+                        const StockBajoChip(),
+                        const SizedBox(width: AppSpacing.sm),
+                      ],
                       Text(
                         part.codigo,
                         style: textTheme.labelMedium?.copyWith(
@@ -271,6 +317,8 @@ class _PartsScreenState extends State<PartsScreen> {
                             '· mín. ${Formatters.number(part.stockMinimo)}',
                         colors,
                         textTheme,
+                        // Stock por debajo del mínimo en `danger` (DS).
+                        color: part.stockBajo ? colors.danger : null,
                       ),
                       if (part.precioCompra != null)
                         _buildMeta(
@@ -337,18 +385,19 @@ class _PartsScreenState extends State<PartsScreen> {
     IconData icon,
     String texto,
     MotorixColors colors,
-    TextTheme textTheme,
-  ) {
+    TextTheme textTheme, {
+    Color? color,
+  }) {
+    final Color tono = color ?? colors.textSecondary;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
-        Icon(icon, size: AppMetrics.iconSizeSmall, color: colors.textSecondary),
+        Icon(icon, size: AppMetrics.iconSizeSmall, color: tono),
         const SizedBox(width: AppSpacing.xs),
         Flexible(
           child: Text(
             texto,
-            style:
-                textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+            style: textTheme.bodySmall?.copyWith(color: tono),
           ),
         ),
       ],

@@ -119,6 +119,17 @@ class _SoftChip extends StatelessWidget {
   }
 }
 
+/// Chip de alerta de stock bajo (US8, SC-008): fondo suave en `danger`,
+/// como pide docs/design-system.md («Stock por debajo del mínimo se marca
+/// en danger»).
+class StockBajoChip extends StatelessWidget {
+  const StockBajoChip({super.key});
+
+  @override
+  Widget build(BuildContext context) =>
+      _SoftChip(label: 'Stock bajo', color: context.motorixColors.danger);
+}
+
 /// Chip del estado de una orden de servicio.
 class OrderStatusChip extends StatelessWidget {
   const OrderStatusChip({super.key, required this.estado});
