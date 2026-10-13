@@ -443,7 +443,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
   Sprint 2 (`client/lib/screens/*order*`, labels y tooltips) y en comentarios de
   `server/routes/service_orders.routes.js`, sin tocar los identificadores ni los alias
   de ruta (clarificación 3)
-- [ ] T071 [P] Ejecutar `npx eslint .` en `server/` (0 errores) y `flutter analyze` en
+- [X] T071 [P] Ejecutar `npx eslint .` en `server/` (0 errores) y `flutter analyze` en
   `client/` (0 problemas) y corregir lo que aparezca
 - [ ] T072 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
   en `client/` (todas en verde; Jest puede requerir `--forceExit` conocido)
