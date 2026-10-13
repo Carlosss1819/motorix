@@ -1,4 +1,5 @@
-// Esquemas de validación de órdenes de servicio (US1).
+// Esquemas de validación de órdenes de servicio (US1; la US3 y la US4 añaden
+// asignación, diagnóstico, servicios, repuestos y recomendaciones).
 // Fuente de verdad: specs/002-citas-ordenes-servicio/contracts/service-orders.md
 import { z } from 'zod';
 import { ORDER_STATUS_VALUES } from '../utils/status-constants.js';
@@ -68,6 +69,68 @@ export const serviceOrderAssignSchema = z.object({
     .int('El mecánico seleccionado no es válido')
     .positive('El mecánico seleccionado no es válido')
     .nullable(),
+});
+
+// Diagnóstico del mecánico (FR-011): `borrador: true` deja el texto sin
+// confirmar y el cliente lo descarta si el usuario no guarda (FR-019).
+export const diagnosisSchema = z.object({
+  texto: z
+    .string({ required_error: 'El diagnóstico es obligatorio' })
+    .trim()
+    .min(1, 'El diagnóstico es obligatorio')
+    .max(4000, 'El diagnóstico no puede exceder 4000 caracteres'),
+  borrador: z
+    .boolean({ invalid_type_error: 'El indicador de borrador debe ser verdadero o falso' })
+    .optional()
+    .default(false),
+});
+
+// Servicio aplicado a la orden (FR-012): se crea junto con su mano de obra.
+export const serviceItemSchema = z.object({
+  descripcion: z
+    .string({ required_error: 'La descripción del servicio es obligatoria' })
+    .trim()
+    .min(1, 'La descripción del servicio es obligatoria')
+    .max(150, 'La descripción del servicio no puede exceder 150 caracteres'),
+  duracionMinutos: z
+    .number({
+      required_error: 'La duración de la mano de obra es obligatoria',
+      invalid_type_error: 'La duración de la mano de obra no es un número válido',
+    })
+    .int('La duración de la mano de obra debe ser un número entero')
+    .positive('La duración de la mano de obra debe ser mayor a 0 minutos'),
+  precio: z
+    .number('El precio de la mano de obra no es un número válido')
+    .min(0, 'El precio de la mano de obra no puede ser negativo')
+    .optional(),
+});
+
+// Repuesto utilizado en la orden (RN-06: solo se registra junto a la orden,
+// sin consultar el inventario; eso llega en el Sprint 3).
+export const partSchema = z.object({
+  descripcion: z
+    .string({ required_error: 'La descripción del repuesto es obligatoria' })
+    .trim()
+    .min(1, 'La descripción del repuesto es obligatoria')
+    .max(120, 'La descripción del repuesto no puede exceder 120 caracteres'),
+  cantidad: z
+    .number({
+      required_error: 'La cantidad del repuesto es obligatoria',
+      invalid_type_error: 'La cantidad del repuesto no es un número válido',
+    })
+    .int('La cantidad del repuesto debe ser un número entero')
+    .min(1, 'La cantidad del repuesto debe ser al menos 1')
+    .optional()
+    .default(1),
+});
+
+// Recomendaciones para la entrega (FR-013).
+export const recommendationSchema = z.object({
+  texto: z
+    .string({ required_error: 'Las recomendaciones son obligatorias' })
+    .trim()
+    .min(1, 'Las recomendaciones son obligatorias')
+    .max(4000, 'Las recomendaciones no pueden exceder 4000 caracteres'),
 });
 
 export const serviceOrderListQuerySchema = z.object({

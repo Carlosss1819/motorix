@@ -213,38 +213,3 @@ export async function listStatusHistory(serviceOrderId) {
     username: row.username,
   }));
 }
-
-// Servicios de la orden con su partida de mano de obra (agregado del detalle).
-export async function listServicesByOrder(serviceOrderId) {
-  const rows = await query(
-    `SELECT s.id, s.description, l.id AS labor_id, l.duration_minutes, l.price
-     FROM order_services s
-     LEFT JOIN order_labor l ON l.service_id = s.id
-     WHERE s.service_order_id = ?
-     ORDER BY s.id`,
-    [serviceOrderId],
-  );
-  return rows.map((row) => ({
-    id: row.id,
-    description: row.description,
-    labor: row.labor_id
-      ? { id: row.labor_id, durationMinutes: row.duration_minutes, price: row.price }
-      : null,
-  }));
-}
-
-// Repuestos registrados en la orden (el stock se valida en el Sprint 3).
-export async function listPartsByOrder(serviceOrderId) {
-  const rows = await query(
-    `SELECT id, description, quantity
-     FROM order_parts
-     WHERE service_order_id = ?
-     ORDER BY id`,
-    [serviceOrderId],
-  );
-  return rows.map((row) => ({
-    id: row.id,
-    description: row.description,
-    quantity: row.quantity,
-  }));
-}

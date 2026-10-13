@@ -11,9 +11,15 @@ import {
   getLastMileageByVehicle,
   addStatusHistory,
   listStatusHistory,
+} from '../models/service_order.js';
+import {
+  createServiceWithLabor,
+  deleteServiceById,
+  createPart,
+  deletePartById,
   listServicesByOrder,
   listPartsByOrder,
-} from '../models/service_order.js';
+} from '../models/order_items.js';
 import { findById as findClientById } from '../models/client.js';
 import { findById as findVehicleById, refreshCurrentMileage } from '../models/vehicle.js';
 import { findById as findUserById } from '../models/user.js';
@@ -292,4 +298,109 @@ export async function update(id, data, user) {
   await refreshCurrentMileage(order.vehicleId, data.kilometraje);
 
   return toApiDetail(updated);
+}
+
+// Guard común de la US4: la orden existe, el mecánico solo opera las suyas
+// (FR-010, RN-15) y una orden ENTREGADO no admite altas ni bajas de contenido
+// (FR-016). Devuelve la orden para reutilizar su estado.
+async function assertOrderOpenForContent(id, user) {
+  const order = await findServiceOrderById(id);
+  if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
+  assertOwnership(order, user);
+
+  if (order.status === ORDER_STATUSES.ENTREGADO) {
+    throw conflict(
+      'Una orden entregada no admite cambios en su contenido',
+      'ORDEN_ENTREGADA',
+    );
+  }
+  return order;
+}
+
+// FR-011: el diagnóstico puede quedar en borrador; guardarlo definitivo limpia
+// la marca (el texto que no se guarda se descarta en el cliente, FR-019).
+export async function saveDiagnosis(id, data, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const updated = await updateServiceOrder(order.id, {
+    diagnosis: data.texto,
+    diagnosisDraft: data.borrador ?? false,
+  });
+
+  return {
+    diagnostico: updated.diagnosis,
+    diagnosticoBorrador: Boolean(updated.diagnosisDraft),
+  };
+}
+
+// FR-012 / R-13: el servicio y su mano de obra se crean en la misma
+// transacción; si falla una, no se guarda ninguna de las dos.
+export async function addService(id, data, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const created = await createServiceWithLabor({
+    serviceOrderId: order.id,
+    description: data.descripcion,
+    durationMinutes: data.duracionMinutos,
+    price: data.precio,
+  });
+
+  return {
+    servicio: { id: created.id, descripcion: created.description },
+    manoDeObra: {
+      id: created.labor.id,
+      duracionMinutos: created.labor.durationMinutes,
+      precio: created.labor.price === null ? null : Number(created.labor.price),
+    },
+  };
+}
+
+// Baja de un servicio; la mano de obra cae en cascada (FK del data-model).
+export async function removeService(id, serviceId, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const deleted = await deleteServiceById(order.id, serviceId);
+  if (!deleted) {
+    throw notFound('El servicio no existe en esta orden', 'SERVICIO_NO_ENCONTRADO');
+  }
+
+  return { mensaje: 'Servicio eliminado' };
+}
+
+// RN-06: el repuesto solo se registra junto a la orden; el control de stock y
+// la salida de inventario pertenecen al Sprint 3.
+export async function addPart(id, data, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const created = await createPart({
+    serviceOrderId: order.id,
+    description: data.descripcion,
+    quantity: data.cantidad ?? 1,
+  });
+
+  return {
+    id: created.id,
+    descripcion: created.description,
+    cantidad: created.quantity,
+  };
+}
+
+export async function removePart(id, partId, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const deleted = await deletePartById(order.id, partId);
+  if (!deleted) {
+    throw notFound('El repuesto no existe en esta orden', 'REPUESTO_NO_ENCONTRADO');
+  }
+
+  return { mensaje: 'Repuesto eliminado' };
+}
+
+// FR-013: recomendaciones para la entrega, guardadas en la misma orden.
+export async function saveRecommendations(id, data, user) {
+  const order = await assertOrderOpenForContent(id, user);
+
+  const updated = await updateServiceOrder(order.id, { recommendations: data.texto });
+
+  return { recomendaciones: updated.recommendations };
 }

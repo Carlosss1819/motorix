@@ -1,5 +1,18 @@
-// Controlador de órdenes de servicio (US1; la US3 agrega la asignación).
-import { list, getById, create, update, assign } from '../services/service_order.service.js';
+// Controlador de órdenes de servicio (US1; la US3 agrega la asignación y la
+// US4 el contenido: diagnóstico, servicios, repuestos y recomendaciones).
+import {
+  list,
+  getById,
+  create,
+  update,
+  assign,
+  saveDiagnosis,
+  addService,
+  removeService,
+  addPart,
+  removePart,
+  saveRecommendations,
+} from '../services/service_order.service.js';
 import { sendOk, sendCreated } from '../utils/response.js';
 
 export async function listServiceOrdersHandler(req, res) {
@@ -20,4 +33,34 @@ export async function updateServiceOrderHandler(req, res) {
 
 export async function assignServiceOrderHandler(req, res) {
   sendOk(res, await assign(Number(req.params.id), req.body, req.user));
+}
+
+export async function saveDiagnosisHandler(req, res) {
+  sendOk(res, await saveDiagnosis(Number(req.params.id), req.body, req.user));
+}
+
+export async function addServiceHandler(req, res) {
+  sendCreated(res, await addService(Number(req.params.id), req.body, req.user));
+}
+
+export async function removeServiceHandler(req, res) {
+  sendOk(
+    res,
+    await removeService(Number(req.params.id), Number(req.params.servicioId), req.user),
+  );
+}
+
+export async function addPartHandler(req, res) {
+  sendCreated(res, await addPart(Number(req.params.id), req.body, req.user));
+}
+
+export async function removePartHandler(req, res) {
+  sendOk(
+    res,
+    await removePart(Number(req.params.id), Number(req.params.repuestoId), req.user),
+  );
+}
+
+export async function saveRecommendationsHandler(req, res) {
+  sendOk(res, await saveRecommendations(Number(req.params.id), req.body, req.user));
 }
