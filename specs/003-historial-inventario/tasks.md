@@ -426,9 +426,9 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
 
 - [X] T067 [US8] Agregar en `server/services/part.service.js` el cálculo de
   `stockBajo` en el listado y el filtro `?stockBajo=true` (R‑10)
-- [ ] T068 [US8] Ampliar `client/lib/screens/parts_screen.dart` con el semáforo de
+- [X] T068 [US8] Ampliar `client/lib/screens/parts_screen.dart` con el semáforo de
   `docs/design-system.md` (chip/ícono de stock bajo) y el filtro de alertas (SC‑008)
-- [ ] T069 [US8] Escribir `client/test/stock_low_test.dart` (marcado, filtro y
+- [X] T069 [US8] Escribir `client/test/stock_low_test.dart` (marcado, filtro y
   `stock_min = 0` sin alerta)
 
 **Checkpoint**: todas las historias del sprint funcionan de forma independiente
