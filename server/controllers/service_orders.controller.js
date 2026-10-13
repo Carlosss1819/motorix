@@ -1,5 +1,5 @@
-// Controlador de órdenes de servicio (US1).
-import { list, getById, create, update } from '../services/service_order.service.js';
+// Controlador de órdenes de servicio (US1; la US3 agrega la asignación).
+import { list, getById, create, update, assign } from '../services/service_order.service.js';
 import { sendOk, sendCreated } from '../utils/response.js';
 
 export async function listServiceOrdersHandler(req, res) {
@@ -16,4 +16,8 @@ export async function createServiceOrderHandler(req, res) {
 
 export async function updateServiceOrderHandler(req, res) {
   sendOk(res, await update(Number(req.params.id), req.body, req.user));
+}
+
+export async function assignServiceOrderHandler(req, res) {
+  sendOk(res, await assign(Number(req.params.id), req.body, req.user));
 }

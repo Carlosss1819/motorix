@@ -226,6 +226,42 @@ export async function create(data, user) {
   return toApiDetail(await findServiceOrderById(created.id));
 }
 
+// Asignación o reasignación de mecánico desde recepción (FR-009, FR-022): la
+// orden cerrada (TERMINADO/ENTREGADO) no admite cambios y `mecanicoId: null`
+// desasigna. El cambio queda en el historial de la orden.
+export async function assign(id, data, user) {
+  const order = await findServiceOrderById(id);
+  if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
+
+  if (order.status === ORDER_STATUSES.TERMINADO || order.status === ORDER_STATUSES.ENTREGADO) {
+    throw conflict(
+      'Una orden terminada o entregada no admite reasignación de mecánico',
+      'ORDEN_CERRADA',
+    );
+  }
+
+  let mechanicId = null;
+  if (data.mecanicoId !== null) mechanicId = await assertMechanic(data.mecanicoId);
+
+  const updated = await updateServiceOrder(id, { mechanicId });
+
+  await addStatusHistory({
+    serviceOrderId: id,
+    fromStatus: order.status,
+    toStatus: order.status,
+    changedBy: user.id,
+    note: mechanicId
+      ? `Asignación de mecánico: ${updated.mechanicUsername}`
+      : 'Desasignación de mecánico',
+  });
+
+  return {
+    id: updated.id,
+    mecanicoId: updated.mechanicId,
+    mecanico: updated.mechanicUsername ?? null,
+  };
+}
+
 // Edición de la orden (PUT /:id): cliente y vehículo no cambian, y no aplica a
 // órdenes terminadas ni entregadas (contrato; R-08 / FR-018 en el kilometraje).
 export async function update(id, data, user) {

@@ -57,6 +57,19 @@ export const serviceOrderUpdateSchema = z.object({
   correccionKilometraje: serviceOrderSchema.shape.correccionKilometraje,
 });
 
+// Asignación de mecánico (FR-009): el campo es obligatorio, pero admite `null`
+// explícito para desasignar la orden.
+export const serviceOrderAssignSchema = z.object({
+  mecanicoId: z
+    .number({
+      required_error: 'Indique el mecánico que desea asignar',
+      invalid_type_error: 'El mecánico seleccionado no es válido',
+    })
+    .int('El mecánico seleccionado no es válido')
+    .positive('El mecánico seleccionado no es válido')
+    .nullable(),
+});
+
 export const serviceOrderListQuerySchema = z.object({
   estado: z.enum([...ORDER_STATUS_VALUES], { errorMap: () => ({ message: 'El estado indicado no es válido' }) }).optional(),
   estadoAbierta: z.enum(['true', 'false'], { errorMap: () => ({ message: 'El filtro de orden abierta no es válido' }) }).optional(),
