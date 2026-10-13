@@ -102,6 +102,16 @@ export async function findServiceOrderById(id) {
   return mapOrder(rows[0]);
 }
 
+// Orden derivada de una cita (FR-007): appointment_id es UNIQUE, así que como
+// mucho existe una fila. Se usa para impedir que una cita genere dos órdenes.
+export async function findOrderByAppointmentId(appointmentId) {
+  const rows = await query(
+    'SELECT id FROM service_orders WHERE appointment_id = ? LIMIT 1',
+    [appointmentId],
+  );
+  return rows[0] ?? null;
+}
+
 // Kilometraje de la orden más reciente del vehículo (regla R-08). En la edición
 // se excluye la orden que se está modificando, para que la comparación siga
 // teniendo sentido con la orden anterior (FR-018).

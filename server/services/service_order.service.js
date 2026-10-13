@@ -5,6 +5,7 @@
 import {
   listServiceOrders,
   findServiceOrderById,
+  findOrderByAppointmentId,
   createServiceOrder,
   updateServiceOrder,
   getLastMileageByVehicle,
@@ -18,7 +19,7 @@ import { findById as findVehicleById, refreshCurrentMileage } from '../models/ve
 import { findById as findUserById } from '../models/user.js';
 import { findAppointmentById } from '../models/appointment.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
-import { ORDER_STATUSES } from '../utils/status-constants.js';
+import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
 
 // Formatea una fecha como AAAA-MM-DD usando la zona horaria local, para que el
 // día mostrado coincida con el capturado por el usuario.
@@ -173,8 +174,20 @@ export async function create(data, user) {
   if (data.mecanicoId) mechanicId = await assertMechanic(data.mecanicoId);
 
   if (data.citaId) {
+    // FR-007: la cita debe existir, estar RECIBIDA y no estar usada ya en otra
+    // orden (el enlace es UNIQUE en service_orders.appointment_id).
     const appointment = await findAppointmentById(data.citaId);
     if (!appointment) throw notFound('La cita seleccionada no existe', 'CITA_NO_ENCONTRADA');
+    if (appointment.status !== APPOINTMENT_STATUSES.RECIBIDA) {
+      throw conflict(
+        'La cita debe estar en estado RECIBIDA para derivar en una orden de servicio',
+        'CITA_NO_RECIBIDA',
+      );
+    }
+    const linkedOrder = await findOrderByAppointmentId(appointment.id);
+    if (linkedOrder) {
+      throw conflict('La cita ya derivó en otra orden de servicio', 'CITA_YA_UTILIZADA');
+    }
   }
 
   // R-08 / FR-018: el kilometraje de entrada no puede ser menor que el de la
