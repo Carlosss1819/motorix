@@ -132,14 +132,14 @@ implementación y pruebas independientes.
 
 ### Tests for User Story 3
 
-- [ ] T041 [P] [US3] Prueba de contrato de aislamiento del mecánico en server/tests/contract/service-orders-mechanic.test.js (`GET /api/service-orders` con token de `MECHANIC` devuelve solo las suyas; `403` al abrir una ajena)
-- [ ] T042 [P] [US3] Prueba de integración de asignación en server/tests/integration/service-orders-assignment.test.js (asignar, reasignar, desasignar con `mecanicoId: null` y `409` en `TERMINADO`/`ENTREGADO`)
+- [X] T041 [P] [US3] Prueba de contrato de aislamiento del mecánico en server/tests/contract/service-orders-mechanic.test.js (`GET /api/service-orders` con token de `MECHANIC` devuelve solo las suyas; `403` al abrir una ajena)
+- [X] T042 [P] [US3] Prueba de integración de asignación en server/tests/integration/service-orders-assignment.test.js (asignar, reasignar, desasignar con `mecanicoId: null` y `409` en `TERMINADO`/`ENTREGADO`)
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Ampliar server/services/service_order.service.js para que el listado con token de `MECHANIC` filtre por `mechanic_id = usuario` e excluya las órdenes sin asignar, ignorando filtros que intenten ampliar el alcance (FR‑010, RN‑15, SC‑003)
-- [ ] T044 [US3] Implementar `POST /api/service-orders/:id/asignar`: validar que `mecanicoId` sea usuario `MECHANIC` activo o `null`, rechazar con `409` si la orden está `TERMINADO` o `ENTREGADO` (FR‑009), limitar a `ADMIN`/`RECEPTIONIST` y registrar el cambio, en server/services/service_order.service.js, server/controllers/service_orders.controller.js y server/validators/service-order.validator.js
-- [ ] T045 [US3] Habilitar `GET /` y `GET /:id` al rol `MECHANIC` y registrar la ruta `/asignar` en server/routes/service_orders.routes.js
+- [X] T043 [US3] Ampliar server/services/service_order.service.js para que el listado con token de `MECHANIC` filtre por `mechanic_id = usuario` e excluya las órdenes sin asignar, ignorando filtros que intenten ampliar el alcance (FR‑010, RN‑15, SC‑003)
+- [X] T044 [US3] Implementar `POST /api/service-orders/:id/asignar`: validar que `mecanicoId` sea usuario `MECHANIC` activo o `null`, rechazar con `409` si la orden está `TERMINADO` o `ENTREGADO` (FR‑009), limitar a `ADMIN`/`RECEPTIONIST` y registrar el cambio, en server/services/service_order.service.js, server/controllers/service_orders.controller.js y server/validators/service-order.validator.js
+- [X] T045 [US3] Habilitar `GET /` y `GET /:id` al rol `MECHANIC` y registrar la ruta `/asignar` en server/routes/service_orders.routes.js
 - [ ] T046 [P] [US3] Adaptar client/lib/screens/service_orders_screen.dart para que con rol `MECHANIC` muestre **Mis órdenes** (solo las propias, sin filtro de estado global)
 - [ ] T047 [US3] Agregar el selector de mecánico (y opción para desasignar) en client/lib/screens/service_order_detail_screen.dart con confirmación y manejo de `409` mostrando el mensaje del backend
 - [ ] T048 [US3] Registrar la entrada **Mis órdenes** en client/lib/widgets/app_shell.dart para `MECHANIC` y reflejar el alcance en client/lib/providers/service_orders_provider.dart
