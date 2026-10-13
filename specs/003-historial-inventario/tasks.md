@@ -224,16 +224,16 @@ duplicar → 409 (V3 del quickstart)
 - [X] T030 [US3] Crear `server/routes/maintenance.routes.js` (lectura
   `authorize('ADMIN','RECEPTIONIST','MECHANIC')`; escritura y `realizar`
   `authorize('ADMIN','MECHANIC')`) y montarla en `server/routes/index.js`
-- [ ] T031 [P] [US3] Crear `client/lib/models/maintenance.dart` (incluye `estado`
+- [X] T031 [P] [US3] Crear `client/lib/models/maintenance.dart` (incluye `estado`
   calculado y campos opcionales)
-- [ ] T032 [US3] Crear `client/lib/services/maintenance_service.dart`
+- [X] T032 [US3] Crear `client/lib/services/maintenance_service.dart`
   (list/get/create/update/realizar)
-- [ ] T033 [US3] Crear `client/lib/providers/maintenance_provider.dart` con filtros y
+- [X] T033 [US3] Crear `client/lib/providers/maintenance_provider.dart` con filtros y
   estados de carga/vacío/error
-- [ ] T034 [US3] Crear `client/lib/screens/maintenance_form_screen.dart`: alta y
+- [X] T034 [US3] Crear `client/lib/screens/maintenance_form_screen.dart`: alta y
   edición de mantenimiento (SC‑004, sin conocimientos técnicos) y botón «Servicio
   realizado» con confirmación obligatoria
-- [ ] T035 [US3] Escribir `client/test/maintenance_form_test.dart` (alta, validación
+- [X] T035 [US3] Escribir `client/test/maintenance_form_test.dart` (alta, validación
   de objetivo faltante y confirmación de «servicio realizado»; snacks encoladas:
   `pump(Duration(seconds: 4))` entre guardados)
 
