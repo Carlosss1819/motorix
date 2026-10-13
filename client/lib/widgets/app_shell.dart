@@ -39,6 +39,11 @@ abstract final class ShellSections {
     icon: LucideIcons.carFront,
     label: 'Vehículos',
   );
+  static const ShellSection orders = ShellSection(
+    route: Routes.serviceOrders,
+    icon: LucideIcons.wrench,
+    label: 'Órdenes',
+  );
   static const ShellSection users = ShellSection(
     route: Routes.users,
     icon: LucideIcons.userCog,
@@ -54,9 +59,10 @@ abstract final class ShellSections {
   /// valida cada operación protegida (RN-15).
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
-      Rol.admin => const <ShellSection>[home, clients, vehicles, users, account],
+      Rol.admin =>
+        const <ShellSection>[home, clients, vehicles, orders, users, account],
       Rol.receptionist =>
-        const <ShellSection>[home, clients, vehicles, account],
+        const <ShellSection>[home, clients, vehicles, orders, account],
       _ => const <ShellSection>[home, account],
     };
   }
@@ -73,6 +79,9 @@ abstract final class ShellSections {
       Routes.vehicleNew => 'Nuevo vehículo',
       Routes.vehicleDetail => 'Detalle de vehículo',
       Routes.vehicleEdit => 'Editar vehículo',
+      Routes.serviceOrders => 'Órdenes',
+      Routes.serviceOrderNew => 'Nueva orden',
+      Routes.serviceOrderDetail => 'Detalle de orden',
       Routes.users => 'Usuarios',
       Routes.account => 'Mi cuenta',
       _ => 'Motorix',
@@ -85,6 +94,7 @@ abstract final class ShellSections {
       Routes.clients => SearchHints.clients,
       Routes.vehicles => SearchHints.vehicles,
       Routes.users => SearchHints.users,
+      Routes.serviceOrders => SearchHints.orders,
       _ => '',
     };
   }

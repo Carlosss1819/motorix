@@ -1,3 +1,12 @@
+/// Número aceptando tanto el valor numérico como el texto que MySQL devuelve
+/// para las columnas DECIMAL (por ejemplo, `"450.00"`).
+num asNum(Object? value, [num fallback = 0]) {
+  if (value is num) {
+    return value;
+  }
+  return num.tryParse(value?.toString() ?? '') ?? fallback;
+}
+
 int asInt(Object? value, [int fallback = 0]) {
   if (value is int) {
     return value;
@@ -9,6 +18,22 @@ int asInt(Object? value, [int fallback = 0]) {
 }
 
 String asString(Object? value) => value?.toString() ?? '';
+
+/// Entero que distingue `null` (sin valor) de un número, para los campos
+/// opcionales como el mecánico asignado o la cita de origen.
+int? asIntOrNull(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  final String text = value.toString();
+  if (text.isEmpty) {
+    return null;
+  }
+  if (value is num) {
+    return value.toInt();
+  }
+  return int.tryParse(text);
+}
 
 String? asStringOrNull(Object? value) {
   final String text = value?.toString() ?? '';

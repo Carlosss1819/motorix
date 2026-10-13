@@ -266,6 +266,9 @@ abstract final class AppMetrics {
 
   /// Ancho mínimo de las tablas con varias columnas.
   static const double tableMinWidth = 880;
+
+  /// Ancho de los selectores de filtro en la barra de una lista.
+  static const double comboboxWidth = 240;
 }
 
 /// Duración efectiva respetando la preferencia del sistema de reducir

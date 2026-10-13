@@ -29,4 +29,12 @@ abstract final class Formatters {
 
   /// Kilometraje con separador de miles y unidad (45000 → `45,000 km`).
   static String mileage(int value) => '${number(value)} km';
+
+  /// Dinero en pesos con separador de miles y dos decimales (450 → `$450.00`).
+  ///
+  /// Acepta `num` porque el backend entrega los DECIMAL como texto.
+  static String money(num value) {
+    final List<String> parts = value.toStringAsFixed(2).split('.');
+    return '\$${number(int.parse(parts[0]))}.${parts[1]}';
+  }
 }
