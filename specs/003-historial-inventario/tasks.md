@@ -439,7 +439,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
 
 **Purpose**: Mejoras transversales y cierre del sprint
 
-- [ ] T070 [P] Unificar la terminología «repuesto» → «refacción» en la UI heredada del
+- [X] T070 [P] Unificar la terminología «repuesto» → «refacción» en la UI heredada del
   Sprint 2 (`client/lib/screens/*order*`, labels y tooltips) y en comentarios de
   `server/routes/service_orders.routes.js`, sin tocar los identificadores ni los alias
   de ruta (clarificación 3)
