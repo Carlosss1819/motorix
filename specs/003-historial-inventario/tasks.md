@@ -397,11 +397,11 @@ quickstart)
   `POST/DELETE /:id/refacciones[/:refaccionId]` con
   `authorize('ADMIN','RECEPTIONIST','MECHANIC')` (FR‑027) y sus alias
   `/:id/repuestos[/:repuestoId]` apuntando al mismo handler (R‑07)
-- [ ] T064 [US7] Actualizar el detalle de orden en Flutter
+- [X] T064 [US7] Actualizar el detalle de orden en Flutter
   (`client/lib/screens/mechanic_order_detail_screen.dart` y el de recepción si
   aplica): selector de refacción del catálogo con cantidad y stock visible en vez de
   texto libre, y retiro con confirmación obligatoria
-- [ ] T065 [US7] Escribir `client/test/order_parts_test.dart` (agregar, error de stock
+- [X] T065 [US7] Escribir `client/test/order_parts_test.dart` (agregar, error de stock
   y retiro con confirmación)
 
 **Checkpoint**: el inventario y las órdenes quedan conectados (RN‑6, RN‑7)
