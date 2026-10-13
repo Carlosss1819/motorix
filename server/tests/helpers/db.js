@@ -50,9 +50,30 @@ export async function prepareTestDatabase() {
   }
 
   try {
+    // Registro de migraciones aplicadas (mismo criterio que
+    // database/scripts/aplicar-migraciones.ps1): la migración 003 usa
+    // ALTER TABLE, que no es idempotente por sí mismo, así que cada script
+    // se aplica una sola vez y queda registrado en schema_migrations.
+    await db.query(
+      `CREATE TABLE IF NOT EXISTS schema_migrations (
+         id INT AUTO_INCREMENT PRIMARY KEY,
+         name VARCHAR(255) NOT NULL,
+         applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+         UNIQUE KEY uq_schema_migrations_name (name)
+       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+    );
     for (const file of sqlFilesIn('database/migrations')) {
+      const name = path.basename(file);
+      const [rows] = await db.query(
+        'SELECT COUNT(*) AS total FROM schema_migrations WHERE name = ?',
+        [name],
+      );
+      if (rows[0].total > 0) continue;
       await db.query(readFileSync(file, 'utf8'));
+      await db.query('INSERT INTO schema_migrations (name) VALUES (?)', [name]);
     }
+    // Los seeds usan INSERT IGNORE con ids fijos: se aplican en cada corrida
+    // sin duplicar datos (R-12 / R-13, FR-031).
     for (const file of sqlFilesIn('database/seeds')) {
       await db.query(readFileSync(file, 'utf8'));
     }
