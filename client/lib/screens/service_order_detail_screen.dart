@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../models/app_user.dart';
 import '../models/enums.dart';
 import '../models/service_order.dart';
 import '../providers/auth_provider.dart';
@@ -48,10 +49,15 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   /// recomendaciones) lo registran el mecánico y el administrador (FR-022).
   late final bool _esAdmin;
 
+  /// Identificador de la sesión actual: el bloque medio de transiciones de
+  /// estado solo lo mueve el mecánico asignado a la orden (US5, R-03).
+  late final int? _usuarioId;
+
   List<MechanicOption> _mecanicos = const <MechanicOption>[];
   bool _cargandoMecanicos = false;
   String? _errorMecanicos;
   bool _guardandoAsignacion = false;
+  bool _cambiandoEstado = false;
 
   // Campos del contenido de la orden (US4).
   final TextEditingController _diagnosticoController = TextEditingController();
@@ -75,9 +81,11 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   void initState() {
     super.initState();
     _orders = context.read<ServiceOrdersProvider>();
-    final String rol = context.read<AuthProvider>().user?.rol ?? '';
+    final AppUser? usuario = context.read<AuthProvider>().user;
+    final String rol = usuario?.rol ?? '';
     _esMecanico = rol == Rol.mechanic;
     _esAdmin = rol == Rol.admin;
+    _usuarioId = usuario?.id;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;
@@ -425,6 +433,65 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         return;
       }
       setState(() => _guardandoRecomendaciones = false);
+      _mostrarAviso(AppMessages.unexpectedError);
+    }
+  }
+
+  /// Aplica la matriz de permisos R-03 / FR-022 del contrato: la entrega es
+  /// de recepción o administración; el bloque medio, del mecánico asignado
+  /// o administración.
+  bool _puedeTransicionar(ServiceOrder order, String destino) {
+    if (destino == 'ENTREGADO') {
+      return !_esMecanico;
+    }
+    if (_esAdmin) {
+      return true;
+    }
+    if (!_esMecanico) {
+      return false;
+    }
+    return order.mecanicoId != null && order.mecanicoId == _usuarioId;
+  }
+
+  /// Cambia el estado de la orden (US5). Cerrar y entregar exigen
+  /// confirmación previa (Principio VIII) y los errores del backend (`403`
+  /// fuera de rol, `409` transición inválida) se muestran tal cual.
+  Future<void> _cambiarEstado(ServiceOrder order, String destino) async {
+    if (destino == 'ENTREGADO' || destino == 'TERMINADO') {
+      final bool confirmado = await showConfirmDialog(
+        context,
+        titulo: destino == 'ENTREGADO' ? 'Entregar orden' : 'Cerrar orden',
+        mensaje: destino == 'ENTREGADO'
+            ? 'La orden #${order.id} se marcará como entregada y se '
+                'registrará la fecha de entrega. ¿Continuar?'
+            : 'La orden #${order.id} se cerrará como terminada y solo '
+                'recepción podrá entregarla. ¿Continuar?',
+        destructive: destino == 'ENTREGADO',
+      );
+      if (!confirmado || !mounted) {
+        return;
+      }
+    }
+
+    setState(() => _cambiandoEstado = true);
+    try {
+      await _orders.changeStatus(id: order.id, estado: destino);
+      if (!mounted) {
+        return;
+      }
+      setState(() => _cambiandoEstado = false);
+      _mostrarAviso('La orden ahora está en ${orderStatusLabel(destino)}.');
+    } on ApiException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _cambiandoEstado = false);
+      _mostrarAviso(e.mensaje);
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _cambiandoEstado = false);
       _mostrarAviso(AppMessages.unexpectedError);
     }
   }
@@ -833,6 +900,106 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     );
   }
 
+  /// Panel de acciones de estado (US5, FR-014/FR-022): ofrece solo las
+  /// transiciones del mapa R-02 que el rol puede hacer según la matriz R-03;
+  /// está oculto cuando no hay ninguna acción disponible (p. ej. la orden
+  /// entregada es terminal).
+  Widget _buildAccionesEstado(ServiceOrder order) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final List<String> destinos = allowedOrderTransitions(order.estado)
+        .where((String destino) => _puedeTransicionar(order, destino))
+        .toList();
+    if (destinos.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return AppPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('Acciones de estado', style: textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.sm,
+            children: <Widget>[
+              for (final String destino in destinos)
+                if (destino == 'ENTREGADO')
+                  FilledButton(
+                    onPressed: _cambiandoEstado
+                        ? null
+                        : () => _cambiarEstado(order, destino),
+                    child: Text('Pasar a ${orderStatusLabel(destino)}'),
+                  )
+                else
+                  OutlinedButton(
+                    onPressed: _cambiandoEstado
+                        ? null
+                        : () => _cambiarEstado(order, destino),
+                    child: Text('Pasar a ${orderStatusLabel(destino)}'),
+                  ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Historial de cambios de estado (US5, FR-015): estado, usuario y fecha
+  /// de cada transición registrada en el backend.
+  Widget _buildHistorial(ServiceOrder order) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+
+    return AppPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('Historial de cambios', style: textTheme.titleMedium),
+          const SizedBox(height: AppSpacing.md),
+          if (order.historial.isEmpty)
+            Text('Sin cambios registrados.', style: textTheme.bodySmall)
+          else
+            for (final OrderHistoryEntry entrada in order.historial)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      entrada.de == null
+                          ? 'Alta de la orden → ${orderStatusLabel(entrada.a)}'
+                          : '${orderStatusLabel(entrada.de!)} → '
+                              '${orderStatusLabel(entrada.a)}',
+                      style: textTheme.bodyMedium,
+                    ),
+                    Text(
+                      '${entrada.usuario} · ${_formatoFechaHora(entrada.fecha)}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+        ],
+      ),
+    );
+  }
+
+  /// Fecha ISO de la API ('AAAA-MM-DDTHH:MM:SS.sssZ') → 'DD/MM/YYYY HH:MM'
+  /// en la zona horaria local del usuario.
+  String _formatoFechaHora(String iso) {
+    final DateTime? fecha = DateTime.tryParse(iso);
+    if (fecha == null) {
+      return iso;
+    }
+    final DateTime local = fecha.toLocal();
+    String pad(int valor) => valor.toString().padLeft(2, '0');
+    return '${pad(local.day)}/${pad(local.month)}/${local.year} '
+        '${pad(local.hour)}:${pad(local.minute)}';
+  }
+
   void _goToClient(int clienteId) {
     Navigator.pushNamed(
       context,
@@ -882,6 +1049,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
       _recomendacionesController.text = order.recomendaciones ?? '';
       _camposContenidoCargados = true;
     }
+
+    // Transiciones que este rol puede hacer desde el estado actual (US5).
+    final bool hayAccionesEstado = allowedOrderTransitions(order.estado)
+        .any((String destino) => _puedeTransicionar(order, destino));
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -940,6 +1111,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
+            if (hayAccionesEstado) ...<Widget>[
+              _buildAccionesEstado(order),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             if (!_esMecanico && order.editable) ...<Widget>[
               _buildAsignacion(order),
               const SizedBox(height: AppSpacing.lg),
@@ -951,6 +1126,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             _buildRepuestos(order),
             const SizedBox(height: AppSpacing.lg),
             _buildRecomendaciones(order),
+            const SizedBox(height: AppSpacing.lg),
+            _buildHistorial(order),
             const SizedBox(height: AppSpacing.lg),
             AppPanel(
               child: Column(

@@ -280,4 +280,16 @@ class ServiceOrdersProvider extends ChangeNotifier {
     await _service.saveRecommendations(id: id, texto: texto);
     await _refrescarContenido(id);
   }
+
+  /// Cambia el estado de la orden (US5, FR-014) y refresca la ficha y el
+  /// listado. Lanza [ApiException] con el `403` de rol no autorizado o el
+  /// `409` de una transición inválida (R-02, R-03).
+  Future<void> changeStatus({
+    required int id,
+    required String estado,
+    String? nota,
+  }) async {
+    await _service.changeStatus(id: id, estado: estado, nota: nota);
+    await _refrescarContenido(id);
+  }
 }

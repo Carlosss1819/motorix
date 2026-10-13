@@ -177,4 +177,18 @@ class ServiceOrdersService {
       body: <String, dynamic>{'texto': texto},
     );
   }
+
+  /// POST /api/service-orders/:id/estado: transición del mapa R-02 con los
+  /// permisos por rol R-03 / FR-022; el backend responde `403` fuera de rol
+  /// y `409` con los estados permitidos cuando la transición es inválida.
+  Future<void> changeStatus({
+    required int id,
+    required String estado,
+    String? nota,
+  }) async {
+    await _api.post(
+      '/service-orders/$id/estado',
+      body: <String, dynamic>{'estado': estado, 'nota': ?nota},
+    );
+  }
 }

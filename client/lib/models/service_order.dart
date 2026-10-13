@@ -225,6 +225,23 @@ class ServiceOrderPage {
   final int total;
 }
 
+/// Mapa de transiciones de la orden: espejo del mapa R-02 del contrato
+/// (contracts/service-orders.md, sección POST /:id/estado). Desde cada
+/// estado, los únicos estados alcanzables; la orden entregada es terminal.
+const Map<String, List<String>> kTransicionesOrden = <String, List<String>>{
+  'RECIBIDO': <String>['DIAGNOSTICO'],
+  'DIAGNOSTICO': <String>['EN_REPARACION', 'ESPERANDO_REFACCION', 'TERMINADO'],
+  'EN_REPARACION': <String>['ESPERANDO_REFACCION', 'TERMINADO'],
+  'ESPERANDO_REFACCION': <String>['DIAGNOSTICO', 'EN_REPARACION', 'TERMINADO'],
+  'TERMINADO': <String>['ENTREGADO'],
+  'ENTREGADO': <String>[],
+};
+
+/// Estados alcanzables desde el estado indicado (R-02); vacío si la orden
+/// ya fue entregada.
+List<String> allowedOrderTransitions(String from) =>
+    kTransicionesOrden[from] ?? const <String>[];
+
 /// Opción del selector de mecánicos (`GET /api/users/mechanics`, FR-009).
 class MechanicOption {
   const MechanicOption({required this.id, required this.username});
