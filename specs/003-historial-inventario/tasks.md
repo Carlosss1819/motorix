@@ -333,19 +333,24 @@ detalle de una refacción y ver sus movimientos con tipo, cantidad, motivo y
 
 ### Tests for User Story 6
 
-- [ ] T055 [P] [US6] Escribir `server/tests/contract/parts-search.test.js` +
+- [X] T055 [P] [US6] Escribir `server/tests/contract/parts-search.test.js` +
   `server/tests/integration/parts-search.test.js`: búsqueda por nombre/código,
-  `GET /api/parts/:id/movements` con `?tipo=` y paginación, orden descendente
+  `GET /api/parts/:id/movements` con `?tipo=` y paginación, orden descendente,
+  y el registro manual `POST /api/parts/:id/movements` (FR‑029)
 
 ### Implementation for User Story 6
 
-- [ ] T056 [US6] Completar en `server/services/part.service.js` los filtros
+- [X] T056 [US6] Completar en `server/services/part.service.js` los filtros
   `?buscar=` (nombre o código, FR‑018) y el `GET /api/parts/:id/movements` con paginación
-  (FR‑030), más el detalle de refacción
-- [ ] T057 [US6] Crear `client/lib/screens/part_detail_screen.dart` con los datos de
+  (FR‑030), más el detalle de refacción y el `POST /api/parts/:id/movements`
+  (entradas y ajustes solo `ADMIN`, transacción con bloqueo de fila, FR‑029)
+- [X] T057 [US6] Crear `client/lib/screens/part_detail_screen.dart` con los datos de
   la refacción y su historial de movimientos (tabla con tipo, cantidad, motivo,
-  orden, stock resultante y fecha)
-- [ ] T058 [US6] Escribir `client/test/part_detail_test.dart` (detalle y lista de
+  orden, stock resultante y fecha), junto a `client/lib/models/part_movement.dart`,
+  `client/lib/providers/part_detail_provider.dart` y el método `movements` de
+  `client/lib/services/parts_service.dart`; registrar la ruta
+  `Routes.partDetail` y la entrada «Ver detalle» del inventario
+- [X] T058 [US6] Escribir `client/test/part_detail_test.dart` (detalle y lista de
   movimientos)
 
 **Checkpoint**: el inventario es auditable movimiento a movimiento
