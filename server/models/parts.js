@@ -77,21 +77,22 @@ export async function findByCode(code) {
   return mapPart(rows[0]);
 }
 
-export async function createPart({
-  code,
-  name,
-  category,
-  brand,
-  stockCurrent,
-  stockMin,
-  purchasePrice,
-  salePrice,
-}) {
-  const result = await query(
-    `INSERT INTO parts (code, name, category, brand, stock_current, stock_min, purchase_price, sale_price)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [code, name, category, brand ?? null, stockCurrent, stockMin, purchasePrice ?? null, salePrice ?? null],
-  );
+// Devuelve el id insertado. Si se pasa `connection`, el INSERT corre dentro de
+// la transacción del llamador (R-08) y la lectura del registro recién creado
+// debe esperar al commit, por eso solo se retorna el id.
+export async function createPart(
+  { code, name, category, brand, stockCurrent, stockMin, purchasePrice, salePrice },
+  connection,
+) {
+  const sql = `INSERT INTO parts (code, name, category, brand, stock_current, stock_min, purchase_price, sale_price)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const values = [code, name, category, brand ?? null, stockCurrent, stockMin, purchasePrice ?? null, salePrice ?? null];
+
+  if (connection) {
+    const [result] = await connection.execute(sql, values);
+    return { id: result.insertId };
+  }
+  const result = await query(sql, values);
   return findById(result.insertId);
 }
 

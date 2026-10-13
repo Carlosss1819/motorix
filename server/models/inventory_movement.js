@@ -19,10 +19,6 @@ function mapMovement(row) {
   };
 }
 
-function escapeLike(term) {
-  return term.replace(/[\\%_]/g, (char) => `\\${char}`);
-}
-
 // Historial de movimientos de una refacción (FR-030), ordenado por fecha
 // descendente; admite filtro por tipo.
 export async function listByPart({ partId, type, page, perPage } = {}) {
