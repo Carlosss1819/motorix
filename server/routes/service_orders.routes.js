@@ -2,8 +2,9 @@
 // US1: lectura y alta para ADMIN y RECEPTIONIST; la US3 habilita la lectura
 // del mecánico sobre sus propias órdenes (FR-010, RN-15) y la asignación de
 // mecánico desde recepción (FR-009); la US4 registra el contenido de la orden
-// (diagnóstico, servicios, repuestos y recomendaciones) para ADMIN/MECHANIC;
-// la US5 agrega las transiciones de estado (FR-014, FR-022).
+// (diagnóstico, servicios y recomendaciones) para ADMIN/MECHANIC; la US5
+// agrega las transiciones de estado (FR-014, FR-022) y la US7 las refacciones
+// del catálogo para los tres roles (FR-023 a FR-027).
 import { Router } from 'express';
 import { validate } from '../middlewares/validate.js';
 import { authenticate } from '../middlewares/auth.js';
@@ -17,7 +18,7 @@ import {
   serviceOrderListQuerySchema,
   diagnosisSchema,
   serviceItemSchema,
-  partSchema,
+  orderPartSchema,
   recommendationSchema,
 } from '../validators/service-order.validator.js';
 import {
@@ -64,10 +65,9 @@ serviceOrdersRoutes.post(
 );
 
 // Contenido de la orden (US4): diagnóstico (FR-011), servicios con mano de
-// obra (FR-012, R-13), repuestos (RN-06) y recomendaciones (FR-013). Las
-// registra el mecánico sobre sus órdenes o el administrador (FR-022); el
-// servicio además rechaza con 409 cualquier cambio en una orden ENTREGADO
-// (FR-016).
+// obra (FR-012, R-13) y recomendaciones (FR-013). Las registra el mecánico
+// sobre sus órdenes o el administrador (FR-022); el servicio además rechaza
+// con 409 cualquier cambio en una orden ENTREGADO (FR-016).
 serviceOrdersRoutes.post(
   '/:id/diagnostico',
   authorize('ADMIN', 'MECHANIC'),
@@ -85,15 +85,30 @@ serviceOrdersRoutes.delete(
   authorize('ADMIN', 'MECHANIC'),
   asyncHandler(removeServiceHandler),
 );
+// Refacciones de la orden (US7, FR-023 a FR-027): salen del catálogo, mueven
+// el stock en transacción y las pueden usar los TRES roles sobre una orden
+// abierta, con el mecánico limitado a las suyas. `/repuestos` se conserva como
+// alias heredado con el mismo handler y la misma respuesta (R-07).
+serviceOrdersRoutes.post(
+  '/:id/refacciones',
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  validate(orderPartSchema),
+  asyncHandler(addPartHandler),
+);
+serviceOrdersRoutes.delete(
+  '/:id/refacciones/:refaccionId',
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  asyncHandler(removePartHandler),
+);
 serviceOrdersRoutes.post(
   '/:id/repuestos',
-  authorize('ADMIN', 'MECHANIC'),
-  validate(partSchema),
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  validate(orderPartSchema),
   asyncHandler(addPartHandler),
 );
 serviceOrdersRoutes.delete(
   '/:id/repuestos/:repuestoId',
-  authorize('ADMIN', 'MECHANIC'),
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
   asyncHandler(removePartHandler),
 );
 serviceOrdersRoutes.post(

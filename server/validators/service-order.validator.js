@@ -105,21 +105,23 @@ export const serviceItemSchema = z.object({
     .optional(),
 });
 
-// Repuesto utilizado en la orden (RN-06: solo se registra junto a la orden,
-// sin consultar el inventario; eso llega en el Sprint 3).
-export const partSchema = z.object({
-  descripcion: z
-    .string({ required_error: 'La descripción del repuesto es obligatoria' })
-    .trim()
-    .min(1, 'La descripción del repuesto es obligatoria')
-    .max(120, 'La descripción del repuesto no puede exceder 120 caracteres'),
+// Refacción usada en la orden (US7, FR-023/FR-025): el alta sale del
+// catálogo, nunca de texto libre (RN-6), y la cantidad es un entero >= 1.
+export const orderPartSchema = z.object({
+  partId: z
+    .number({
+      required_error: 'La refacción es obligatoria',
+      invalid_type_error: 'La refacción no es un identificador válido',
+    })
+    .int('La refacción no es un identificador válido')
+    .positive('La refacción no es un identificador válido'),
   cantidad: z
     .number({
-      required_error: 'La cantidad del repuesto es obligatoria',
-      invalid_type_error: 'La cantidad del repuesto no es un número válido',
+      required_error: 'La cantidad de la refacción es obligatoria',
+      invalid_type_error: 'La cantidad de la refacción no es un número válido',
     })
-    .int('La cantidad del repuesto debe ser un número entero')
-    .min(1, 'La cantidad del repuesto debe ser al menos 1')
+    .int('La cantidad de la refacción debe ser un número entero')
+    .min(1, 'La cantidad de la refacción debe ser al menos 1')
     .optional()
     .default(1),
 });

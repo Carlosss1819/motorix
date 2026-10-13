@@ -15,18 +15,30 @@ import {
 import {
   createServiceWithLabor,
   deleteServiceById,
-  createPart,
-  deletePartById,
+  insertOrderPart,
+  findOrderPartRow,
+  deleteOrderPart,
   listServicesByOrder,
   listPartsByOrder,
 } from '../models/order_items.js';
+import {
+  findById as findPartById,
+  lockStockForUpdate,
+  setStock,
+} from '../models/parts.js';
+import { insertMovement } from '../models/inventory_movement.js';
 import { findById as findClientById } from '../models/client.js';
 import { findById as findVehicleById, refreshCurrentMileage } from '../models/vehicle.js';
 import { findById as findUserById } from '../models/user.js';
 import { findAppointmentById } from '../models/appointment.js';
+import { getConnection } from '../config/db.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
 import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
 import { evaluateTransition } from '../utils/order-transitions.js';
+import {
+  evaluateQuantity,
+  evaluateStock,
+} from '../utils/order-parts-stock.js';
 
 // Formatea una fecha como AAAA-MM-DD usando la zona horaria local, para que el
 // día mostrado coincida con el capturado por el usuario.
@@ -368,33 +380,142 @@ export async function removeService(id, serviceId, user) {
   return { mensaje: 'Servicio eliminado' };
 }
 
-// RN-06: el repuesto solo se registra junto a la orden; el control de stock y
-// la salida de inventario pertenecen al Sprint 3.
-export async function addPart(id, data, user) {
+// Guard de las refacciones de la orden (US7): además del guard heredado de
+// contenido, una orden TERMINADO está cerrada y no admite altas ni bajas
+// (FR-026, RN-9 / quickstart V5).
+async function assertOrderOpenForParts(id, user) {
   const order = await assertOrderOpenForContent(id, user);
-
-  const created = await createPart({
-    serviceOrderId: order.id,
-    description: data.descripcion,
-    quantity: data.cantidad ?? 1,
-  });
-
-  return {
-    id: created.id,
-    descripcion: created.description,
-    cantidad: created.quantity,
-  };
+  if (order.status === ORDER_STATUSES.TERMINADO) {
+    throw conflict('Una orden cerrada no admite cambios en sus refacciones', 'ORDEN_CERRADA');
+  }
+  return order;
 }
 
-export async function removePart(id, partId, user) {
-  const order = await assertOrderOpenForContent(id, user);
+// RN-06 / FR-023: la refacción debe existir en el catálogo y estar activa.
+function assertPartUsable(part) {
+  if (!part) {
+    throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+  }
+  if (!part.isActive) {
+    throw conflict(
+      'La refacción está desactivada y no puede agregarse a una orden',
+      'REFACCION_INACTIVA',
+    );
+  }
+}
 
-  const deleted = await deletePartById(order.id, partId);
-  if (!deleted) {
-    throw notFound('El repuesto no existe en esta orden', 'REPUESTO_NO_ENCONTRADO');
+// FR-024 / RN-7 / R-08: la baja de stock, la fila de la orden y el movimiento
+// SALIDA ocurren en UNA transacción con la fila de la refacción bloqueada; si
+// no alcanza el stock se hace ROLLBACK completo (RN-8: nunca negativo).
+export async function addPart(id, data, user) {
+  const order = await assertOrderOpenForParts(id, user);
+  const refaccion = await findPartById(data.partId);
+  assertPartUsable(refaccion);
+
+  const cantidad = evaluateQuantity(data.cantidad);
+  if (!cantidad.valida) {
+    throw badRequest(cantidad.mensaje, cantidad.codigo);
   }
 
-  return { mensaje: 'Repuesto eliminado' };
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const stockActual = await lockStockForUpdate(connection, refaccion.id);
+    if (stockActual === null) {
+      throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+    }
+
+    const evaluacion = evaluateStock(stockActual, data.cantidad);
+    if (!evaluacion.suficiente) {
+      throw conflict(evaluacion.mensaje, evaluacion.codigo);
+    }
+
+    await setStock(connection, refaccion.id, evaluacion.stockAfter);
+    const fila = await insertOrderPart(connection, {
+      serviceOrderId: order.id,
+      // Copia histórica del catálogo (R-06): la orden conserva el nombre con
+      // el que se usó, aunque la refacción cambie o se desactive después.
+      description: refaccion.name,
+      quantity: data.cantidad,
+      partId: refaccion.id,
+    });
+    await insertMovement(connection, {
+      partId: refaccion.id,
+      movementType: 'SALIDA',
+      quantity: data.cantidad,
+      serviceOrderId: order.id,
+      stockAfter: evaluacion.stockAfter,
+      createdBy: user.id,
+    });
+
+    await connection.commit();
+    return {
+      id: fila.id,
+      partId: refaccion.id,
+      codigo: refaccion.code,
+      nombre: refaccion.name,
+      cantidad: data.cantidad,
+      stockActual: evaluacion.stockAfter,
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+// FR-026 / R-09: el retiro repone el stock con una ENTRADA de reposición en
+// la misma transacción; una fila heredada sin `part_id` solo se elimina, porque
+// nunca descontó inventario.
+export async function removePart(id, refaccionId, user) {
+  const order = await assertOrderOpenForParts(id, user);
+
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const fila = await findOrderPartRow(connection, order.id, refaccionId);
+    if (!fila) {
+      throw notFound('La refacción no existe en esta orden', 'REPUESTO_NO_ENCONTRADO');
+    }
+
+    let stockRepuesto = null;
+    if (fila.part_id) {
+      const stockActual = await lockStockForUpdate(connection, fila.part_id);
+      if (stockActual === null) {
+        throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
+      }
+      stockRepuesto = stockActual + fila.quantity;
+      await setStock(connection, fila.part_id, stockRepuesto);
+      await insertMovement(connection, {
+        partId: fila.part_id,
+        movementType: 'ENTRADA',
+        quantity: fila.quantity,
+        reason: `Reposición por retiro de la orden #${order.id}`,
+        serviceOrderId: order.id,
+        stockAfter: stockRepuesto,
+        createdBy: user.id,
+      });
+    }
+
+    const borrada = await deleteOrderPart(connection, order.id, fila.id);
+    if (!borrada) {
+      throw notFound('La refacción no existe en esta orden', 'REPUESTO_NO_ENCONTRADO');
+    }
+
+    await connection.commit();
+    return {
+      mensaje: 'Refacción retirada de la orden.',
+      stockActual: stockRepuesto,
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 // FR-013: recomendaciones para la entrega, guardadas en la misma orden.

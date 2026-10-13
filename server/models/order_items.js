@@ -61,22 +61,41 @@ export async function deleteServiceById(serviceOrderId, serviceId) {
   return result.affectedRows > 0;
 }
 
-// Registra un repuesto en la orden. RN-06: no se consulta el inventario
-// (quedó fuera de alcance para el Sprint 2; se valida en el Sprint 3).
-export async function createPart({ serviceOrderId, description, quantity }) {
-  const result = await query(
-    `INSERT INTO order_parts (service_order_id, description, quantity)
-     VALUES (?, ?, ?)`,
-    [serviceOrderId, description, quantity],
+// Fila de refacción usada en la orden (US7): `description` guarda el nombre
+// del catálogo copiado en el momento del alta (R-06) y `part_id` queda en
+// NULL solo en las filas heredadas del Sprint 2. Las funciones reciben la
+// conexión para correr dentro de la transacción que mueve el stock (R-08).
+export async function insertOrderPart(
+  connection,
+  { serviceOrderId, description, quantity, partId = null },
+) {
+  const [result] = await connection.execute(
+    `INSERT INTO order_parts (service_order_id, description, quantity, part_id)
+     VALUES (?, ?, ?, ?)`,
+    [serviceOrderId, description, quantity, partId],
   );
-  return { id: result.insertId, description, quantity };
+  return { id: result.insertId, description, quantity, partId };
 }
 
-// Elimina un repuesto de la orden; devuelve false si no existía.
-export async function deletePartById(serviceOrderId, partId) {
-  const result = await query(
+// Fila de la orden con bloqueo de fila: dos retiros simultáneos de la misma
+// fila serializan aquí y solo uno repone el stock (RN-8, R-08).
+export async function findOrderPartRow(connection, serviceOrderId, rowId) {
+  const [rows] = await connection.execute(
+    `SELECT id, part_id, description, quantity
+     FROM order_parts
+     WHERE id = ? AND service_order_id = ?
+     LIMIT 1
+     FOR UPDATE`,
+    [rowId, serviceOrderId],
+  );
+  return rows[0] ?? null;
+}
+
+// Elimina la fila dentro de la transacción; devuelve false si ya no existía.
+export async function deleteOrderPart(connection, serviceOrderId, rowId) {
+  const [result] = await connection.execute(
     'DELETE FROM order_parts WHERE id = ? AND service_order_id = ?',
-    [partId, serviceOrderId],
+    [rowId, serviceOrderId],
   );
   return result.affectedRows > 0;
 }

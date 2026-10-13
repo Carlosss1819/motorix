@@ -56,10 +56,10 @@ export async function addPartHandler(req, res) {
 }
 
 export async function removePartHandler(req, res) {
-  sendOk(
-    res,
-    await removePart(Number(req.params.id), Number(req.params.repuestoId), req.user),
-  );
+  // La ruta canónica usa `:refaccionId` y el alias heredado `:repuestoId`
+  // (R-07): ambos llegan al mismo handler.
+  const filaId = Number(req.params.refaccionId ?? req.params.repuestoId);
+  sendOk(res, await removePart(Number(req.params.id), filaId, req.user));
 }
 
 export async function saveRecommendationsHandler(req, res) {
