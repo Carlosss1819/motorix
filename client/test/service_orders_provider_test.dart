@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import 'package:motorix_client/models/app_user.dart';
+import 'package:motorix_client/models/enums.dart';
 import 'package:motorix_client/models/service_order.dart';
+import 'package:motorix_client/providers/auth_provider.dart';
 import 'package:motorix_client/providers/load_status.dart';
 import 'package:motorix_client/providers/service_orders_provider.dart';
 import 'package:motorix_client/providers/shell_provider.dart';
@@ -65,6 +68,22 @@ class _ServiceOrdersServiceFake extends ServiceOrdersService {
       total: base.total,
     );
   }
+}
+
+/// Sesión simulada de recepción: la pantalla de órdenes consulta el rol.
+class _AuthProviderFake extends AuthProvider {
+  _AuthProviderFake({required super.api});
+
+  @override
+  AppUser? get user => const AppUser(
+        id: 2,
+        username: 'recepcion',
+        email: 'recepcion@motorix.local',
+        rol: Rol.receptionist,
+      );
+
+  @override
+  bool get isAuthenticated => true;
 }
 
 ServiceOrder _orden({
@@ -213,6 +232,9 @@ void main() {
           providers: [
             ChangeNotifierProvider<ShellProvider>(
               create: (_) => ShellProvider(initialWidth: 1280),
+            ),
+            ChangeNotifierProvider<AuthProvider>(
+              create: (_) => _AuthProviderFake(api: ApiClient()),
             ),
             ChangeNotifierProvider<ServiceOrdersProvider>(
               create: (_) =>
