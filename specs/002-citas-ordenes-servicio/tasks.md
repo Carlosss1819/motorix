@@ -208,12 +208,12 @@ implementación y pruebas independientes.
 
 ### Tests for User Story 6
 
-- [ ] T069 [P] [US6] Prueba flutter test del panel en client/test/reception_panel_test.dart (citas del día, órdenes abiertas y estado vacío)
+- [X] T069 [P] [US6] Prueba flutter test del panel en client/test/reception_panel_test.dart (citas del día, órdenes abiertas y estado vacío)
 
 ### Implementation for User Story 6
 
-- [ ] T070 [US6] Crear client/lib/screens/reception_screen.dart que compone `GET /api/appointments?fecha=<hoy>` y `GET /api/service-orders?estadoAbierta=true` (R‑09), con estados vacío ("sin actividades"), cargando y error
-- [ ] T071 [US6] Registrar la ruta del panel y hacerlo Inicio por defecto de `ADMIN` y `RECEPTIONIST` en client/lib/utils/app_routes.dart y client/lib/widgets/app_shell.dart
+- [X] T070 [US6] Crear client/lib/screens/reception_screen.dart que compone `GET /api/appointments?fecha=<hoy>` y `GET /api/service-orders?estadoAbierta=true` (R‑09), con estados vacío ("sin actividades"), cargando y error
+- [X] T071 [US6] Registrar la ruta del panel y hacerlo Inicio por defecto de `ADMIN` y `RECEPTIONIST` en client/lib/utils/app_routes.dart y client/lib/widgets/app_shell.dart
 
 **Checkpoint**: todas las historias del sprint funcionan de forma independiente
 
