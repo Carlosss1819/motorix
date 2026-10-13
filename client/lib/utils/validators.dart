@@ -78,4 +78,45 @@ abstract final class Validators {
     }
     return null;
   }
+
+  /// Entero mayor o igual que cero u opcional: el vacío se acepta y no se
+  /// envía al backend (campos como los intervalos o la fecha objetivo).
+  static String? optionalNonNegativeInt(String? value, String campo) {
+    final String text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+    final int? parsed = int.tryParse(text);
+    if (parsed == null || parsed < 0) {
+      return 'El campo $campo debe ser un número igual o mayor a 0.';
+    }
+    return null;
+  }
+
+  /// Entero positivo u opcional: el vacío se acepta (intervalos y
+  /// antelaciones, que el backend exige mayores que cero).
+  static String? optionalPositiveInt(String? value, String campo) {
+    final String text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+    final int? parsed = int.tryParse(text);
+    if (parsed == null || parsed <= 0) {
+      return 'El campo $campo debe ser un número entero mayor a 0.';
+    }
+    return null;
+  }
+
+  /// Fecha opcional con formato `AAAA-MM-DD`; el vacío se acepta.
+  static String? optionalFecha(String? value) {
+    final String text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+    final DateTime? parsed = DateTime.tryParse(text);
+    if (parsed == null || parsed.toIso8601String().substring(0, 10) != text) {
+      return 'Escribe una fecha con el formato AAAA-MM-DD.';
+    }
+    return null;
+  }
 }
