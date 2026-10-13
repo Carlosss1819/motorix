@@ -158,18 +158,18 @@ quickstart)
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Escribir `server/tests/integration/mileage-history.test.js`:
+- [X] T020 [P] [US2] Escribir `server/tests/integration/mileage-history.test.js`:
   kilometraje heredado al historial (FR‑005), rechazo de regresión sin corrección y
   aceptación con corrección de `ADMIN` (FR‑006), `current_mileage` con el valor más
   alto (FR‑007)
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Verificar y, si falta, completar en
+- [X] T021 [US2] Verificar y, si falta, completar en
   `server/services/service_order.service.js` y `server/models/vehicle.js` la regla
   heredada (helper `UPDATE … WHERE current_mileage < ?`); este sprint NO duplica la
   lógica, solo la comprueba y la reutiliza en la renovación de mantenimientos (R‑03)
-- [ ] T022 [US2] Escribir `client/test/mileage_history_test.dart`: cada entrada del
+- [X] T022 [US2] Escribir `client/test/mileage_history_test.dart`: cada entrada del
   historial muestra su kilometraje y el formulario de corrección de kilometraje
   responde con el mensaje en español
 
