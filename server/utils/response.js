@@ -13,6 +13,7 @@ export function sendNoContent(res) {
   res.status(204).end();
 }
 
-export function sendError(res, status, mensaje, codigo) {
-  res.status(status).json({ error: { mensaje, codigo } });
+// `extra` agrega campos de negocio al error (opcional; ver HttpError.extra).
+export function sendError(res, status, mensaje, codigo, extra) {
+  res.status(status).json({ error: { mensaje, codigo, ...extra } });
 }

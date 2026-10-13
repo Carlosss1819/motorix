@@ -11,7 +11,7 @@ export function errorHandler(error, req, res, next) {
   if (res.headersSent) return next(error);
 
   if (error instanceof HttpError) {
-    return sendError(res, error.status, error.message, error.code);
+    return sendError(res, error.status, error.message, error.code, error.extra);
   }
 
   if (error?.type === 'entity.parse.failed') {
