@@ -157,4 +157,41 @@ class PartsProvider extends ChangeNotifier {
     await _service.deactivate(id);
     await reload();
   }
+
+  // Catálogo del selector de refacciones de una orden (US7, RN-6): se carga
+  // aparte del listado para NO tocar sus filtros ni su paginación (R-10).
+  List<Part> _catalogo = const <Part>[];
+  bool _cargandoCatalogo = false;
+  String? _errorCatalogo;
+
+  /// Refacciones activas disponibles para usar en una orden.
+  List<Part> get catalogo => _catalogo;
+  bool get cargandoCatalogo => _cargandoCatalogo;
+  String? get errorCatalogo => _errorCatalogo;
+
+  /// Carga una página amplia del catálogo activo para el selector.
+  Future<void> loadCatalog() async {
+    if (_cargandoCatalogo) {
+      return;
+    }
+    _cargandoCatalogo = true;
+    _errorCatalogo = null;
+    notifyListeners();
+
+    try {
+      final PartPage page = await _service.list(
+        activa: true,
+        pagina: 1,
+        porPagina: 50,
+      );
+      _catalogo = page.elementos;
+    } on ApiException catch (e) {
+      _errorCatalogo = e.mensaje;
+    } catch (_) {
+      _errorCatalogo = AppMessages.unexpectedError;
+    }
+
+    _cargandoCatalogo = false;
+    notifyListeners();
+  }
 }

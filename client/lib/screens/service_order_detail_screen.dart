@@ -4,9 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../models/app_user.dart';
 import '../models/enums.dart';
+import '../models/part.dart';
 import '../models/service_order.dart';
 import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
+import '../providers/parts_provider.dart';
 import '../providers/service_orders_provider.dart';
 import '../services/api_client.dart';
 import '../utils/app_routes.dart';
@@ -42,12 +44,16 @@ class ServiceOrderDetailScreen extends StatefulWidget {
 class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   late final ServiceOrdersProvider _orders;
 
+  /// Catálogo de refacciones del selector del panel de inventario (US7).
+  late final PartsProvider _parts;
+
   /// El selector de asignación es de recepción/administración (FR-009); el
   /// mecánico solo consulta su orden.
   late final bool _esMecanico;
 
-  /// El contenido de la orden (diagnóstico, servicios, repuestos y
-  /// recomendaciones) lo registran el mecánico y el administrador (FR-022).
+  /// El contenido de la orden (diagnóstico, servicios, refacciones y
+  /// recomendaciones) lo registran el mecánico y el administrador (FR-022);
+  /// las refacciones, además, las manejan los tres roles (FR-027).
   late final bool _esAdmin;
 
   /// Identificador de la sesión actual: el bloque medio de transiciones de
@@ -67,8 +73,11 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   final TextEditingController _servicioController = TextEditingController();
   final TextEditingController _duracionController = TextEditingController();
   final TextEditingController _precioController = TextEditingController();
-  final TextEditingController _repuestoController = TextEditingController();
   final TextEditingController _cantidadController = TextEditingController();
+
+  /// Refacción elegida en el selector del catálogo (US7, RN-6): el alta ya
+  /// no acepta texto libre.
+  int? _refaccionId;
 
   /// Los campos se precargan una sola vez cuando llega la ficha; lo que el
   /// usuario escriba y no guarde se descarta al salir (FR-019).
@@ -76,12 +85,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   bool _guardandoDiagnostico = false;
   bool _guardandoRecomendaciones = false;
   bool _guardandoServicio = false;
-  bool _guardandoRepuesto = false;
+  bool _guardandoRefaccion = false;
 
   @override
   void initState() {
     super.initState();
     _orders = context.read<ServiceOrdersProvider>();
+    _parts = context.read<PartsProvider>();
     final AppUser? usuario = context.read<AuthProvider>().user;
     final String rol = usuario?.rol ?? '';
     _esMecanico = rol == Rol.mechanic;
@@ -92,6 +102,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         return;
       }
       _orders.loadDetail(widget.orderId);
+      // El selector de refacciones (US7) muestra el stock vigente del
+      // catálogo, que se refresca además después de cada alta o baja.
+      _parts.loadCatalog();
       if (!_esMecanico) {
         _cargarMecanicos();
       }
@@ -105,7 +118,6 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     _servicioController.dispose();
     _duracionController.dispose();
     _precioController.dispose();
-    _repuestoController.dispose();
     _cantidadController.dispose();
     super.dispose();
   }
@@ -330,57 +342,66 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     }
   }
 
-  /// Agrega un repuesto usado en la orden (RN-06: sin tocar el inventario).
-  Future<void> _agregarRepuesto(ServiceOrder order) async {
-    final String descripcion = _repuestoController.text.trim();
+  /// Las refacciones de la orden las manejan los TRES roles sobre una orden
+  /// abierta (FR-027): a diferencia del contenido, recepción también puede
+  /// darlas de alta y de baja. El `403` de un mecánico en orden ajena y el
+  /// `409` de una orden cerrada los resuelve el backend (RN-15, FR-026).
+  bool _puedeEditarRefacciones(ServiceOrder order) => order.editable;
+
+  /// Agrega una refacción del catálogo a la orden (FR-023): el stock se
+  /// descuenta en el backend dentro de su transacción (RN-7, R-08).
+  Future<void> _agregarRefaccion(ServiceOrder order) async {
     final String cantidadTexto = _cantidadController.text.trim();
     final int? cantidad =
         cantidadTexto.isEmpty ? 1 : int.tryParse(cantidadTexto);
 
-    if (descripcion.isEmpty || cantidad == null || cantidad < 1) {
+    if (_refaccionId == null || cantidad == null || cantidad < 1) {
       _mostrarAviso(
-        'Revisa la descripción y la cantidad del repuesto (mínimo 1).',
+        'Selecciona una refacción del catálogo y una cantidad de al menos 1.',
       );
       return;
     }
 
-    setState(() => _guardandoRepuesto = true);
+    setState(() => _guardandoRefaccion = true);
     try {
       await _orders.addPart(
         id: order.id,
-        descripcion: descripcion,
+        partId: _refaccionId!,
         cantidad: cantidad,
       );
       if (!mounted) {
         return;
       }
-      _repuestoController.clear();
+      _refaccionId = null;
       _cantidadController.clear();
-      setState(() => _guardandoRepuesto = false);
-      _mostrarAviso('Repuesto registrado en la orden.');
+      setState(() => _guardandoRefaccion = false);
+      _mostrarAviso('Refacción registrada en la orden.');
+      // El stock visible del selector cambió con la salida.
+      _parts.loadCatalog();
     } on ApiException catch (e) {
       if (!mounted) {
         return;
       }
-      setState(() => _guardandoRepuesto = false);
+      setState(() => _guardandoRefaccion = false);
       _mostrarAviso(e.mensaje);
     } catch (_) {
       if (!mounted) {
         return;
       }
-      setState(() => _guardandoRepuesto = false);
+      setState(() => _guardandoRefaccion = false);
       _mostrarAviso(AppMessages.unexpectedError);
     }
   }
 
-  /// Elimina un repuesto de la orden con confirmación previa.
-  Future<void> _eliminarRepuesto(ServiceOrder order, OrderPart repuesto) async {
+  /// Retira una refacción de la orden con confirmación obligatoria (Principio
+  /// VIII): el backend repone el stock con una ENTRADA (FR-026, R-09).
+  Future<void> _eliminarRefaccion(ServiceOrder order, OrderPart repuesto) async {
     final bool confirmado = await showConfirmDialog(
       context,
-      titulo: 'Eliminar repuesto',
+      titulo: 'Eliminar refacción',
       mensaje:
-          'Se quitará "${repuesto.descripcion}" de la orden #${order.id}. '
-          '¿Continuar?',
+          'Se quitará "${repuesto.descripcion}" de la orden #${order.id} y se '
+          'repondrá su stock. ¿Continuar?',
       destructive: true,
     );
     if (!confirmado || !mounted) {
@@ -392,7 +413,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
       if (!mounted) {
         return;
       }
-      _mostrarAviso('Repuesto eliminado.');
+      _mostrarAviso('Refacción retirada de la orden.');
+      // El stock visible del selector cambió con la reposición.
+      _parts.loadCatalog();
     } on ApiException catch (e) {
       if (!mounted) {
         return;
@@ -771,20 +794,26 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     return '$duracion · ${Formatters.money(precio)}';
   }
 
-  /// Repuestos usados en la orden (RN-06): solo se registran junto a la
-  /// orden; el control de stock es del Sprint 3.
-  Widget _buildRepuestos(ServiceOrder order) {
+  /// Refacciones usadas en la orden (US7): salen del catálogo con su stock
+  /// visible y el retiro siempre pide confirmación (FR-023 a FR-027).
+  Widget _buildRefacciones(ServiceOrder order) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool editable = _puedeEditarContenido(order);
+    final PartsProvider parts = context.watch<PartsProvider>();
+    final bool editable = _puedeEditarRefacciones(order);
+    final List<Part> catalogo = parts.catalogo;
+    // Tras un refresco el id elegido puede haber salido del catálogo.
+    final int? valorSelector = catalogo.any((Part p) => p.id == _refaccionId)
+        ? _refaccionId
+        : null;
 
     return AppPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('Repuestos utilizados', style: textTheme.titleMedium),
+          Text('Refacciones utilizadas', style: textTheme.titleMedium),
           const SizedBox(height: AppSpacing.md),
           if (order.repuestos.isEmpty)
-            Text('Sin repuestos registrados.', style: textTheme.bodySmall)
+            Text('Sin refacciones registradas.', style: textTheme.bodySmall)
           else
             for (final OrderPart repuesto in order.repuestos)
               Padding(
@@ -799,12 +828,12 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                     ),
                     if (editable)
                       IconButton(
-                        tooltip: 'Eliminar repuesto',
+                        tooltip: 'Eliminar refacción',
                         icon: const Icon(
                           LucideIcons.trash2,
                           size: AppMetrics.iconSizeSmall,
                         ),
-                        onPressed: () => _eliminarRepuesto(order, repuesto),
+                        onPressed: () => _eliminarRefaccion(order, repuesto),
                       ),
                   ],
                 ),
@@ -814,12 +843,29 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             Row(
               children: <Widget>[
                 Expanded(
-                  child: TextField(
-                    key: const Key('campo-repuesto'),
-                    controller: _repuestoController,
+                  child: DropdownButtonFormField<int>(
+                    key: const Key('selector-refaccion'),
+                    initialValue: valorSelector,
+                    isExpanded: true,
                     decoration: const InputDecoration(
-                      labelText: 'Descripción del repuesto',
+                      labelText: 'Refacción del catálogo',
                     ),
+                    hint: const Text('Selecciona una refacción'),
+                    items: <DropdownMenuItem<int>>[
+                      for (final Part parte in catalogo)
+                        DropdownMenuItem<int>(
+                          value: parte.id,
+                          // Una refacción sin stock no se puede usar (RN-8).
+                          enabled: parte.stockActual > 0,
+                          child: Text(
+                            '${parte.nombre} (${parte.codigo}) · '
+                            'stock ${parte.stockActual}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                    ],
+                    onChanged: (int? valor) =>
+                        setState(() => _refaccionId = valor),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -834,18 +880,30 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: AppSpacing.xs),
+            if (parts.cargandoCatalogo)
+              Text('Cargando el catálogo de refacciones…', style: textTheme.bodySmall)
+            else if (parts.errorCatalogo != null)
+              Text(parts.errorCatalogo!, style: textTheme.bodySmall)
+            else if (catalogo.isEmpty)
+              Text('No hay refacciones activas en el catálogo.', style: textTheme.bodySmall)
+            else
+              Text(
+                'El stock se descuenta al guardar y se repone al retirar.',
+                style: textTheme.bodySmall,
+              ),
             const SizedBox(height: AppSpacing.md),
             Align(
               alignment: Alignment.centerLeft,
               child: FilledButton.icon(
-                onPressed: _guardandoRepuesto
+                onPressed: _guardandoRefaccion
                     ? null
-                    : () => _agregarRepuesto(order),
+                    : () => _agregarRefaccion(order),
                 icon: const Icon(
                   LucideIcons.plus,
                   size: AppMetrics.iconSizeSmall,
                 ),
-                label: const Text('Agregar repuesto'),
+                label: const Text('Agregar refacción'),
               ),
             ),
           ],
@@ -1136,7 +1194,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             const SizedBox(height: AppSpacing.lg),
             _buildServicios(order),
             const SizedBox(height: AppSpacing.lg),
-            _buildRepuestos(order),
+            _buildRefacciones(order),
             const SizedBox(height: AppSpacing.lg),
             _buildRecomendaciones(order),
             const SizedBox(height: AppSpacing.lg),

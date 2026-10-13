@@ -260,17 +260,18 @@ class ServiceOrdersProvider extends ChangeNotifier {
     await _refrescarContenido(id);
   }
 
-  /// Registra un repuesto usado en la orden, sin tocar el inventario (RN-06).
+  /// Agrega una refacción del catálogo a la orden: el backend descuenta el
+  /// stock y deja el movimiento SALIDA (US7, FR-023/FR-024).
   Future<void> addPart({
     required int id,
-    required String descripcion,
+    required int partId,
     required int cantidad,
   }) async {
-    await _service.addPart(id: id, descripcion: descripcion, cantidad: cantidad);
+    await _service.addPart(id: id, partId: partId, cantidad: cantidad);
     await _refrescarContenido(id);
   }
 
-  /// Elimina un repuesto registrado en la orden.
+  /// Retira una refacción de la orden y el backend repone su stock (FR-026).
   Future<void> removePart({
     required int id,
     required int repuestoId,

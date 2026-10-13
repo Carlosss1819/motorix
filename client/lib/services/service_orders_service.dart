@@ -161,25 +161,28 @@ class ServiceOrdersService {
     await _api.delete('/service-orders/$id/servicios/$servicioId');
   }
 
-  /// POST /api/service-orders/:id/repuestos: solo registra el repuesto junto
-  /// a la orden; el inventario se valida en el Sprint 3 (RN-06).
+  /// POST /api/service-orders/:id/refacciones (alias heredado /repuestos):
+  /// la refacción sale del catálogo y el backend descuenta el stock en
+  /// transacción (US7, FR-023/FR-024, RN-6). Responde `409 STOCK_INSUFICIENTE`
+  /// o `409 REFACCION_INACTIVA`.
   Future<void> addPart({
     required int id,
-    required String descripcion,
+    required int partId,
     required int cantidad,
   }) async {
     await _api.post(
-      '/service-orders/$id/repuestos',
-      body: <String, dynamic>{'descripcion': descripcion, 'cantidad': cantidad},
+      '/service-orders/$id/refacciones',
+      body: <String, dynamic>{'partId': partId, 'cantidad': cantidad},
     );
   }
 
-  /// DELETE /api/service-orders/:id/repuestos/:repuestoId.
+  /// DELETE /api/service-orders/:id/refacciones/:repuestoId: el backend
+  /// retira la fila y repone el stock con una ENTRADA (FR-026, R-09).
   Future<void> removePart({
     required int id,
     required int repuestoId,
   }) async {
-    await _api.delete('/service-orders/$id/repuestos/$repuestoId');
+    await _api.delete('/service-orders/$id/refacciones/$repuestoId');
   }
 
   /// POST /api/service-orders/:id/recomendaciones: recomendaciones para la
