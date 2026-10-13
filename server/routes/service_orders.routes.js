@@ -2,7 +2,8 @@
 // US1: lectura y alta para ADMIN y RECEPTIONIST; la US3 habilita la lectura
 // del mecánico sobre sus propias órdenes (FR-010, RN-15) y la asignación de
 // mecánico desde recepción (FR-009); la US4 registra el contenido de la orden
-// (diagnóstico, servicios, repuestos y recomendaciones) para ADMIN/MECHANIC.
+// (diagnóstico, servicios, repuestos y recomendaciones) para ADMIN/MECHANIC;
+// la US5 agrega las transiciones de estado (FR-014, FR-022).
 import { Router } from 'express';
 import { validate } from '../middlewares/validate.js';
 import { authenticate } from '../middlewares/auth.js';
@@ -12,6 +13,7 @@ import {
   serviceOrderSchema,
   serviceOrderUpdateSchema,
   serviceOrderAssignSchema,
+  serviceOrderStatusSchema,
   serviceOrderListQuerySchema,
   diagnosisSchema,
   serviceItemSchema,
@@ -24,6 +26,7 @@ import {
   createServiceOrderHandler,
   updateServiceOrderHandler,
   assignServiceOrderHandler,
+  changeServiceOrderStatusHandler,
   saveDiagnosisHandler,
   addServiceHandler,
   removeServiceHandler,
@@ -98,4 +101,14 @@ serviceOrdersRoutes.post(
   authorize('ADMIN', 'MECHANIC'),
   validate(recommendationSchema),
   asyncHandler(saveRecommendationsHandler),
+);
+
+// Transición de estado (US5, FR-014/FR-022): los tres roles participan y el
+// servicio aplica el mapa R-02 y la matriz de permisos R-03 (el bloque medio
+// es del mecánico asignado o ADMIN; la entrega, de recepción o ADMIN).
+serviceOrdersRoutes.post(
+  '/:id/estado',
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  validate(serviceOrderStatusSchema),
+  asyncHandler(changeServiceOrderStatusHandler),
 );

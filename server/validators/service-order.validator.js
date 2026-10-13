@@ -133,6 +133,20 @@ export const recommendationSchema = z.object({
     .max(4000, 'Las recomendaciones no pueden exceder 4000 caracteres'),
 });
 
+// Transición de estado (US5): `{ estado, nota }` con nota opcional; el mapa
+// de transiciones y los permisos por rol se validan en el servicio (R-02,
+// R-03 / FR-022).
+export const serviceOrderStatusSchema = z.object({
+  estado: z.enum([...ORDER_STATUS_VALUES], {
+    errorMap: () => ({ message: 'El estado indicado no es válido' }),
+  }),
+  nota: z
+    .string({ invalid_type_error: 'La nota debe ser texto' })
+    .trim()
+    .max(255, 'La nota no puede exceder 255 caracteres')
+    .optional(),
+});
+
 export const serviceOrderListQuerySchema = z.object({
   estado: z.enum([...ORDER_STATUS_VALUES], { errorMap: () => ({ message: 'El estado indicado no es válido' }) }).optional(),
   estadoAbierta: z.enum(['true', 'false'], { errorMap: () => ({ message: 'El filtro de orden abierta no es válido' }) }).optional(),

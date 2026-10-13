@@ -1,5 +1,5 @@
-// Controlador de órdenes de servicio (US1; la US3 agrega la asignación y la
-// US4 el contenido: diagnóstico, servicios, repuestos y recomendaciones).
+// Controlador de órdenes de servicio (US1; la US3 agrega la asignación, la
+// US4 el contenido y la US5 las transiciones de estado).
 import {
   list,
   getById,
@@ -12,6 +12,7 @@ import {
   addPart,
   removePart,
   saveRecommendations,
+  changeStatus,
 } from '../services/service_order.service.js';
 import { sendOk, sendCreated } from '../utils/response.js';
 
@@ -63,4 +64,8 @@ export async function removePartHandler(req, res) {
 
 export async function saveRecommendationsHandler(req, res) {
   sendOk(res, await saveRecommendations(Number(req.params.id), req.body, req.user));
+}
+
+export async function changeServiceOrderStatusHandler(req, res) {
+  sendOk(res, await changeStatus(Number(req.params.id), req.body, req.user));
 }

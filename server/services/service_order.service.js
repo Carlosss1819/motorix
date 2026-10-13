@@ -26,6 +26,7 @@ import { findById as findUserById } from '../models/user.js';
 import { findAppointmentById } from '../models/appointment.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
 import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
+import { evaluateTransition } from '../utils/order-transitions.js';
 
 // Formatea una fecha como AAAA-MM-DD usando la zona horaria local, para que el
 // día mostrado coincida con el capturado por el usuario.
@@ -403,4 +404,53 @@ export async function saveRecommendations(id, data, user) {
   const updated = await updateServiceOrder(order.id, { recommendations: data.texto });
 
   return { recomendaciones: updated.recommendations };
+}
+
+// Fecha y hora local como 'AAAA-MM-DD HH:MM:SS' para la columna DATETIME de
+// la base de datos.
+function toDbDateTime(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, '0');
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+  );
+}
+
+// Transición de estado (US5, FR-014): valida el mapa R-02 y los permisos
+// R-03 / FR-022 con la función pura de order-transitions, registra el cambio
+// en el historial con usuario y fecha (FR-015) y llena `delivery_date` al
+// pasar a ENTREGADO.
+export async function changeStatus(id, data, user) {
+  const order = await findServiceOrderById(id);
+  if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
+
+  const evaluacion = evaluateTransition({
+    fromStatus: order.status,
+    toStatus: data.estado,
+    role: user.role,
+    assignedMechanicId: order.mechanicId,
+    userId: user.id,
+  });
+  if (!evaluacion.permitida) {
+    throw evaluacion.httpStatus === 403
+      ? forbidden(evaluacion.mensaje, evaluacion.codigo)
+      : conflict(evaluacion.mensaje, evaluacion.codigo);
+  }
+
+  const entregar = data.estado === ORDER_STATUSES.ENTREGADO;
+  const updated = await updateServiceOrder(order.id, {
+    status: data.estado,
+    // Solo la entrega llena la fecha; el resto de campos no cambian.
+    deliveryDate: entregar ? toDbDateTime() : undefined,
+  });
+
+  await addStatusHistory({
+    serviceOrderId: order.id,
+    fromStatus: order.status,
+    toStatus: data.estado,
+    changedBy: user.id,
+    note: data.nota?.trim() || null,
+  });
+
+  return toApiDetail(updated);
 }
