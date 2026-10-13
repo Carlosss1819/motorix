@@ -39,6 +39,11 @@ abstract final class ShellSections {
     icon: LucideIcons.carFront,
     label: 'Vehículos',
   );
+  static const ShellSection appointments = ShellSection(
+    route: Routes.appointments,
+    icon: LucideIcons.calendar,
+    label: 'Citas',
+  );
   static const ShellSection orders = ShellSection(
     route: Routes.serviceOrders,
     icon: LucideIcons.wrench,
@@ -60,9 +65,24 @@ abstract final class ShellSections {
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
       Rol.admin =>
-        const <ShellSection>[home, clients, vehicles, orders, users, account],
+        const <ShellSection>[
+          home,
+          clients,
+          vehicles,
+          appointments,
+          orders,
+          users,
+          account,
+        ],
       Rol.receptionist =>
-        const <ShellSection>[home, clients, vehicles, orders, account],
+        const <ShellSection>[
+          home,
+          clients,
+          vehicles,
+          appointments,
+          orders,
+          account,
+        ],
       _ => const <ShellSection>[home, account],
     };
   }
@@ -79,6 +99,9 @@ abstract final class ShellSections {
       Routes.vehicleNew => 'Nuevo vehículo',
       Routes.vehicleDetail => 'Detalle de vehículo',
       Routes.vehicleEdit => 'Editar vehículo',
+      Routes.appointments => 'Citas',
+      Routes.appointmentNew => 'Nueva cita',
+      Routes.appointmentEdit => 'Editar cita',
       Routes.serviceOrders => 'Órdenes',
       Routes.serviceOrderNew => 'Nueva orden',
       Routes.serviceOrderDetail => 'Detalle de orden',
@@ -94,6 +117,7 @@ abstract final class ShellSections {
       Routes.clients => SearchHints.clients,
       Routes.vehicles => SearchHints.vehicles,
       Routes.users => SearchHints.users,
+      Routes.appointments => SearchHints.appointments,
       Routes.serviceOrders => SearchHints.orders,
       _ => '',
     };

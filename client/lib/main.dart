@@ -3,6 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
 import 'models/enums.dart';
+import 'providers/appointments_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/clients_provider.dart';
 import 'providers/service_orders_provider.dart';
@@ -10,6 +11,8 @@ import 'providers/shell_provider.dart';
 import 'providers/users_provider.dart';
 import 'providers/vehicles_provider.dart';
 import 'screens/account_screen.dart';
+import 'screens/appointment_form_screen.dart';
+import 'screens/appointments_screen.dart';
 import 'screens/client_detail_screen.dart';
 import 'screens/client_form_screen.dart';
 import 'screens/clients_screen.dart';
@@ -94,6 +97,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ChangeNotifierProvider<ServiceOrdersProvider>(
           create: (_) => ServiceOrdersProvider(api: _api),
         ),
+        ChangeNotifierProvider<AppointmentsProvider>(
+          create: (_) => AppointmentsProvider(api: _api),
+        ),
         ChangeNotifierProvider<UsersProvider>(
           create: (_) => UsersProvider(api: _api),
         ),
@@ -159,8 +165,14 @@ class _MotorixAppState extends State<MotorixApp> {
       Routes.vehicleDetail =>
         VehicleDetailScreen(vehicleId: _arg<VehicleDetailArgs>(settings)?.vehicleId ?? 0),
       Routes.vehicleEdit => VehicleFormScreen(vehicle: _arg<VehicleFormArgs>(settings)?.vehicle),
+      Routes.appointments => const AppointmentsScreen(),
+      Routes.appointmentNew =>
+        AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
+      Routes.appointmentEdit =>
+        AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
       Routes.serviceOrders => const ServiceOrdersScreen(),
-      Routes.serviceOrderNew => const ServiceOrderFormScreen(),
+      Routes.serviceOrderNew =>
+        ServiceOrderFormScreen(cita: _arg<ServiceOrderFormArgs>(settings)?.citaRecibida),
       Routes.serviceOrderDetail =>
         ServiceOrderDetailScreen(
           orderId: _arg<ServiceOrderDetailArgs>(settings)?.orderId ?? 0,
@@ -189,6 +201,9 @@ class _MotorixAppState extends State<MotorixApp> {
       case Routes.vehicleNew:
       case Routes.vehicleDetail:
       case Routes.vehicleEdit:
+      case Routes.appointments:
+      case Routes.appointmentNew:
+      case Routes.appointmentEdit:
       case Routes.serviceOrders:
       case Routes.serviceOrderNew:
       case Routes.serviceOrderDetail:

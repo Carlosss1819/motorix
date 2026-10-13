@@ -22,6 +22,11 @@ abstract final class Routes {
   static const String vehicleDetail = '/vehicles/detail';
   static const String vehicleEdit = '/vehicles/edit';
 
+  /// Citas de recepción.
+  static const String appointments = '/appointments';
+  static const String appointmentNew = '/appointments/new';
+  static const String appointmentEdit = '/appointments/edit';
+
   /// Órdenes de servicio.
   static const String serviceOrders = '/service-orders';
   static const String serviceOrderNew = '/service-orders/new';

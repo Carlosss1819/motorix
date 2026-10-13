@@ -9,6 +9,7 @@ abstract final class SearchHints {
       'Buscar por placas, marca, modelo o propietario';
   static const String users = 'Buscar por usuario o correo';
   static const String orders = 'Buscar por placas o nombre del cliente';
+  static const String appointments = 'Buscar por placas o nombre del cliente';
 }
 
 /// Estado compartido del shell: ancho del sidebar y búsqueda del header.
