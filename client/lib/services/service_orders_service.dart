@@ -46,7 +46,7 @@ class ServiceOrdersService {
     return ServiceOrderPage.fromJson(asMap(data));
   }
 
-  /// GET /api/service-orders/:id, con servicios, repuestos e historial.
+  /// GET /api/service-orders/:id, con servicios, refacciones e historial.
   Future<ServiceOrder> detail(int id) async {
     final dynamic data = await _api.get('/service-orders/$id');
     return ServiceOrder.fromJson(asMap(data));

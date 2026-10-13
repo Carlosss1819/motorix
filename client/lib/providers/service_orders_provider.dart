@@ -119,7 +119,7 @@ class ServiceOrdersProvider extends ChangeNotifier {
     await load();
   }
 
-  /// Carga la ficha completa de una orden, con servicios, repuestos e historial.
+  /// Carga la ficha completa de una orden, con servicios, refacciones e historial.
   Future<void> loadDetail(int id) async {
     _detailStatus = LoadStatus.loading;
     _selected = null;

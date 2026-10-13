@@ -58,7 +58,8 @@ class OrderServiceItem {
   final OrderLabor? manoDeObra;
 }
 
-/// Repuesto registrado junto a la orden (RN-06).
+/// Refacción usada en la orden (US7, FR-023): la clave del contrato sigue
+/// siendo `repuestos` (R-07).
 class OrderPart {
   const OrderPart({
     required this.id,
@@ -105,7 +106,8 @@ class OrderHistoryEntry {
 ///
 /// El listado trae los campos básicos y el detalle agrega teléfono, nota de
 /// corrección de kilometraje, diagnóstico, recomendaciones, servicios,
-/// repuestos e historial (contrato: contracts/service-orders.md).
+/// refacciones (clave `repuestos`) e historial (contrato:
+/// contracts/service-orders.md).
 class ServiceOrder {
   const ServiceOrder({
     required this.id,

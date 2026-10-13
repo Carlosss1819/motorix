@@ -395,12 +395,15 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
 
   /// Retira una refacción de la orden con confirmación obligatoria (Principio
   /// VIII): el backend repone el stock con una ENTRADA (FR-026, R-09).
-  Future<void> _eliminarRefaccion(ServiceOrder order, OrderPart repuesto) async {
+  Future<void> _eliminarRefaccion(
+    ServiceOrder order,
+    OrderPart refaccion,
+  ) async {
     final bool confirmado = await showConfirmDialog(
       context,
       titulo: 'Eliminar refacción',
       mensaje:
-          'Se quitará "${repuesto.descripcion}" de la orden #${order.id} y se '
+          'Se quitará "${refaccion.descripcion}" de la orden #${order.id} y se '
           'repondrá su stock. ¿Continuar?',
       destructive: true,
     );
@@ -409,7 +412,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     }
 
     try {
-      await _orders.removePart(id: order.id, repuestoId: repuesto.id);
+      await _orders.removePart(id: order.id, repuestoId: refaccion.id);
       if (!mounted) {
         return;
       }
@@ -815,14 +818,14 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           if (order.repuestos.isEmpty)
             Text('Sin refacciones registradas.', style: textTheme.bodySmall)
           else
-            for (final OrderPart repuesto in order.repuestos)
+            for (final OrderPart refaccion in order.repuestos)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                 child: Row(
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        '${repuesto.cantidad} × ${repuesto.descripcion}',
+                        '${refaccion.cantidad} × ${refaccion.descripcion}',
                         style: textTheme.bodyMedium,
                       ),
                     ),
@@ -833,7 +836,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                           LucideIcons.trash2,
                           size: AppMetrics.iconSizeSmall,
                         ),
-                        onPressed: () => _eliminarRefaccion(order, repuesto),
+                        onPressed: () => _eliminarRefaccion(order, refaccion),
                       ),
                   ],
                 ),
