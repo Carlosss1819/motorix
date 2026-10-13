@@ -100,17 +100,17 @@ implementación y pruebas independientes.
 
 ### Tests for User Story 2
 
-- [ ] T025 [P] [US2] Prueba de contrato de `/api/appointments` en server/tests/contract/appointments.test.js (201, `409` de conflicto, `200` con `confirmar: true`, `403` para `MECHANIC`)
-- [ ] T026 [P] [US2] Prueba de integración de citas contra `motorix_v2_test` en server/tests/integration/appointments.test.js (cancelación con motivo opcional, recepción con precarga y detección de `NO_PRESENTADA`)
+- [X] T025 [P] [US2] Prueba de contrato de `/api/appointments` en server/tests/contract/appointments.test.js (201, `409` de conflicto, `200` con `confirmar: true`, `403` para `MECHANIC`)
+- [X] T026 [P] [US2] Prueba de integración de citas contra `motorix_v2_test` en server/tests/integration/appointments.test.js (cancelación con motivo opcional, recepción con precarga y detección de `NO_PRESENTADA`)
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Crear server/models/appointment.js con `createAppointment`, `findAppointmentById`, `listAppointments` (filtros `fecha`, `desde`/`hasta`, `estado`, `buscar`, paginación), `findScheduleConflict` (misma fecha, hora y vehículo en `PROGRAMADA`/`RECIBIDA`) y `markExpiredAsNotPresented` según data-model.md
-- [ ] T028 [P] [US2] Crear server/validators/appointment.validator.js con `zod`: `clienteId`, `vehiculoId`, `fecha`, `hora`, `motivo` obligatorios; `confirmar` booleano opcional; `motivoCancelacion` opcional de hasta 255 caracteres; mensajes en español
-- [ ] T029 [US2] Crear server/services/appointment.service.js: alta con validación de pertenencia vehículo‑cliente (RN‑01, RN‑02); conflicto de horario → `409` con `pendienteConfirmacion`/`confirmarReenvio` salvo `confirmar: true` (FR‑008, R‑05); `cancelar` solo desde `PROGRAMADA` con motivo opcional guardado (FR‑006); `recibir` solo desde `PROGRAMADA` devolviendo `precargaOrden` sin crear órdenes (FR‑007); marcado perezoso a `NO_PRESENTADA` al listar (R‑06)
-- [ ] T030 [P] [US2] Crear server/controllers/appointments.controller.js con los handlers de listado, detalle (incluye `orden` derivada o `null`), creación, edición, cancelación y recepción
-- [ ] T031 [US2] Crear server/routes/appointments.routes.js con `authenticate` + `authorize('ADMIN','RECEPTIONIST')` (MECHANIC → `403`), `validate` por ruta y `asyncHandler`; registrarlo bajo `/api/appointments` en server/routes/index.js
-- [ ] T032 [US2] Ampliar server/services/service_order.service.js para validar `citaId` al crear la orden: la cita debe existir, estar `RECIBIDA` y no usarse en otra orden (responde `409`), guardando `service_orders.appointment_id` (FR‑007)
+- [X] T027 [P] [US2] Crear server/models/appointment.js con `createAppointment`, `findAppointmentById`, `listAppointments` (filtros `fecha`, `desde`/`hasta`, `estado`, `buscar`, paginación), `findScheduleConflict` (misma fecha, hora y vehículo en `PROGRAMADA`/`RECIBIDA`) y `markExpiredAsNotPresented` según data-model.md
+- [X] T028 [P] [US2] Crear server/validators/appointment.validator.js con `zod`: `clienteId`, `vehiculoId`, `fecha`, `hora`, `motivo` obligatorios; `confirmar` booleano opcional; `motivoCancelacion` opcional de hasta 255 caracteres; mensajes en español
+- [X] T029 [US2] Crear server/services/appointment.service.js: alta con validación de pertenencia vehículo‑cliente (RN‑01, RN‑02); conflicto de horario → `409` con `pendienteConfirmacion`/`confirmarReenvio` salvo `confirmar: true` (FR‑008, R‑05); `cancelar` solo desde `PROGRAMADA` con motivo opcional guardado (FR‑006); `recibir` solo desde `PROGRAMADA` devolviendo `precargaOrden` sin crear órdenes (FR‑007); marcado perezoso a `NO_PRESENTADA` al listar (R‑06)
+- [X] T030 [P] [US2] Crear server/controllers/appointments.controller.js con los handlers de listado, detalle (incluye `orden` derivada o `null`), creación, edición, cancelación y recepción
+- [X] T031 [US2] Crear server/routes/appointments.routes.js con `authenticate` + `authorize('ADMIN','RECEPTIONIST')` (MECHANIC → `403`), `validate` por ruta y `asyncHandler`; registrarlo bajo `/api/appointments` en server/routes/index.js
+- [X] T032 [US2] Ampliar server/services/service_order.service.js para validar `citaId` al crear la orden: la cita debe existir, estar `RECIBIDA` y no usarse en otra orden (responde `409`), guardando `service_orders.appointment_id` (FR‑007)
 - [ ] T033 [P] [US2] Crear client/lib/models/appointment.dart con los campos del contrato
 - [ ] T034 [P] [US2] Crear client/lib/services/appointments_service.dart con `listar`, `obtener`, `crear`, `editar`, `cancelar` y `recibir`
 - [ ] T035 [US2] Crear client/lib/providers/appointments_provider.dart con filtros por fecha y estado, estados de interfaz y manejo del `409` de conflicto
