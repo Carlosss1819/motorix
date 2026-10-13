@@ -86,7 +86,7 @@ y retirar refacciones en una orden los tres roles, con `MECHANIC` limitado a sus
 - **Reglas**: marca `activa = false`; la refacción deja de poder agregarse a órdenes
   (`409 REFACCION_INACTIVA`) pero su historial de uso y sus movimientos se conservan.
   Desactivar una ya desactivada responde `200` sin cambios (idempotente).
-- **Respuesta `200`: `{"message": "Refacción desactivada."}`**.
+- **Respuesta `200`: `{"mensaje": "Refacción desactivada."}`**.
 - **Errores**: `403`, `404`.
 
 ## `GET /api/parts/:id/movements`
@@ -182,5 +182,5 @@ y retirar refacciones en una orden los tres roles, con `MECHANIC` limitado a sus
   - Si la fila es heredada (sin `part_id`): solo se elimina; no había descuento de
     inventario que reponer.
   - La fila se elimina de la orden; el movimiento queda como constancia.
-- **Respuesta `200`**: `{"message": "Refacción retirada de la orden.", "stockActual": 5}`.
+- **Respuesta `200`**: `{"mensaje": "Refacción retirada de la orden.", "stockActual": 5}`.
 - **Errores**: `403`, `404` orden o fila inexistente, `409` orden cerrada.
