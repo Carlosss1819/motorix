@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../models/enums.dart';
 import '../models/service_order.dart';
+import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
 import '../providers/service_orders_provider.dart';
 import '../providers/shell_provider.dart';
@@ -26,6 +28,12 @@ class ServiceOrdersScreen extends StatefulWidget {
 class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
   late final ShellProvider _shell;
   late final ServiceOrdersProvider _orders;
+
+  /// Con rol MECHANIC la pantalla es "Mis órdenes" (US3/FR-010): el backend
+  /// acota el listado a las órdenes propias y aquí se ocultan la alta y el
+  /// filtro global de estado.
+  late final bool _esMecanico;
+
   String _lastQuery = '';
   String _estado = kTodosLosEstados;
 
@@ -34,6 +42,7 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
     super.initState();
     _shell = context.read<ShellProvider>();
     _orders = context.read<ServiceOrdersProvider>();
+    _esMecanico = context.read<AuthProvider>().user?.rol == Rol.mechanic;
     _lastQuery = _shell.queryFor(SearchHints.orders);
     _estado = _orders.estado;
     _shell.addListener(_onSearchChanged);
@@ -95,16 +104,19 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              FilledButton.icon(
-                onPressed: _goToNew,
-                icon: const Icon(
-                  LucideIcons.plus,
-                  size: AppMetrics.iconSizeSmall,
+              if (!_esMecanico) ...<Widget>[
+                FilledButton.icon(
+                  onPressed: _goToNew,
+                  icon: const Icon(
+                    LucideIcons.plus,
+                    size: AppMetrics.iconSizeSmall,
+                  ),
+                  label: const Text('Registrar orden'),
                 ),
-                label: const Text('Registrar orden'),
-              ),
-              const SizedBox(width: AppSpacing.lg),
-              _buildStatusFilter(orders),
+                const SizedBox(width: AppSpacing.lg),
+                _buildStatusFilter(orders),
+                const SizedBox(width: AppSpacing.lg),
+              ],
               const Spacer(),
               Text(_counterText(orders), style: textTheme.bodySmall),
             ],
@@ -178,8 +190,9 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
         if (orders.items.isEmpty) {
           return EmptyView(
             mensaje: _emptyMessage(orders),
-            actionLabel: 'Registrar orden',
-            onAction: _goToNew,
+            // El mecánico no da de alta órdenes desde esta pantalla.
+            actionLabel: _esMecanico ? null : 'Registrar orden',
+            onAction: _esMecanico ? null : _goToNew,
           );
         }
         return _buildTable(orders.items);
@@ -189,6 +202,9 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
   String _emptyMessage(ServiceOrdersProvider orders) {
     if (_lastQuery.isNotEmpty) {
       return 'No se encontraron órdenes que coincidan con "$_lastQuery".';
+    }
+    if (_esMecanico) {
+      return 'No tienes órdenes asignadas por el momento.';
     }
     if (_estado != kTodosLosEstados) {
       return 'No hay órdenes en estado ${orderStatusLabel(_estado)}.';

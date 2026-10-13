@@ -32,6 +32,9 @@ abstract final class Routes {
   static const String serviceOrderNew = '/service-orders/new';
   static const String serviceOrderDetail = '/service-orders/detail';
 
+  /// Órdenes propias del mecánico (US3).
+  static const String myOrders = '/my-orders';
+
   /// Usuarios (solo ADMIN).
   static const String users = '/users';
 

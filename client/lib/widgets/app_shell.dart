@@ -49,6 +49,11 @@ abstract final class ShellSections {
     icon: LucideIcons.wrench,
     label: 'Órdenes',
   );
+  static const ShellSection myOrders = ShellSection(
+    route: Routes.myOrders,
+    icon: LucideIcons.clipboardList,
+    label: 'Mis órdenes',
+  );
   static const ShellSection users = ShellSection(
     route: Routes.users,
     icon: LucideIcons.userCog,
@@ -83,6 +88,7 @@ abstract final class ShellSections {
           orders,
           account,
         ],
+      Rol.mechanic => const <ShellSection>[home, myOrders, account],
       _ => const <ShellSection>[home, account],
     };
   }
@@ -103,6 +109,7 @@ abstract final class ShellSections {
       Routes.appointmentNew => 'Nueva cita',
       Routes.appointmentEdit => 'Editar cita',
       Routes.serviceOrders => 'Órdenes',
+      Routes.myOrders => 'Mis órdenes',
       Routes.serviceOrderNew => 'Nueva orden',
       Routes.serviceOrderDetail => 'Detalle de orden',
       Routes.users => 'Usuarios',
@@ -119,6 +126,7 @@ abstract final class ShellSections {
       Routes.users => SearchHints.users,
       Routes.appointments => SearchHints.appointments,
       Routes.serviceOrders => SearchHints.orders,
+      Routes.myOrders => SearchHints.orders,
       _ => '',
     };
   }

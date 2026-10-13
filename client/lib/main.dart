@@ -171,6 +171,7 @@ class _MotorixAppState extends State<MotorixApp> {
       Routes.appointmentEdit =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
       Routes.serviceOrders => const ServiceOrdersScreen(),
+      Routes.myOrders => const ServiceOrdersScreen(),
       Routes.serviceOrderNew =>
         ServiceOrderFormScreen(cita: _arg<ServiceOrderFormArgs>(settings)?.citaRecibida),
       Routes.serviceOrderDetail =>
@@ -193,6 +194,8 @@ class _MotorixAppState extends State<MotorixApp> {
   /// (FR-006 / RN-15).
   static bool _puedeAcceder(String route, String rol) {
     switch (route) {
+      case Routes.myOrders:
+        return rol == Rol.mechanic;
       case Routes.clients:
       case Routes.clientNew:
       case Routes.clientDetail:
