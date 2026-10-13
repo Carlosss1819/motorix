@@ -3,6 +3,19 @@
 // utils/maintenance-status.js en cada consulta (R-04). La unicidad por
 // vehículo y tipo de servicio está garantizada por uq_maintenance_vehicle_type.
 import { query } from '../config/db.js';
+import {
+  DEFAULT_ADVANCE_DAYS,
+  DEFAULT_ADVANCE_KM,
+} from '../utils/maintenance-status.js';
+
+// mysql2 devuelve las columnas DATE como objeto Date; el contrato pide
+// `YYYY-MM-DD` (mismo criterio que vehicle_history.js).
+function formatDate(value) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  const pad = (number) => String(number).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
 
 function mapMaintenance(row) {
   if (!row) return null;
@@ -14,9 +27,9 @@ function mapMaintenance(row) {
     vehicleCurrentMileage: row.vehicle_current_mileage ?? undefined,
     clientName: row.client_name ?? undefined,
     serviceType: row.service_type,
-    lastServiceDate: row.last_service_date ?? null,
+    lastServiceDate: formatDate(row.last_service_date),
     lastServiceMileage: row.last_service_mileage ?? null,
-    targetDate: row.target_date ?? null,
+    targetDate: formatDate(row.target_date),
     targetMileage: row.target_mileage ?? null,
     intervalDays: row.interval_days ?? null,
     intervalKm: row.interval_km ?? null,
@@ -119,8 +132,9 @@ export async function createMaintenance({
       targetMileage ?? null,
       intervalDays ?? null,
       intervalKm ?? null,
-      advanceDays,
-      advanceKm,
+      // Contrato: al omitir las antelaciones se guardan los defectos 30/500.
+      advanceDays ?? DEFAULT_ADVANCE_DAYS,
+      advanceKm ?? DEFAULT_ADVANCE_KM,
       notes ?? null,
       createdBy,
     ],
@@ -151,21 +165,29 @@ export async function updateMaintenance(id, fields) {
   return findById(id);
 }
 
-// Renovación al marcar «servicio realizado» (FR-015, R-05): actualiza el
-// último servicio y los objetivos recalculados en el MISMO registro.
-export async function renewMaintenance(id, {
+// Renovación al marcar «servicio realizado» (FR-015, R-05): en UNA
+// transacción se actualiza el último servicio, los objetivos recalculados del
+// MISMO registro y el kilometraje vigente del vehículo con la regla de valor
+// más alto (FR-007). El llamador gestiona begin/commit/rollback.
+export async function renewMaintenance(connection, {
+  maintenanceId,
+  vehicleId,
   lastServiceDate,
   lastServiceMileage,
   targetDate,
   targetMileage,
 }) {
-  await query(
+  await connection.execute(
     `UPDATE maintenance SET last_service_date = ?, last_service_mileage = ?,
        target_date = ?, target_mileage = ?
      WHERE id = ?`,
-    [lastServiceDate, lastServiceMileage, targetDate, targetMileage, id],
+    [lastServiceDate, lastServiceMileage, targetDate, targetMileage, maintenanceId],
   );
-  return findById(id);
+  // Regla heredada del Sprint 2 (FR-007): el kilometraje vigente solo sube.
+  await connection.execute(
+    'UPDATE vehicles SET current_mileage = ? WHERE id = ? AND current_mileage < ?',
+    [lastServiceMileage, vehicleId, lastServiceMileage],
+  );
 }
 
 // Último kilometraje registrado en las órdenes del vehículo (para la regla
