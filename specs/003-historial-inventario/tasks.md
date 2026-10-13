@@ -284,38 +284,38 @@ registrar otra con el mismo código → 409 con mensaje; desactivarla → no usa
 
 ### Tests for User Story 5
 
-- [ ] T041 [P] [US5] Escribir `server/tests/unit/part.validator.test.js` (alta válida,
+- [X] T041 [P] [US5] Escribir `server/tests/unit/part.validator.test.js` (alta válida,
   código vacío o largo, stock negativo rechazado)
-- [ ] T042 [P] [US5] Escribir la prueba de contrato `server/tests/contract/parts.test.js`:
+- [X] T042 [P] [US5] Escribir la prueba de contrato `server/tests/contract/parts.test.js`:
   CRUD con `201/200`, `409 CODIGO_DUPLICADO`, `404 REFACCION_NO_ENCONTRADA`,
   `403` para `recepcion`/`mecanico` en escrituras
-- [ ] T043 [P] [US5] Escribir la prueba de integración `server/tests/integration/parts.test.js`:
+- [X] T043 [P] [US5] Escribir la prueba de integración `server/tests/integration/parts.test.js`:
   código único, `stockInicial > 0` genera `ENTRADA` inicial con motivo "Stock inicial"
   (SC‑007), desactivación idempotente y `REFACCION_INACTIVA` al usarla en una orden
 
 ### Implementation for User Story 5
 
-- [ ] T044 [US5] Crear `server/validators/part.validator.js` (zod): `codigo` 1–30
+- [X] T044 [US5] Crear `server/validators/part.validator.js` (zod): `codigo` 1–30
   caracteres, precios ≥ 0, `stockInicial`/`stockMinimo` ≥ 0
-- [ ] T045 [US5] Crear `server/services/part.service.js` con `create/update/deactivate`:
+- [X] T045 [US5] Crear `server/services/part.service.js` con `create/update/deactivate`:
   unicidad de código (409), transacción que crea el movimiento `ENTRADA` inicial cuando
   `stockInicial > 0`, edición sin tocar `stock_current` ni `codigo`, desactivar
   idempotente (R‑06, R‑08)
-- [ ] T046 [US5] Crear `server/controllers/parts.controller.js`
-- [ ] T047 [US5] Crear `server/routes/parts.routes.js` (escritura solo `ADMIN`,
+- [X] T046 [US5] Crear `server/controllers/parts.controller.js`
+- [X] T047 [US5] Crear `server/routes/parts.routes.js` (escritura solo `ADMIN`,
   lectura los tres roles, R‑11) y montarla en `server/routes/index.js`
-- [ ] T048 [P] [US5] Crear `client/lib/models/part.dart` (incluye `stockBajo` y
+- [X] T048 [P] [US5] Crear `client/lib/models/part.dart` (incluye `stockBajo` y
   `activa`)
-- [ ] T049 [US5] Crear `client/lib/services/parts_service.dart`
-- [ ] T050 [US5] Crear `client/lib/providers/parts_provider.dart` con búsqueda y
+- [X] T049 [US5] Crear `client/lib/services/parts_service.dart`
+- [X] T050 [US5] Crear `client/lib/providers/parts_provider.dart` con búsqueda y
   filtros
-- [ ] T051 [US5] Crear `client/lib/screens/parts_screen.dart` (listado con código,
+- [X] T051 [US5] Crear `client/lib/screens/parts_screen.dart` (listado con código,
   nombre, categoría, marca, stock actual/mínimo y precios; SC‑005)
-- [ ] T052 [US5] Crear `client/lib/screens/part_form_screen.dart` (alta y edición sin
+- [X] T052 [US5] Crear `client/lib/screens/part_form_screen.dart` (alta y edición sin
   campo de stock actual)
-- [ ] T053 [US5] Ampliar `client/lib/utils/app_shell.dart` con la sección
+- [X] T053 [US5] Ampliar `client/lib/utils/app_shell.dart` con la sección
   **Inventario** visible solo para `ADMIN` (R‑12)
-- [ ] T054 [US5] Escribir `client/test/parts_screen_test.dart` (alta, duplicado con
+- [X] T054 [US5] Escribir `client/test/parts_screen_test.dart` (alta, duplicado con
   mensaje y desactivación)
 
 **Checkpoint**: el catálogo existe y es gestionable por el administrador
