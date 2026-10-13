@@ -189,15 +189,15 @@ duplicar → 409 (V3 del quickstart)
 
 ### Tests for User Story 3
 
-- [ ] T023 [P] [US3] Escribir `server/tests/unit/maintenance-status.test.js` para
+- [X] T023 [P] [US3] Escribir `server/tests/unit/maintenance-status.test.js` para
   `server/utils/maintenance-status.js`: normal/próximo/vencido por fecha y por km,
   antelación propia (30 días/500 km por defecto), mantenimiento solo-por-km y
   solo-por-fecha, y «vence primero lo que se cumple» (FR‑011, FR‑012)
-- [ ] T024 [P] [US3] Escribir la prueba de contrato
+- [X] T024 [P] [US3] Escribir la prueba de contrato
   `server/tests/contract/maintenance.test.js`: `POST/PUT/GET/realizar` con 200/201,
   `400 OBJETIVO_REQUERIDO`, `409 MANTENIMIENTO_DUPLICADO`, `400
   MANTENIMIENTO_SIN_INTERVALO`, `403` para `recepcion` en escrituras
-- [ ] T025 [P] [US3] Escribir la prueba de integración
+- [X] T025 [P] [US3] Escribir la prueba de integración
   `server/tests/integration/maintenance.test.js`: ciclo completo alta → estado
   calculado → «servicio realizado» renueva el mismo registro (mismo `id`,
   `last_service_*` y objetivos recalculados, estado vuelve a `NORMAL`) y no crea
@@ -205,23 +205,23 @@ duplicar → 409 (V3 del quickstart)
 
 ### Implementation for User Story 3
 
-- [ ] T026 [US3] Crear `server/utils/maintenance-status.js` como módulo puro
+- [X] T026 [US3] Crear `server/utils/maintenance-status.js` como módulo puro
   (`calcMaintenanceState(maintenance, hoy, kmActual)` → `NORMAL|PROXIMO|VENCIDO`,
   R‑04) al estilo de `order-transitions.js`
-- [ ] T027 [US3] Crear `server/validators/maintenance.validator.js` (zod): alta con
+- [X] T027 [US3] Crear `server/validators/maintenance.validator.js` (zod): alta con
   `vehiculoId`/`tipoServicio` obligatorios, al menos uno de `fechaObjetivo`/
   `kilometrajeObjetivo`, intervalos y antelaciones enteros positivos opcionales
   (defectos 30/500)
-- [ ] T028 [US3] Crear `server/services/maintenance.service.js` con
+- [X] T028 [US3] Crear `server/services/maintenance.service.js` con
   `create/update/realizar`: unicidad por vehículo+tipo (409), y `realizar` en
   **transacción** (R‑05): defectos hoy + `current_mileage`, no-regresión de km con
   corrección solo de `ADMIN`, actualización de `last_service_*`, recálculo de
   objetivos desde `interval_days`/`interval_km` o desde el body,
   `MANTENIMIENTO_SIN_INTERVALO` si no hay ninguno, y actualización de
   `vehicles.current_mileage` con el helper de valor más alto
-- [ ] T029 [US3] Crear `server/controllers/maintenance.controller.js` con los handlers
+- [X] T029 [US3] Crear `server/controllers/maintenance.controller.js` con los handlers
   de la Fase 5
-- [ ] T030 [US3] Crear `server/routes/maintenance.routes.js` (lectura
+- [X] T030 [US3] Crear `server/routes/maintenance.routes.js` (lectura
   `authorize('ADMIN','RECEPTIONIST','MECHANIC')`; escritura y `realizar`
   `authorize('ADMIN','MECHANIC')`) y montarla en `server/routes/index.js`
 - [ ] T031 [P] [US3] Crear `client/lib/models/maintenance.dart` (incluye `estado`
