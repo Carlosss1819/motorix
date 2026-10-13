@@ -79,14 +79,14 @@ implementación y pruebas independientes.
 - [X] T014 [P] [US1] Crear server/controllers/service_orders.controller.js con los handlers de listado (con `elementos`/`pagina`/`paginas`/`total`), detalle y creación, devolviendo errores con `{ error: { mensaje, codigo } }` en español
 - [X] T015 [US1] Crear server/routes/service_orders.routes.js: `authenticate` en todas las rutas; creación y edición con `authorize('ADMIN','RECEPTIONIST')`; `GET /` y `GET /:id` con `validate` de los esquemas del validador y `asyncHandler`
 - [X] T016 [US1] Registrar `serviceOrdersRoutes` bajo `/api/service-orders` en server/routes/index.js
-- [ ] T017 [P] [US1] Crear client/lib/models/service_order.dart con los campos en español del contrato (incluye `servicios`, `repuestos` e `historial` vacíos por defecto)
-- [ ] T018 [P] [US1] Crear client/lib/services/service_orders_service.dart sobre client/lib/services/api_client.dart con `listar`, `obtener` y `crear` (query `estado`, `buscar`, `pagina`, `porPagina`)
-- [ ] T019 [US1] Crear client/lib/providers/service_orders_provider.dart con estados vacío/cargando/error/éxito, filtros y paginación (patrón de client/lib/providers/clients_provider.dart)
-- [ ] T020 [US1] Crear client/lib/screens/service_orders_screen.dart con tabla densa, filtro por estado, búsqueda por placas o nombre del cliente y paginación (FR‑003, design system)
-- [ ] T021 [US1] Crear client/lib/screens/service_order_form_screen.dart con selección cliente → vehículos de ese cliente, motivo de visita obligatorio, fecha de ingreso y kilometraje; si el cliente no tiene vehículos, mostrar aviso para registrar primero uno y no enviar (escenario 5 HU1)
-- [ ] T022 [US1] Crear client/lib/screens/service_order_detail_screen.dart mostrando cliente, teléfono, vehículo, placas, motivo, estado (chip), fecha de ingreso, kilometraje y mecánico con estados vacío/cargando/error
-- [ ] T023 [US1] Registrar las rutas de órdenes en client/lib/utils/app_routes.dart y las entradas **Órdenes** en client/lib/widgets/app_shell.dart solo para `ADMIN` y `RECEPTIONIST`
-- [ ] T024 [P] [US1] Prueba flutter test del provider y del listado de órdenes en client/test/service_orders_provider_test.dart
+- [X] T017 [P] [US1] Crear client/lib/models/service_order.dart con los campos en español del contrato (incluye `servicios`, `repuestos` e `historial` vacíos por defecto)
+- [X] T018 [P] [US1] Crear client/lib/services/service_orders_service.dart sobre client/lib/services/api_client.dart con `listar`, `obtener` y `crear` (query `estado`, `buscar`, `pagina`, `porPagina`)
+- [X] T019 [US1] Crear client/lib/providers/service_orders_provider.dart con estados vacío/cargando/error/éxito, filtros y paginación (patrón de client/lib/providers/clients_provider.dart)
+- [X] T020 [US1] Crear client/lib/screens/service_orders_screen.dart con tabla densa, filtro por estado, búsqueda por placas o nombre del cliente y paginación (FR‑003, design system)
+- [X] T021 [US1] Crear client/lib/screens/service_order_form_screen.dart con selección cliente → vehículos de ese cliente, motivo de visita obligatorio, fecha de ingreso y kilometraje; si el cliente no tiene vehículos, mostrar aviso para registrar primero uno y no enviar (escenario 5 HU1)
+- [X] T022 [US1] Crear client/lib/screens/service_order_detail_screen.dart mostrando cliente, teléfono, vehículo, placas, motivo, estado (chip), fecha de ingreso, kilometraje y mecánico con estados vacío/cargando/error
+- [X] T023 [US1] Registrar las rutas de órdenes en client/lib/utils/app_routes.dart y las entradas **Órdenes** en client/lib/widgets/app_shell.dart solo para `ADMIN` y `RECEPTIONIST`
+- [X] T024 [P] [US1] Prueba flutter test del provider y del listado de órdenes en client/test/service_orders_provider_test.dart
 
 **Checkpoint**: US1 funcional y verificable de forma independiente
 
