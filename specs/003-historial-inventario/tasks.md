@@ -261,12 +261,12 @@ escritura y sus escrituras devuelven 403 (HU4, V3)
 - [X] T037 [US4] Completar en `server/services/maintenance.service.js` y
   `server/models/maintenance.js` el `list` con filtros (estado calculado, vehículo,
   búsqueda por tipo/placas), joins de `vehiculo`/`placas`/`cliente` y paginación
-- [ ] T038 [US4] Crear `client/lib/screens/maintenance_screen.dart` con lista,
+- [X] T038 [US4] Crear `client/lib/screens/maintenance_screen.dart` con lista,
   chips/filtro de estado, vencidos destacados y estado vacío «no hay pendientes»
   (SC‑003)
-- [ ] T039 [US4] Ampliar `client/lib/utils/app_shell.dart` con la sección
+- [X] T039 [US4] Ampliar `client/lib/utils/app_shell.dart` con la sección
   **Mantenimientos** visible para `ADMIN`, `RECEPTIONIST` y `MECHANIC` (R‑12, §16)
-- [ ] T040 [US4] Escribir `client/test/maintenance_list_test.dart` (lista con estados,
+- [X] T040 [US4] Escribir `client/test/maintenance_list_test.dart` (lista con estados,
   filtro y estado vacío)
 
 **Checkpoint**: recepción puede hacer su llamada de seguimiento en menos de 30 segundos
