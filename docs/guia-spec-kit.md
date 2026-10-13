@@ -53,13 +53,13 @@ Checklist Sprint 1 (antes de pasar al 2):
     /speckit.implement
 
 Checklist Sprint 2:
-- [ ] Registrar/consultar/modificar/cancelar cita.
-- [ ] Crear orden de servicio asociada a cliente y vehiculo.
-- [ ] Mecanico ve sus ordenes asignadas.
-- [ ] Mecanico registra diagnostico, servicios y recomendaciones.
-- [ ] Cambios de estado respetan RECIBIDO -> DIAGNOSTICO -> EN_REPARACION -> TERMINADO -> ENTREGADO (con ESPERANDO_REFACCION disponible).
-- [ ] Kilometraje de entrada registrado y validado (no menor al previo sin correccion explicita).
-- [ ] Pruebas pasan; sin secretos.
+- [x] Registrar/consultar/modificar/cancelar cita.
+- [x] Crear orden de servicio asociada a cliente y vehiculo.
+- [x] Mecanico ve sus ordenes asignadas.
+- [x] Mecanico registra diagnostico, servicios y recomendaciones.
+- [x] Cambios de estado respetan RECIBIDO -> DIAGNOSTICO -> EN_REPARACION -> TERMINADO -> ENTREGADO (con ESPERANDO_REFACCION disponible).
+- [x] Kilometraje de entrada registrado y validado (no menor al previo sin correccion explicita).
+- [x] Pruebas pasan; sin secretos.
 
 ### Sprint 3 - Historial, mantenimiento e inventario
 
