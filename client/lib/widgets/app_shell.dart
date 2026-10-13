@@ -139,6 +139,7 @@ abstract final class ShellSections {
       Routes.parts => 'Inventario',
       Routes.partNew => 'Nueva refacción',
       Routes.partEdit => 'Editar refacción',
+      Routes.partDetail => 'Detalle de refacción',
       Routes.account => 'Mi cuenta',
       _ => 'Motorix',
     };

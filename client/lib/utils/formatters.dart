@@ -13,6 +13,23 @@ abstract final class Formatters {
     return '${parts[2]}/${parts[1]}/${parts[0]}';
   }
 
+  /// Fecha y hora `YYYY-MM-DD HH:mm:ss` → `DD/MM/YYYY HH:mm`.
+  static String dateTime(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Sin registro';
+    }
+    final List<String> parts = value.split(' ');
+    final String fecha = date(parts.first);
+    if (parts.length < 2) {
+      return fecha;
+    }
+    final List<String> hora = parts[1].split(':');
+    if (hora.length < 2) {
+      return '$fecha ${parts[1]}';
+    }
+    return '$fecha ${hora[0]}:${hora[1]}';
+  }
+
   /// Número con separador de miles (45000 → `45,000`).
   static String number(int value) {
     final bool negative = value < 0;

@@ -12,6 +12,7 @@ import 'providers/users_provider.dart';
 import 'providers/vehicles_provider.dart';
 import 'providers/vehicle_history_provider.dart';
 import 'providers/maintenance_provider.dart';
+import 'providers/part_detail_provider.dart';
 import 'providers/parts_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
@@ -30,6 +31,7 @@ import 'screens/vehicle_detail_screen.dart';
 import 'screens/vehicle_history_screen.dart';
 import 'screens/maintenance_form_screen.dart';
 import 'screens/maintenance_screen.dart';
+import 'screens/part_detail_screen.dart';
 import 'screens/part_form_screen.dart';
 import 'screens/parts_screen.dart';
 import 'screens/vehicle_form_screen.dart';
@@ -111,6 +113,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<PartsProvider>(
           create: (_) => PartsProvider(api: _api),
+        ),
+        ChangeNotifierProvider<PartDetailProvider>(
+          create: (_) => PartDetailProvider(api: _api),
         ),
         ChangeNotifierProvider<ServiceOrdersProvider>(
           create: (_) => ServiceOrdersProvider(api: _api),
@@ -201,8 +206,8 @@ class _MotorixAppState extends State<MotorixApp> {
           mantenimiento: _arg<MaintenanceFormArgs>(settings)?.mantenimiento,
         ),
       ),
-      // Inventario (US5): la lista es de consulta y el formulario es solo
-      // de ADMIN (FR-022); el detalle se registra en la US6.
+      // Inventario (US5/US6): la lista y el detalle son de consulta, y el
+      // formulario es solo de ADMIN (FR-022).
       Routes.parts => const PartsScreen(),
       Routes.partNew =>
         const PartFormScreen(args: PartFormArgs()),
@@ -211,6 +216,11 @@ class _MotorixAppState extends State<MotorixApp> {
           refaccion: _arg<PartFormArgs>(settings)?.refaccion,
         ),
       ),
+      Routes.partDetail =>
+        PartDetailScreen(
+          args: _arg<PartDetailArgs>(settings) ??
+              const PartDetailArgs(refaccionId: 0),
+        ),
       Routes.appointments => const AppointmentsScreen(),
       Routes.appointmentNew =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
@@ -259,6 +269,7 @@ class _MotorixAppState extends State<MotorixApp> {
       case Routes.parts:
       case Routes.partNew:
       case Routes.partEdit:
+      case Routes.partDetail:
         return rol == Rol.admin;
       case Routes.clients:
       case Routes.clientNew:

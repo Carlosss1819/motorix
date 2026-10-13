@@ -15,6 +15,7 @@ import '../utils/formatters.dart';
 import '../utils/messages.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
+import 'part_detail_screen.dart';
 import 'part_form_screen.dart';
 
 /// Catálogo de refacciones del inventario (US5/HU5): búsqueda por nombre o
@@ -92,6 +93,17 @@ class _PartsScreenState extends State<PartsScreen> {
     if (editado == true && mounted) {
       _parts.reload();
     }
+  }
+
+  /// Abre el detalle con los datos de la refacción y su historial de
+  /// movimientos (US6, FR-030). Una refacción desactivada también se abre:
+  /// su historial persiste (FR-019).
+  Future<void> _goToDetail(Part part) async {
+    await Navigator.pushNamed(
+      context,
+      Routes.partDetail,
+      arguments: PartDetailArgs(refaccionId: part.id),
+    );
   }
 
   /// Desactivación con confirmación obligatoria (Principio VIII): la baja es
@@ -286,24 +298,34 @@ class _PartsScreenState extends State<PartsScreen> {
                 ],
               ),
             ),
-            if (_puedeEscribir && part.activa) ...<Widget>[
+            if (_puedeEscribir) ...<Widget>[
               const SizedBox(width: AppSpacing.md),
               IconButton(
-                tooltip: 'Editar refacción',
-                onPressed: () => _goToEdit(part),
+                tooltip: 'Ver detalle',
+                onPressed: () => _goToDetail(part),
                 icon: const Icon(
-                  LucideIcons.pencil,
+                  LucideIcons.eye,
                   size: AppMetrics.iconSizeSmall,
                 ),
               ),
-              IconButton(
-                tooltip: 'Desactivar refacción',
-                onPressed: () => _deactivate(part),
-                icon: const Icon(
-                  LucideIcons.circleOff,
-                  size: AppMetrics.iconSizeSmall,
+              if (part.activa) ...<Widget>[
+                IconButton(
+                  tooltip: 'Editar refacción',
+                  onPressed: () => _goToEdit(part),
+                  icon: const Icon(
+                    LucideIcons.pencil,
+                    size: AppMetrics.iconSizeSmall,
+                  ),
                 ),
-              ),
+                IconButton(
+                  tooltip: 'Desactivar refacción',
+                  onPressed: () => _deactivate(part),
+                  icon: const Icon(
+                    LucideIcons.circleOff,
+                    size: AppMetrics.iconSizeSmall,
+                  ),
+                ),
+              ],
             ],
           ],
         ),

@@ -1,4 +1,5 @@
 import '../models/part.dart';
+import '../models/part_movement.dart';
 import '../utils/parsing.dart';
 import 'api_client.dart';
 
@@ -37,6 +38,28 @@ class PartsService {
   Future<Part> detail(int id) async {
     final dynamic data = await _api.get('/parts/$id');
     return Part.fromJson(asMap(data));
+  }
+
+  /// GET /api/parts/:id/movements?tipo=&pagina=&porPagina=
+  ///
+  /// Historial auditable de la refacción en orden descendente (FR-030): cada
+  /// movimiento conserva su `stockAfter`. `tipo` filtra por ENTRADA, SALIDA o
+  /// AJUSTE y vacío devuelve todo.
+  Future<PartMovementPage> movements({
+    required int partId,
+    String tipo = '',
+    int pagina = 1,
+    int porPagina = 10,
+  }) async {
+    final dynamic data = await _api.get(
+      '/parts/$partId/movements',
+      query: <String, String>{
+        if (tipo.isNotEmpty) 'tipo': tipo,
+        'pagina': '$pagina',
+        'porPagina': '$porPagina',
+      },
+    );
+    return PartMovementPage.fromJson(asMap(data));
   }
 
   /// POST /api/parts. `codigo` único en todo el catálogo (FR-017): el backend
