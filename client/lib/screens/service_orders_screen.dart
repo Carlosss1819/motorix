@@ -1,0 +1,321 @@
+import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
+
+import '../models/service_order.dart';
+import '../providers/load_status.dart';
+import '../providers/service_orders_provider.dart';
+import '../providers/shell_provider.dart';
+import '../utils/app_routes.dart';
+import '../utils/app_theme.dart';
+import '../utils/formatters.dart';
+import '../utils/messages.dart';
+import '../widgets/common_views.dart';
+import '../widgets/status_chip.dart';
+import 'service_order_detail_screen.dart';
+
+/// Lista de órdenes de servicio (US1/HU1): tabla densa con filtro por estado,
+/// búsqueda por placas o nombre del cliente (FR-003) y paginación.
+class ServiceOrdersScreen extends StatefulWidget {
+  const ServiceOrdersScreen({super.key});
+
+  @override
+  State<ServiceOrdersScreen> createState() => _ServiceOrdersScreenState();
+}
+
+class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
+  late final ShellProvider _shell;
+  late final ServiceOrdersProvider _orders;
+  String _lastQuery = '';
+  String _estado = kTodosLosEstados;
+
+  @override
+  void initState() {
+    super.initState();
+    _shell = context.read<ShellProvider>();
+    _orders = context.read<ServiceOrdersProvider>();
+    _lastQuery = _shell.queryFor(SearchHints.orders);
+    _estado = _orders.estado;
+    _shell.addListener(_onSearchChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      if (_lastQuery.isNotEmpty) {
+        _orders.setBuscar(_lastQuery);
+      } else if (_orders.status == LoadStatus.idle) {
+        _orders.load();
+      }
+    });
+  }
+
+  void _onSearchChanged() {
+    final String query = _shell.queryFor(SearchHints.orders);
+    if (query == _lastQuery) {
+      return;
+    }
+    _lastQuery = query;
+    _orders.setBuscar(query);
+  }
+
+  @override
+  void dispose() {
+    _shell.removeListener(_onSearchChanged);
+    super.dispose();
+  }
+
+  void _goToNew() async {
+    final bool? creado = await Navigator.pushNamed<bool>(
+      context,
+      Routes.serviceOrderNew,
+    );
+    if (creado == true && mounted) {
+      _orders.load();
+    }
+  }
+
+  void _goToDetail(ServiceOrder order) {
+    Navigator.pushNamed(
+      context,
+      Routes.serviceOrderDetail,
+      arguments: ServiceOrderDetailArgs(orderId: order.id),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ServiceOrdersProvider orders = context.watch<ServiceOrdersProvider>();
+    final TextTheme textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              FilledButton.icon(
+                onPressed: _goToNew,
+                icon: const Icon(
+                  LucideIcons.plus,
+                  size: AppMetrics.iconSizeSmall,
+                ),
+                label: const Text('Registrar orden'),
+              ),
+              const SizedBox(width: AppSpacing.lg),
+              _buildStatusFilter(orders),
+              const Spacer(),
+              Text(_counterText(orders), style: textTheme.bodySmall),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Expanded(child: _buildBody(orders)),
+          if (orders.status == LoadStatus.ready && orders.total > 0) ...<Widget>[
+            const SizedBox(height: AppSpacing.lg),
+            _buildPagination(orders),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String _counterText(ServiceOrdersProvider orders) {
+    if (orders.status != LoadStatus.ready) {
+      return '';
+    }
+    final int total = orders.total;
+    return total == 1 ? '1 orden' : '$total órdenes';
+  }
+
+  /// Selector de estado de orden (FR-014).
+  Widget _buildStatusFilter(ServiceOrdersProvider orders) {
+    return SizedBox(
+      width: AppMetrics.comboboxWidth,
+      child: DropdownButtonFormField<String>(
+        initialValue: _estado,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Estado',
+          prefixIcon: Icon(
+            LucideIcons.listFilter,
+            size: AppMetrics.iconSizeSmall,
+          ),
+        ),
+        items: <DropdownMenuItem<String>>[
+          const DropdownMenuItem<String>(
+            value: kTodosLosEstados,
+            child: Text('Todos los estados'),
+          ),
+          for (final String estado in orderStatusValues)
+            DropdownMenuItem<String>(
+              value: estado,
+              child: Text(orderStatusLabel(estado)),
+            ),
+        ],
+        onChanged: (String? value) {
+          if (value == null) {
+            return;
+          }
+          setState(() => _estado = value);
+          _orders.setEstado(value);
+        },
+      ),
+    );
+  }
+
+  Widget _buildBody(ServiceOrdersProvider orders) {
+    switch (orders.status) {
+      case LoadStatus.idle:
+      case LoadStatus.loading:
+        return const LoadingView(mensaje: 'Cargando órdenes…');
+      case LoadStatus.error:
+        return ErrorView(
+          mensaje: orders.error ?? AppMessages.unexpectedError,
+          onRetry: _orders.reload,
+        );
+      case LoadStatus.ready:
+        if (orders.items.isEmpty) {
+          return EmptyView(
+            mensaje: _emptyMessage(orders),
+            actionLabel: 'Registrar orden',
+            onAction: _goToNew,
+          );
+        }
+        return _buildTable(orders.items);
+    }
+  }
+
+  String _emptyMessage(ServiceOrdersProvider orders) {
+    if (_lastQuery.isNotEmpty) {
+      return 'No se encontraron órdenes que coincidan con "$_lastQuery".';
+    }
+    if (_estado != kTodosLosEstados) {
+      return 'No hay órdenes en estado ${orderStatusLabel(_estado)}.';
+    }
+    return 'Todavía no hay órdenes de servicio. Registra la primera para '
+        'empezar.';
+  }
+
+  Widget _buildTable(List<ServiceOrder> items) {
+    final MotorixColors colors = context.motorixColors;
+    return AppPanel(
+      padding: EdgeInsets.zero,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: DataTable(
+          columns: const <DataColumn>[
+            DataColumn(label: Text('Folio')),
+            DataColumn(label: Text('Cliente')),
+            DataColumn(label: Text('Vehículo')),
+            DataColumn(label: Text('Estado')),
+            DataColumn(label: Text('Motivo de visita')),
+            DataColumn(label: Text('Ingreso')),
+            DataColumn(label: Text('Kilometraje')),
+            DataColumn(label: Text('Mecánico')),
+            DataColumn(label: Text('Acciones')),
+          ],
+          rows: <DataRow>[
+            for (final ServiceOrder order in items) _buildRow(order, colors),
+          ],
+        ),
+      ),
+    );
+  }
+
+  DataRow _buildRow(ServiceOrder order, MotorixColors colors) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    return DataRow(
+      color: WidgetStateProperty.resolveWith<Color?>(
+        (Set<WidgetState> states) =>
+            states.contains(WidgetState.hovered) ? colors.primarySoft : null,
+      ),
+      cells: <DataCell>[
+        DataCell(
+          Text('#${order.id}'),
+          onTap: () => _goToDetail(order),
+        ),
+        DataCell(
+          Text(order.cliente, overflow: TextOverflow.ellipsis),
+          onTap: () => _goToDetail(order),
+        ),
+        DataCell(
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                order.vehiculo,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.bodySmall,
+              ),
+              Text(
+                order.placas,
+                style: textTheme.labelSmall
+                    ?.copyWith(color: colors.textSecondary),
+              ),
+            ],
+          ),
+          onTap: () => _goToDetail(order),
+        ),
+        DataCell(OrderStatusChip(estado: order.estado)),
+        DataCell(
+          Text(order.motivoVisita, overflow: TextOverflow.ellipsis),
+          onTap: () => _goToDetail(order),
+        ),
+        DataCell(Text(Formatters.date(order.fechaIngreso))),
+        DataCell(Text(Formatters.mileage(order.kilometrajeEntrada))),
+        DataCell(Text(order.mecanico ?? 'Sin asignar')),
+        DataCell(
+          IconButton(
+            tooltip: 'Ver detalle',
+            onPressed: () => _goToDetail(order),
+            icon: const Icon(
+              LucideIcons.eye,
+              size: AppMetrics.iconSizeSmall,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPagination(ServiceOrdersProvider orders) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    return Row(
+      children: <Widget>[
+        Text(
+          'Mostrando ${orders.items.length} de ${orders.total}',
+          style: textTheme.bodySmall,
+        ),
+        const Spacer(),
+        IconButton(
+          tooltip: 'Página anterior',
+          onPressed:
+              orders.pagina > 1 ? () => _orders.goToPage(orders.pagina - 1) : null,
+          icon: const Icon(
+            LucideIcons.chevronLeft,
+            size: AppMetrics.iconSizeSmall,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(
+            'Página ${orders.pagina} de ${orders.paginas}',
+            style: textTheme.bodySmall,
+          ),
+        ),
+        IconButton(
+          tooltip: 'Página siguiente',
+          onPressed: orders.pagina < orders.paginas
+              ? () => _orders.goToPage(orders.pagina + 1)
+              : null,
+          icon: const Icon(
+            LucideIcons.chevronRight,
+            size: AppMetrics.iconSizeSmall,
+          ),
+        ),
+      ],
+    );
+  }
+}
