@@ -96,6 +96,16 @@ class AppointmentsProvider extends ChangeNotifier {
   /// Vuelve a cargar con los últimos filtros usados.
   Future<void> reload() => load();
 
+  /// Lista las citas de un día para el panel de recepción (US6, R-09) sin
+  /// tocar los filtros del listado de citas.
+  Future<List<Appointment>> listDay(String fecha) async {
+    final AppointmentPage page = await _service.list(
+      fecha: fecha,
+      porPagina: 50,
+    );
+    return page.elementos;
+  }
+
   /// Filtra por día exacto; [kSinFechaCita] muestra todas las fechas. Siempre
   /// vuelve a la primera página.
   Future<void> setFecha(String value) async {

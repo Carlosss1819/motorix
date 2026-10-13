@@ -10,6 +10,10 @@ abstract final class Routes {
   /// Inicio (bienvenida).
   static const String home = '/';
 
+  /// Panel de recepción (US6): citas del día y órdenes abiertas; es la vista
+  /// principal ("Inicio") de ADMIN y RECEPTIONIST.
+  static const String reception = '/reception';
+
   /// Clientes.
   static const String clients = '/clients';
   static const String clientNew = '/clients/new';

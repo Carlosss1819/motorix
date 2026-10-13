@@ -18,6 +18,7 @@ import 'screens/client_form_screen.dart';
 import 'screens/clients_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/reception_screen.dart';
 import 'screens/service_order_detail_screen.dart';
 import 'screens/service_order_form_screen.dart';
 import 'screens/service_orders_screen.dart';
@@ -151,7 +152,13 @@ class _MotorixAppState extends State<MotorixApp> {
     }
 
     final Widget contenido = switch (name) {
-      Routes.home => const HomeScreen(),
+      // Inicio por defecto: recepción y administración abren el panel de
+      // recepción (US6); el mecánico conserva la bienvenida.
+      Routes.home =>
+        rol == Rol.admin || rol == Rol.receptionist
+            ? const ReceptionScreen()
+            : const HomeScreen(),
+      Routes.reception => const ReceptionScreen(),
       Routes.clients => const ClientsScreen(),
       Routes.clientNew => ClientFormScreen(client: _arg<ClientFormArgs>(settings)?.client),
       Routes.clientDetail =>
@@ -196,6 +203,8 @@ class _MotorixAppState extends State<MotorixApp> {
     switch (route) {
       case Routes.myOrders:
         return rol == Rol.mechanic;
+      case Routes.reception:
+        return rol == Rol.admin || rol == Rol.receptionist;
       case Routes.clients:
       case Routes.clientNew:
       case Routes.clientDetail:

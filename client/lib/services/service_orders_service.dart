@@ -30,6 +30,22 @@ class ServiceOrdersService {
     return ServiceOrderPage.fromJson(asMap(data));
   }
 
+  /// GET /api/service-orders?estadoAbierta=true (R-09): las órdenes que siguen
+  /// en el taller, para el panel de recepción (US6).
+  Future<ServiceOrderPage> listOpen({int pagina = 1, int porPagina = 10}) async {
+    final dynamic data = await _api.get(
+      '/service-orders',
+      query: <String, String>{
+        'buscar': '',
+        'estado': '',
+        'estadoAbierta': 'true',
+        'pagina': '$pagina',
+        'porPagina': '$porPagina',
+      },
+    );
+    return ServiceOrderPage.fromJson(asMap(data));
+  }
+
   /// GET /api/service-orders/:id, con servicios, repuestos e historial.
   Future<ServiceOrder> detail(int id) async {
     final dynamic data = await _api.get('/service-orders/$id');

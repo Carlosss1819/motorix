@@ -82,6 +82,13 @@ class ServiceOrdersProvider extends ChangeNotifier {
   /// Vuelve a cargar con los últimos filtros usados.
   Future<void> reload() => load();
 
+  /// Órdenes abiertas (estadoAbierta=true, R-09) para el panel de recepción
+  /// (US6), sin tocar los filtros del listado de órdenes.
+  Future<List<ServiceOrder>> listOpen() async {
+    final ServiceOrderPage page = await _service.listOpen(porPagina: 50);
+    return page.elementos;
+  }
+
   /// Filtra por estado de orden siempre desde la primera página.
   Future<void> setEstado(String value) async {
     if (_estado == value) {

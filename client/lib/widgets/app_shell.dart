@@ -97,6 +97,7 @@ abstract final class ShellSections {
   static String titleForRoute(String? route) {
     return switch (route) {
       Routes.home => 'Inicio',
+      Routes.reception => 'Panel de recepción',
       Routes.clients => 'Clientes',
       Routes.clientNew => 'Nuevo cliente',
       Routes.clientDetail => 'Detalle de cliente',
