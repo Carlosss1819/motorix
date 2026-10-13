@@ -7,6 +7,7 @@ import 'package:motorix_client/models/app_user.dart';
 import 'package:motorix_client/models/enums.dart';
 import 'package:motorix_client/models/service_order.dart';
 import 'package:motorix_client/providers/auth_provider.dart';
+import 'package:motorix_client/providers/parts_provider.dart';
 import 'package:motorix_client/providers/service_orders_provider.dart';
 import 'package:motorix_client/providers/shell_provider.dart';
 import 'package:motorix_client/screens/service_order_detail_screen.dart';
@@ -14,6 +15,8 @@ import 'package:motorix_client/screens/service_orders_screen.dart';
 import 'package:motorix_client/services/api_client.dart';
 import 'package:motorix_client/services/service_orders_service.dart';
 import 'package:motorix_client/utils/app_theme.dart';
+
+import 'fake_parts_service.dart';
 
 /// Servicio falso con datos en memoria: no se abre ninguna conexión.
 class _ServiceOrdersServiceFake extends ServiceOrdersService {
@@ -330,6 +333,12 @@ void main() {
             ChangeNotifierProvider<ServiceOrdersProvider>.value(
               value: provider,
             ),
+            ChangeNotifierProvider<PartsProvider>(
+              create: (_) => PartsProvider(
+                api: ApiClient(),
+                service: FakePartsService(),
+              ),
+            ),
           ],
           child: MaterialApp(
             theme: AppTheme.light(),
@@ -418,6 +427,12 @@ void main() {
               ChangeNotifierProvider<ServiceOrdersProvider>(
                 create: (_) =>
                     ServiceOrdersProvider(api: ApiClient(), service: fake),
+              ),
+              ChangeNotifierProvider<PartsProvider>(
+                create: (_) => PartsProvider(
+                  api: ApiClient(),
+                  service: FakePartsService(),
+                ),
               ),
             ],
             child: MaterialApp(

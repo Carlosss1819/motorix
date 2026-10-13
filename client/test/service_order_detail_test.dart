@@ -5,13 +5,24 @@ import 'package:provider/provider.dart';
 
 import 'package:motorix_client/models/app_user.dart';
 import 'package:motorix_client/models/enums.dart';
+import 'package:motorix_client/models/part.dart';
 import 'package:motorix_client/models/service_order.dart';
 import 'package:motorix_client/providers/auth_provider.dart';
+import 'package:motorix_client/providers/parts_provider.dart';
 import 'package:motorix_client/providers/service_orders_provider.dart';
 import 'package:motorix_client/screens/service_order_detail_screen.dart';
 import 'package:motorix_client/services/api_client.dart';
 import 'package:motorix_client/services/service_orders_service.dart';
 import 'package:motorix_client/utils/app_theme.dart';
+
+import 'fake_parts_service.dart';
+
+/// Catálogo que ve el selector de refacciones de la orden (US7): la primera
+/// tiene stock y la segunda está agotada para comprobar que no se puede elegir.
+final List<Part> _catalogoPrueba = <Part>[
+  parteDePrueba(id: 901, codigo: 'BUJ-1', nombre: 'Juego de bujías'),
+  parteDePrueba(id: 902, codigo: 'FIL-1', nombre: 'Filtro de aceite', stockActual: 0),
+];
 
 /// Servicio falso con el contenido de la orden en memoria: no se abre
 /// ninguna conexión y cada operación queda registrada para las aserciones.
@@ -35,8 +46,8 @@ class _ServiceOrdersServiceFake extends ServiceOrdersService {
         num? precio,
       })>[];
   final List<int> bajasServicio = <int>[];
-  final List<({String descripcion, int cantidad})> altasRepuesto =
-      <({String descripcion, int cantidad})>[];
+  final List<({int partId, int cantidad})> altasRepuesto =
+      <({int partId, int cantidad})>[];
   final List<int> bajasRepuesto = <int>[];
   final List<String> recomendaciones = <String>[];
 
@@ -133,11 +144,11 @@ class _ServiceOrdersServiceFake extends ServiceOrdersService {
   @override
   Future<void> addPart({
     required int id,
-    required String descripcion,
+    required int partId,
     required int cantidad,
   }) async {
     _fallarSiCorresponde();
-    altasRepuesto.add((descripcion: descripcion, cantidad: cantidad));
+    altasRepuesto.add((partId: partId, cantidad: cantidad));
     final ServiceOrder base = ordenActual ?? _orden(id: id);
     ordenActual = _copiaContenido(
       base,
@@ -145,7 +156,8 @@ class _ServiceOrdersServiceFake extends ServiceOrdersService {
         ...base.repuestos,
         OrderPart(
           id: 700 + altasRepuesto.length,
-          descripcion: descripcion,
+          // El backend copia el nombre del catálogo al dar de alta (R-06).
+          descripcion: _nombreRefaccion(partId),
           cantidad: cantidad,
         ),
       ],
@@ -278,6 +290,16 @@ ServiceOrder _copiaContenido(
   );
 }
 
+/// Nombre del catálogo para una fila creada por el fake (R-06).
+String _nombreRefaccion(int partId) {
+  for (final Part parte in _catalogoPrueba) {
+    if (parte.id == partId) {
+      return parte.nombre;
+    }
+  }
+  return 'Refacción $partId';
+}
+
 void main() {
   setUpAll(() {
     // En pruebas no se descargan fuentes desde internet.
@@ -311,6 +333,12 @@ void main() {
           ),
           ChangeNotifierProvider<ServiceOrdersProvider>.value(
             value: provider,
+          ),
+          ChangeNotifierProvider<PartsProvider>(
+            create: (_) => PartsProvider(
+              api: ApiClient(),
+              service: FakePartsService(parts: _catalogoPrueba),
+            ),
           ),
         ],
         child: MaterialApp(
@@ -496,32 +524,44 @@ void main() {
     );
 
     testWidgets(
-      'agrega un repuesto con cantidad, sin tocar el inventario (RN-06)',
+      'agrega una refacción del catálogo con su cantidad (US7)',
       (WidgetTester tester) async {
         final ({_ServiceOrdersServiceFake fake, ServiceOrdersProvider provider})
             estado = await pumpDetail(tester, rol: Rol.mechanic);
 
-        await tester.enterText(
-          find.byKey(const Key('campo-repuesto')),
-          'Juego de bujías',
-        );
+        // El selector empieza sin elegir y ofrece solo el catálogo activo.
+        expect(find.text('Selecciona una refacción'), findsOneWidget);
+
+        await tester.tap(find.byKey(const Key('selector-refaccion')));
+        await tester.pumpAndSettle();
+
+        // El stock visible acompaña a cada refacción del menú.
+        expect(find.text('Juego de bujías (BUJ-1) · stock 6'), findsWidgets);
+        expect(find.text('Filtro de aceite (FIL-1) · stock 0'), findsWidgets);
+
+        await tester.tap(find.text('Juego de bujías (BUJ-1) · stock 6').last);
+        await tester.pumpAndSettle();
+
         await tester.enterText(find.byKey(const Key('campo-cantidad')), '4');
-        await tester.tap(find.text('Agregar repuesto'));
+        await tester.tap(find.text('Agregar refacción'));
         await tester.pumpAndSettle();
 
         expect(
           estado.fake.altasRepuesto,
-          <({String descripcion, int cantidad})>[
-            (descripcion: 'Juego de bujías', cantidad: 4),
+          <({int partId, int cantidad})>[
+            (partId: 901, cantidad: 4),
           ],
         );
-        expect(find.text('Repuesto registrado en la orden.'), findsOneWidget);
+        expect(
+          find.text('Refacción registrada en la orden.'),
+          findsOneWidget,
+        );
         expect(find.text('4 × Juego de bujías'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'da de baja un repuesto con confirmación previa',
+      'da de baja una refacción con confirmación obligatoria (FR-026)',
       (WidgetTester tester) async {
         final ({_ServiceOrdersServiceFake fake, ServiceOrdersProvider provider})
             estado = await pumpDetail(
@@ -538,15 +578,15 @@ void main() {
           ),
         );
 
-        await tester.tap(find.byTooltip('Eliminar repuesto'));
+        await tester.tap(find.byTooltip('Eliminar refacción'));
         await tester.pumpAndSettle();
-        expect(find.text('Eliminar repuesto'), findsOneWidget);
+        expect(find.text('Eliminar refacción'), findsOneWidget);
         await tester.tap(find.text('Confirmar'));
         await tester.pumpAndSettle();
 
         expect(estado.fake.bajasRepuesto, <int>[44]);
-        expect(find.text('Repuesto eliminado.'), findsOneWidget);
-        expect(find.text('Sin repuestos registrados.'), findsOneWidget);
+        expect(find.text('Refacción retirada de la orden.'), findsOneWidget);
+        expect(find.text('Sin refacciones registradas.'), findsOneWidget);
       },
     );
 
@@ -577,13 +617,13 @@ void main() {
 
         expect(find.text('Guardar borrador'), findsOneWidget);
         expect(find.text('Agregar servicio'), findsOneWidget);
-        expect(find.text('Agregar repuesto'), findsOneWidget);
+        expect(find.text('Agregar refacción'), findsOneWidget);
         expect(find.text('Guardar recomendaciones'), findsOneWidget);
       },
     );
 
     testWidgets(
-      'recepción solo consulta el contenido, sin acciones de alta ni baja',
+      'recepción solo registra refacciones, sin diagnóstico ni servicios',
       (WidgetTester tester) async {
         await pumpDetail(
           tester,
@@ -596,10 +636,10 @@ void main() {
         expect(find.text('Guardar borrador'), findsNothing);
         expect(find.text('Guardar y continuar'), findsNothing);
         expect(find.text('Agregar servicio'), findsNothing);
-        expect(find.text('Agregar repuesto'), findsNothing);
         expect(find.text('Guardar recomendaciones'), findsNothing);
         expect(find.byTooltip('Eliminar servicio'), findsNothing);
-        expect(find.byTooltip('Eliminar repuesto'), findsNothing);
+        // Las refacciones de la orden las manejan los tres roles (FR-027).
+        expect(find.text('Agregar refacción'), findsOneWidget);
       },
     );
 
@@ -615,9 +655,10 @@ void main() {
         expect(find.text('Trabajo concluido'), findsOneWidget);
         expect(find.text('Guardar borrador'), findsNothing);
         expect(find.text('Agregar servicio'), findsNothing);
-        expect(find.text('Agregar repuesto'), findsNothing);
+        expect(find.text('Agregar refacción'), findsNothing);
         expect(find.text('Guardar recomendaciones'), findsNothing);
         expect(find.byTooltip('Eliminar servicio'), findsNothing);
+        expect(find.byTooltip('Eliminar refacción'), findsNothing);
       },
     );
 
@@ -649,6 +690,12 @@ void main() {
               ),
               ChangeNotifierProvider<ServiceOrdersProvider>.value(
                 value: provider,
+              ),
+              ChangeNotifierProvider<PartsProvider>(
+                create: (_) => PartsProvider(
+                  api: ApiClient(),
+                  service: FakePartsService(parts: _catalogoPrueba),
+                ),
               ),
             ],
             child: MaterialApp(
