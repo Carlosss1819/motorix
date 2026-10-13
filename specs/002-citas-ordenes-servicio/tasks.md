@@ -111,14 +111,14 @@ implementación y pruebas independientes.
 - [X] T030 [P] [US2] Crear server/controllers/appointments.controller.js con los handlers de listado, detalle (incluye `orden` derivada o `null`), creación, edición, cancelación y recepción
 - [X] T031 [US2] Crear server/routes/appointments.routes.js con `authenticate` + `authorize('ADMIN','RECEPTIONIST')` (MECHANIC → `403`), `validate` por ruta y `asyncHandler`; registrarlo bajo `/api/appointments` en server/routes/index.js
 - [X] T032 [US2] Ampliar server/services/service_order.service.js para validar `citaId` al crear la orden: la cita debe existir, estar `RECIBIDA` y no usarse en otra orden (responde `409`), guardando `service_orders.appointment_id` (FR‑007)
-- [ ] T033 [P] [US2] Crear client/lib/models/appointment.dart con los campos del contrato
-- [ ] T034 [P] [US2] Crear client/lib/services/appointments_service.dart con `listar`, `obtener`, `crear`, `editar`, `cancelar` y `recibir`
-- [ ] T035 [US2] Crear client/lib/providers/appointments_provider.dart con filtros por fecha y estado, estados de interfaz y manejo del `409` de conflicto
-- [ ] T036 [US2] Crear client/lib/screens/appointments_screen.dart con listado del día, filtros, y acciones **Cancelar** y **Recibir** con confirmación (Principio VIII) y mensajes de éxito/error
-- [ ] T037 [US2] Crear client/lib/screens/appointment_form_screen.dart con alta y edición, y aviso de conflicto de horario que permite reenviar con confirmación
-- [ ] T038 [US2] Ampliar client/lib/screens/service_order_form_screen.dart para precargar cliente, vehículo y motivo desde una cita `RECIBIDA` y enviar `citaId` (FR‑007)
-- [ ] T039 [US2] Registrar la ruta de citas en client/lib/utils/app_routes.dart y la entrada **Citas** en client/lib/widgets/app_shell.dart solo para `ADMIN` y `RECEPTIONIST`
-- [ ] T040 [P] [US2] Prueba flutter test del provider de citas en client/test/appointments_provider_test.dart
+- [X] T033 [P] [US2] Crear client/lib/models/appointment.dart con los campos del contrato
+- [X] T034 [P] [US2] Crear client/lib/services/appointments_service.dart con `listar`, `obtener`, `crear`, `editar`, `cancelar` y `recibir`
+- [X] T035 [US2] Crear client/lib/providers/appointments_provider.dart con filtros por fecha y estado, estados de interfaz y manejo del `409` de conflicto
+- [X] T036 [US2] Crear client/lib/screens/appointments_screen.dart con listado del día, filtros, y acciones **Cancelar** y **Recibir** con confirmación (Principio VIII) y mensajes de éxito/error
+- [X] T037 [US2] Crear client/lib/screens/appointment_form_screen.dart con alta y edición, y aviso de conflicto de horario que permite reenviar con confirmación
+- [X] T038 [US2] Ampliar client/lib/screens/service_order_form_screen.dart para precargar cliente, vehículo y motivo desde una cita `RECIBIDA` y enviar `citaId` (FR‑007)
+- [X] T039 [US2] Registrar la ruta de citas en client/lib/utils/app_routes.dart y la entrada **Citas** en client/lib/widgets/app_shell.dart solo para `ADMIN` y `RECEPTIONIST`
+- [X] T040 [P] [US2] Prueba flutter test del provider de citas en client/test/appointments_provider_test.dart
 
 **Checkpoint**: US1 y US2 funcionan de forma independiente; una cita recibida puede derivar en orden
 
