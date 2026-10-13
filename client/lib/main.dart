@@ -11,6 +11,7 @@ import 'providers/shell_provider.dart';
 import 'providers/users_provider.dart';
 import 'providers/vehicles_provider.dart';
 import 'providers/vehicle_history_provider.dart';
+import 'providers/maintenance_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -26,6 +27,8 @@ import 'screens/service_orders_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/vehicle_detail_screen.dart';
 import 'screens/vehicle_history_screen.dart';
+import 'screens/maintenance_form_screen.dart';
+import 'screens/maintenance_screen.dart';
 import 'screens/vehicle_form_screen.dart';
 import 'screens/vehicles_screen.dart';
 import 'services/api_client.dart';
@@ -99,6 +102,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<VehicleHistoryProvider>(
           create: (_) => VehicleHistoryProvider(api: _api),
+        ),
+        ChangeNotifierProvider<MaintenanceProvider>(
+          create: (_) => MaintenanceProvider(api: _api),
         ),
         ChangeNotifierProvider<ServiceOrdersProvider>(
           create: (_) => ServiceOrdersProvider(api: _api),
@@ -181,6 +187,14 @@ class _MotorixAppState extends State<MotorixApp> {
         VehicleHistoryScreen(
           args: _arg<VehicleHistoryArgs>(settings) ?? const VehicleHistoryArgs(vehicleId: 0),
         ),
+      Routes.maintenance => const MaintenanceScreen(),
+      Routes.maintenanceNew =>
+        const MaintenanceFormScreen(args: MaintenanceFormArgs()),
+      Routes.maintenanceEdit => MaintenanceFormScreen(
+        args: MaintenanceFormArgs(
+          mantenimiento: _arg<MaintenanceFormArgs>(settings)?.mantenimiento,
+        ),
+      ),
       Routes.appointments => const AppointmentsScreen(),
       Routes.appointmentNew =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
@@ -217,6 +231,13 @@ class _MotorixAppState extends State<MotorixApp> {
       // Historial del vehículo (FR-004): los TRES roles pueden consultarlo.
       case Routes.vehicleHistory:
         return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
+      // Mantenimientos (US4, R-12 §16): los TRES roles consultan; la escritura
+      // (alta, edición y «servicio realizado») es de ADMIN y MECHANIC (FR-008).
+      case Routes.maintenance:
+        return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
+      case Routes.maintenanceNew:
+      case Routes.maintenanceEdit:
+        return rol == Rol.admin || rol == Rol.mechanic;
       case Routes.clients:
       case Routes.clientNew:
       case Routes.clientDetail:

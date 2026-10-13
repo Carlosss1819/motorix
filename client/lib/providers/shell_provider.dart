@@ -10,6 +10,7 @@ abstract final class SearchHints {
   static const String users = 'Buscar por usuario o correo';
   static const String orders = 'Buscar por placas o nombre del cliente';
   static const String appointments = 'Buscar por placas o nombre del cliente';
+  static const String maintenance = 'Buscar por tipo de servicio o placas';
 }
 
 /// Estado compartido del shell: ancho del sidebar y búsqueda del header.

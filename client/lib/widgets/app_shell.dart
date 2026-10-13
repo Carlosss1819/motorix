@@ -54,6 +54,11 @@ abstract final class ShellSections {
     icon: LucideIcons.clipboardList,
     label: 'Mis órdenes',
   );
+  static const ShellSection maintenance = ShellSection(
+    route: Routes.maintenance,
+    icon: LucideIcons.calendarClock,
+    label: 'Mantenimientos',
+  );
   static const ShellSection users = ShellSection(
     route: Routes.users,
     icon: LucideIcons.userCog,
@@ -67,6 +72,9 @@ abstract final class ShellSections {
 
   /// Secciones visibles para cada rol. Ocultar no es seguridad: el backend
   /// valida cada operación protegida (RN-15).
+  ///
+  /// Mantenimientos (US4, R-12 §16) es visible para los TRES roles: recepción
+  /// hace el llamado de seguimiento (FR-013) y el mecánico consulta y renueva.
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
       Rol.admin =>
@@ -76,6 +84,7 @@ abstract final class ShellSections {
           vehicles,
           appointments,
           orders,
+          maintenance,
           users,
           account,
         ],
@@ -86,9 +95,11 @@ abstract final class ShellSections {
           vehicles,
           appointments,
           orders,
+          maintenance,
           account,
         ],
-      Rol.mechanic => const <ShellSection>[home, myOrders, account],
+      Rol.mechanic =>
+        const <ShellSection>[home, myOrders, maintenance, account],
       _ => const <ShellSection>[home, account],
     };
   }
@@ -106,6 +117,7 @@ abstract final class ShellSections {
       Routes.vehicleNew => 'Nuevo vehículo',
       Routes.vehicleDetail => 'Detalle de vehículo',
       Routes.vehicleEdit => 'Editar vehículo',
+      Routes.vehicleHistory => 'Historial del vehículo',
       Routes.appointments => 'Citas',
       Routes.appointmentNew => 'Nueva cita',
       Routes.appointmentEdit => 'Editar cita',
@@ -114,6 +126,9 @@ abstract final class ShellSections {
       Routes.serviceOrderNew => 'Nueva orden',
       Routes.serviceOrderDetail => 'Detalle de orden',
       Routes.users => 'Usuarios',
+      Routes.maintenance => 'Mantenimientos',
+      Routes.maintenanceNew => 'Programar mantenimiento',
+      Routes.maintenanceEdit => 'Editar mantenimiento',
       Routes.account => 'Mi cuenta',
       _ => 'Motorix',
     };
@@ -128,6 +143,7 @@ abstract final class ShellSections {
       Routes.appointments => SearchHints.appointments,
       Routes.serviceOrders => SearchHints.orders,
       Routes.myOrders => SearchHints.orders,
+      Routes.maintenance => SearchHints.maintenance,
       _ => '',
     };
   }

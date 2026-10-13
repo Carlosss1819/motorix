@@ -29,6 +29,11 @@ abstract final class Routes {
   /// Historial del vehículo (US1, Sprint 3).
   static const String vehicleHistory = '/vehicles/history';
 
+  /// Mantenimientos preventivos (US3/US4, Sprint 3).
+  static const String maintenance = '/maintenance';
+  static const String maintenanceNew = '/maintenance/new';
+  static const String maintenanceEdit = '/maintenance/edit';
+
   /// Citas de recepción.
   static const String appointments = '/appointments';
   static const String appointmentNew = '/appointments/new';

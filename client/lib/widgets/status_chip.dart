@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../models/maintenance.dart';
 import '../utils/app_theme.dart';
 
 /// Etiqueta en español de un estado de orden o de cita.
@@ -63,8 +64,42 @@ class EstadoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final MotorixColors colors = context.motorixColors;
     final Color color = _colorFor(context, estado);
+    return _SoftChip(label: orderStatusLabel(estado), color: color);
+  }
+}
+
+/// Chip del estado calculado de un mantenimiento (US3/US4): normal en verde,
+/// próximo en ámbar y vencido en rojo (docs/design-system.md).
+class MaintenanceStatusChip extends StatelessWidget {
+  const MaintenanceStatusChip({super.key, required this.estado});
+
+  /// Estado calculado por el backend (`NORMAL`, `PROXIMO`, `VENCIDO`).
+  final String estado;
+
+  @override
+  Widget build(BuildContext context) {
+    final MotorixColors colors = context.motorixColors;
+    final Color color = switch (estado) {
+      'NORMAL' => colors.success,
+      'PROXIMO' => colors.warning,
+      'VENCIDO' => colors.danger,
+      _ => colors.textSecondary,
+    };
+    return _SoftChip(label: maintenanceStatusLabel(estado), color: color);
+  }
+}
+
+/// Etiqueta con fondo suave y borde en el color de estado.
+class _SoftChip extends StatelessWidget {
+  const _SoftChip({required this.label, required this.color});
+
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final MotorixColors colors = context.motorixColors;
     final bool esNeutro = color == colors.textSecondary;
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -77,7 +112,7 @@ class EstadoChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Text(
-        orderStatusLabel(estado),
+        label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
       ),
     );
