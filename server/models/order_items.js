@@ -1,5 +1,5 @@
 // Contenido de la orden de servicio: servicios con su mano de obra y
-// repuestos. El servicio y su partida de mano de obra se crean siempre en la
+// refacciones. El servicio y su partida de mano de obra se crean siempre en la
 // misma transacción (R-13): no puede existir uno sin la otra.
 // Fuente de verdad: specs/002-citas-ordenes-servicio/data-model.md.
 import { query, getConnection } from '../config/db.js';
@@ -119,7 +119,7 @@ export async function listServicesByOrder(serviceOrderId) {
   }));
 }
 
-// Repuestos registrados en la orden (el stock se valida en el Sprint 3).
+// Refacciones registradas en la orden (el stock se controla desde el Sprint 3).
 export async function listPartsByOrder(serviceOrderId) {
   const rows = await query(
     `SELECT id, description, quantity

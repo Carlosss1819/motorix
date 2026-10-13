@@ -1,5 +1,5 @@
 // Esquemas de validación de órdenes de servicio (US1; la US3 y la US4 añaden
-// asignación, diagnóstico, servicios, repuestos y recomendaciones).
+// asignación, diagnóstico, servicios, refacciones y recomendaciones).
 // Fuente de verdad: specs/002-citas-ordenes-servicio/contracts/service-orders.md
 import { z } from 'zod';
 import { ORDER_STATUS_VALUES } from '../utils/status-constants.js';

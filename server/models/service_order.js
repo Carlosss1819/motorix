@@ -1,5 +1,5 @@
 // Acceso a datos de las ordenes de servicio (tabla service_orders) y de su
-// agregado: historial de estados, servicios, mano de obra y repuestos.
+// agregado: historial de estados, servicios, mano de obra y refacciones.
 // Fuente de verdad de los campos: specs/002-citas-ordenes-servicio/data-model.md
 import { query } from '../config/db.js';
 
