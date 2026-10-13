@@ -417,14 +417,14 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
 
 ### Tests for User Story 8
 
-- [ ] T066 [P] [US8] Escribir `server/tests/contract/stock-low.test.js` +
+- [X] T066 [P] [US8] Escribir `server/tests/contract/stock-low.test.js` +
   `server/tests/integration/stock-low.test.js`: campo `stockBajo` calculado
   (`stock_actual <= stock_minimo && stock_minimo > 0`, FR‑020), `?stockBajo=true` y el
   caso `stock_min = 0` sin alerta
 
 ### Implementation for User Story 8
 
-- [ ] T067 [US8] Agregar en `server/services/part.service.js` el cálculo de
+- [X] T067 [US8] Agregar en `server/services/part.service.js` el cálculo de
   `stockBajo` en el listado y el filtro `?stockBajo=true` (R‑10)
 - [ ] T068 [US8] Ampliar `client/lib/screens/parts_screen.dart` con el semáforo de
   `docs/design-system.md` (chip/ícono de stock bajo) y el filtro de alertas (SC‑008)
