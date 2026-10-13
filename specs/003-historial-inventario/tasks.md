@@ -445,7 +445,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
   de ruta (clarificación 3)
 - [X] T071 [P] Ejecutar `npx eslint .` en `server/` (0 errores) y `flutter analyze` en
   `client/` (0 problemas) y corregir lo que aparezca
-- [ ] T072 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
+- [X] T072 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
   en `client/` (todas en verde; Jest puede requerir `--forceExit` conocido)
 - [ ] T073 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
   desarrollo) **solo con la aprobación del usuario**, verificando que las migraciones
