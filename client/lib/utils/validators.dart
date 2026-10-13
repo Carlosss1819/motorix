@@ -107,6 +107,20 @@ abstract final class Validators {
     return null;
   }
 
+  /// Número decimal mayor o igual que cero u opcional (precios del
+  /// inventario, que el backend nunca acepta negativos).
+  static String? optionalNonNegativeNumber(String? value, String campo) {
+    final String text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+    final double? parsed = double.tryParse(text);
+    if (parsed == null || parsed < 0) {
+      return 'El campo $campo debe ser un número igual o mayor a 0.';
+    }
+    return null;
+  }
+
   /// Fecha opcional con formato `AAAA-MM-DD`; el vacío se acepta.
   static String? optionalFecha(String? value) {
     final String text = value?.trim() ?? '';

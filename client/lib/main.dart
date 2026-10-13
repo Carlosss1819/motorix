@@ -12,6 +12,7 @@ import 'providers/users_provider.dart';
 import 'providers/vehicles_provider.dart';
 import 'providers/vehicle_history_provider.dart';
 import 'providers/maintenance_provider.dart';
+import 'providers/parts_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -29,6 +30,8 @@ import 'screens/vehicle_detail_screen.dart';
 import 'screens/vehicle_history_screen.dart';
 import 'screens/maintenance_form_screen.dart';
 import 'screens/maintenance_screen.dart';
+import 'screens/part_form_screen.dart';
+import 'screens/parts_screen.dart';
 import 'screens/vehicle_form_screen.dart';
 import 'screens/vehicles_screen.dart';
 import 'services/api_client.dart';
@@ -105,6 +108,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<MaintenanceProvider>(
           create: (_) => MaintenanceProvider(api: _api),
+        ),
+        ChangeNotifierProvider<PartsProvider>(
+          create: (_) => PartsProvider(api: _api),
         ),
         ChangeNotifierProvider<ServiceOrdersProvider>(
           create: (_) => ServiceOrdersProvider(api: _api),
@@ -195,6 +201,16 @@ class _MotorixAppState extends State<MotorixApp> {
           mantenimiento: _arg<MaintenanceFormArgs>(settings)?.mantenimiento,
         ),
       ),
+      // Inventario (US5): la lista es de consulta y el formulario es solo
+      // de ADMIN (FR-022); el detalle se registra en la US6.
+      Routes.parts => const PartsScreen(),
+      Routes.partNew =>
+        const PartFormScreen(args: PartFormArgs()),
+      Routes.partEdit => PartFormScreen(
+        args: PartFormArgs(
+          refaccion: _arg<PartFormArgs>(settings)?.refaccion,
+        ),
+      ),
       Routes.appointments => const AppointmentsScreen(),
       Routes.appointmentNew =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
@@ -238,6 +254,12 @@ class _MotorixAppState extends State<MotorixApp> {
       case Routes.maintenanceNew:
       case Routes.maintenanceEdit:
         return rol == Rol.admin || rol == Rol.mechanic;
+      // Inventario (US5, R-12 §16): la sección del panel es solo de ADMIN
+      // (FR-022); el backend también permite leer a los otros roles.
+      case Routes.parts:
+      case Routes.partNew:
+      case Routes.partEdit:
+        return rol == Rol.admin;
       case Routes.clients:
       case Routes.clientNew:
       case Routes.clientDetail:

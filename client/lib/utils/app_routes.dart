@@ -34,6 +34,12 @@ abstract final class Routes {
   static const String maintenanceNew = '/maintenance/new';
   static const String maintenanceEdit = '/maintenance/edit';
 
+  /// Inventario de refacciones (US5/US6, Sprint 3).
+  static const String parts = '/parts';
+  static const String partNew = '/parts/new';
+  static const String partEdit = '/parts/edit';
+  static const String partDetail = '/parts/detail';
+
   /// Citas de recepción.
   static const String appointments = '/appointments';
   static const String appointmentNew = '/appointments/new';

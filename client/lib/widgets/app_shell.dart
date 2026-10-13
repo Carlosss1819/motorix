@@ -59,6 +59,11 @@ abstract final class ShellSections {
     icon: LucideIcons.calendarClock,
     label: 'Mantenimientos',
   );
+  static const ShellSection parts = ShellSection(
+    route: Routes.parts,
+    icon: LucideIcons.warehouse,
+    label: 'Inventario',
+  );
   static const ShellSection users = ShellSection(
     route: Routes.users,
     icon: LucideIcons.userCog,
@@ -75,6 +80,7 @@ abstract final class ShellSections {
   ///
   /// Mantenimientos (US4, R-12 §16) es visible para los TRES roles: recepción
   /// hace el llamado de seguimiento (FR-013) y el mecánico consulta y renueva.
+  /// Inventario (US5, R-12 §16) es visible solo para ADMIN (FR-022).
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
       Rol.admin =>
@@ -85,6 +91,7 @@ abstract final class ShellSections {
           appointments,
           orders,
           maintenance,
+          parts,
           users,
           account,
         ],
@@ -129,6 +136,9 @@ abstract final class ShellSections {
       Routes.maintenance => 'Mantenimientos',
       Routes.maintenanceNew => 'Programar mantenimiento',
       Routes.maintenanceEdit => 'Editar mantenimiento',
+      Routes.parts => 'Inventario',
+      Routes.partNew => 'Nueva refacción',
+      Routes.partEdit => 'Editar refacción',
       Routes.account => 'Mi cuenta',
       _ => 'Motorix',
     };
@@ -144,6 +154,7 @@ abstract final class ShellSections {
       Routes.serviceOrders => SearchHints.orders,
       Routes.myOrders => SearchHints.orders,
       Routes.maintenance => SearchHints.maintenance,
+      Routes.parts => SearchHints.parts,
       _ => '',
     };
   }

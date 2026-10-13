@@ -40,6 +40,18 @@ String? asStringOrNull(Object? value) {
   return text.isEmpty ? null : text;
 }
 
+/// Número opcional que distingue `null` de `0` (precios y montos DECIMAL).
+num? asNumOrNull(Object? value) {
+  if (value == null) {
+    return null;
+  }
+  final String text = value.toString();
+  if (text.isEmpty) {
+    return null;
+  }
+  return num.tryParse(text);
+}
+
 bool asBool(Object? value, [bool fallback = false]) {
   if (value is bool) {
     return value;
