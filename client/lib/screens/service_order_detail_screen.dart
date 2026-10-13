@@ -18,6 +18,7 @@ import '../widgets/confirm_dialog.dart';
 import '../widgets/status_chip.dart';
 import 'client_detail_screen.dart';
 import 'vehicle_detail_screen.dart';
+import 'vehicle_history_screen.dart';
 
 /// Argumento de la ruta de detalle de una orden.
 class ServiceOrderDetailArgs {
@@ -1016,6 +1017,18 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     );
   }
 
+  /// Abre el historial del vehículo de la orden (US1, FR-004).
+  void _goToVehicleHistory(ServiceOrder order) {
+    Navigator.pushNamed(
+      context,
+      Routes.vehicleHistory,
+      arguments: VehicleHistoryArgs(
+        vehicleId: order.vehiculoId,
+        vehicleLabel: order.vehiculo,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ServiceOrdersProvider orders =
@@ -1163,6 +1176,17 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                     onTap: () => _goToVehicle(order.vehiculoId),
                   ),
                   DetailRow(label: 'Placas', value: order.placas),
+                  const SizedBox(height: AppSpacing.sm),
+                  // Historial del vehículo (US1, FR-004): disponible también
+                  // para el mecánico, cuya ficha de vehículo es de solo lectura.
+                  OutlinedButton.icon(
+                    onPressed: () => _goToVehicleHistory(order),
+                    icon: const Icon(
+                      LucideIcons.history,
+                      size: AppMetrics.iconSizeSmall,
+                    ),
+                    label: const Text('Ver historial del vehículo'),
+                  ),
                 ],
               ),
             ),

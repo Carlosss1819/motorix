@@ -12,6 +12,7 @@ import '../utils/messages.dart';
 import '../widgets/common_views.dart';
 import 'client_detail_screen.dart';
 import 'vehicle_form_screen.dart';
+import 'vehicle_history_screen.dart';
 
 /// Argumento de la ruta de detalle de vehículo.
 class VehicleDetailArgs {
@@ -61,6 +62,18 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
       context,
       Routes.clientDetail,
       arguments: ClientDetailArgs(clientId: clienteId),
+    );
+  }
+
+  /// Abre el historial de servicios del vehículo (US1, FR-001).
+  void _goToHistory(Vehicle vehicle) {
+    Navigator.pushNamed(
+      context,
+      Routes.vehicleHistory,
+      arguments: VehicleHistoryArgs(
+        vehicleId: vehicle.id,
+        vehicleLabel: vehicle.descripcion,
+      ),
     );
   }
 
@@ -115,6 +128,15 @@ class _VehicleDetailScreenState extends State<VehicleDetailScreen> {
                     size: AppMetrics.iconSizeSmall,
                   ),
                   label: const Text('Editar'),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                OutlinedButton.icon(
+                  onPressed: () => _goToHistory(vehicle),
+                  icon: const Icon(
+                    LucideIcons.history,
+                    size: AppMetrics.iconSizeSmall,
+                  ),
+                  label: const Text('Ver historial'),
                 ),
               ],
             ),

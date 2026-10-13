@@ -10,6 +10,7 @@ import 'providers/service_orders_provider.dart';
 import 'providers/shell_provider.dart';
 import 'providers/users_provider.dart';
 import 'providers/vehicles_provider.dart';
+import 'providers/vehicle_history_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -24,6 +25,7 @@ import 'screens/service_order_form_screen.dart';
 import 'screens/service_orders_screen.dart';
 import 'screens/users_screen.dart';
 import 'screens/vehicle_detail_screen.dart';
+import 'screens/vehicle_history_screen.dart';
 import 'screens/vehicle_form_screen.dart';
 import 'screens/vehicles_screen.dart';
 import 'services/api_client.dart';
@@ -94,6 +96,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<VehiclesProvider>(
           create: (_) => VehiclesProvider(api: _api),
+        ),
+        ChangeNotifierProvider<VehicleHistoryProvider>(
+          create: (_) => VehicleHistoryProvider(api: _api),
         ),
         ChangeNotifierProvider<ServiceOrdersProvider>(
           create: (_) => ServiceOrdersProvider(api: _api),
@@ -172,6 +177,10 @@ class _MotorixAppState extends State<MotorixApp> {
       Routes.vehicleDetail =>
         VehicleDetailScreen(vehicleId: _arg<VehicleDetailArgs>(settings)?.vehicleId ?? 0),
       Routes.vehicleEdit => VehicleFormScreen(vehicle: _arg<VehicleFormArgs>(settings)?.vehicle),
+      Routes.vehicleHistory =>
+        VehicleHistoryScreen(
+          args: _arg<VehicleHistoryArgs>(settings) ?? const VehicleHistoryArgs(vehicleId: 0),
+        ),
       Routes.appointments => const AppointmentsScreen(),
       Routes.appointmentNew =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
@@ -205,6 +214,9 @@ class _MotorixAppState extends State<MotorixApp> {
         return rol == Rol.mechanic;
       case Routes.reception:
         return rol == Rol.admin || rol == Rol.receptionist;
+      // Historial del vehículo (FR-004): los TRES roles pueden consultarlo.
+      case Routes.vehicleHistory:
+        return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
       case Routes.clients:
       case Routes.clientNew:
       case Routes.clientDetail:

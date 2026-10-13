@@ -126,19 +126,19 @@ el estado vacío (V1 y V2 del quickstart)
   handler `historyHandler`
 - [X] T013 [US1] Agregar `GET /:id/history` en `server/routes/vehicles.routes.js` con
   `authenticate` + `authorize('ADMIN','RECEPTIONIST','MECHANIC')` y `asyncHandler`
-- [ ] T014 [P] [US1] Crear `client/lib/models/vehicle_history.dart` (entrada del
+- [X] T014 [P] [US1] Crear `client/lib/models/vehicle_history.dart` (entrada del
   historial con todos los campos y `fromJson` tolerante a nulos)
-- [ ] T015 [US1] Crear `client/lib/services/vehicle_history_service.dart` con
+- [X] T015 [US1] Crear `client/lib/services/vehicle_history_service.dart` con
   `fetchHistory(vehiculoId, pagina)` sobre el patrón de `http` ya usado
-- [ ] T016 [US1] Crear `client/lib/providers/vehicle_history_provider.dart` con
+- [X] T016 [US1] Crear `client/lib/providers/vehicle_history_provider.dart` con
   estados de carga/vacío/error y paginación
-- [ ] T017 [US1] Crear `client/lib/screens/vehicle_history_screen.dart` con la lista
+- [X] T017 [US1] Crear `client/lib/screens/vehicle_history_screen.dart` con la lista
   paginada, tarjetas por servicio y estado vacío «aún no hay servicios registrados»
-- [ ] T018 [US1] Registrar la ruta en `client/lib/utils/app_routes.dart` y agregar el
+- [X] T018 [US1] Registrar la ruta en `client/lib/utils/app_routes.dart` y agregar el
   botón «Ver historial del vehículo» en el detalle del vehículo
   (`client/lib/screens/vehicle_detail_screen.dart` o equivalente) y en el detalle de
   orden del mecánico (`client/lib/screens/mechanic_order_detail_screen.dart`)
-- [ ] T019 [US1] Escribir `client/test/vehicle_history_screen_test.dart` (widget con
+- [X] T019 [US1] Escribir `client/test/vehicle_history_screen_test.dart` (widget con
   datos de prueba, estado vacío y error; viewport 1280×3000 y
   `GoogleFonts.config.allowRuntimeFetching = false`)
 

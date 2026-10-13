@@ -26,6 +26,9 @@ abstract final class Routes {
   static const String vehicleDetail = '/vehicles/detail';
   static const String vehicleEdit = '/vehicles/edit';
 
+  /// Historial del vehículo (US1, Sprint 3).
+  static const String vehicleHistory = '/vehicles/history';
+
   /// Citas de recepción.
   static const String appointments = '/appointments';
   static const String appointmentNew = '/appointments/new';
