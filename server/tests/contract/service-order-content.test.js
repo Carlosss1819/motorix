@@ -1,7 +1,9 @@
 // Pruebas de contrato del contenido de la orden (US4): diagnóstico con
-// borrador (FR-011), servicios con su mano de obra (FR-012, R-13), repuestos
-// (RN-06) y recomendaciones (FR-013). Fuente de verdad:
-// specs/002-citas-ordenes-servicio/contracts/service-orders.md.
+// borrador (FR-011), servicios con su mano de obra (FR-012, R-13), refacciones
+// del catálogo en la ruta heredada /repuestos (RN-06, US7 del Sprint 3) y
+// recomendaciones (FR-013). Fuente de verdad:
+// specs/002-citas-ordenes-servicio/contracts/service-orders.md y
+// specs/003-historial-inventario/contracts/parts.md.
 import mysql from 'mysql2/promise';
 import { api, loginAs, bearer } from '../helpers/api.js';
 import { prepareTestDatabase, uniqueSuffix } from '../helpers/db.js';
@@ -13,6 +15,7 @@ let mechanicToken;
 let suffix;
 let clientId;
 let vehicleId;
+let contadorRefacciones = 0;
 
 // La entrega no tiene endpoint todavía (US5), así que el estado ENTREGADO se
 // fija directamente sobre la base de pruebas motorix_v2_test.
@@ -41,6 +44,24 @@ async function crearOrden(kilometraje) {
     });
   expect(response.status).toBe(201);
   return response.body.id;
+}
+
+// Crea una refacción de la corrida: desde el Sprint 3 el alta en la orden
+// recibe `partId` del catálogo en lugar de una descripción libre.
+async function crearRefaccion(stock = 5) {
+  contadorRefacciones += 1;
+  const response = await api
+    .post('/api/parts')
+    .set(bearer(adminToken))
+    .send({
+      codigo: `CTT-${suffix}-${contadorRefacciones}`,
+      nombre: `Repuesto de contrato ${suffix} ${contadorRefacciones}`,
+      categoria: 'Frenos',
+      stockInicial: stock,
+      stockMinimo: 1,
+    });
+  expect(response.status).toBe(201);
+  return response.body;
 }
 
 beforeAll(async () => {
@@ -209,29 +230,34 @@ describe('contrato DELETE /api/service-orders/:id/servicios/:servicioId', () => 
 });
 
 describe('contrato POST /api/service-orders/:id/repuestos', () => {
-  test('registra el repuesto con su cantidad y responde 201', async () => {
+  test('registra la refacción del catálogo con su cantidad y responde 201', async () => {
     const ordenId = await crearOrden(9000);
+    const refaccion = await crearRefaccion(5);
 
     const response = await api
       .post(`/api/service-orders/${ordenId}/repuestos`)
       .set(bearer(adminToken))
-      .send({ descripcion: 'Juego de pastillas delanteras', cantidad: 1 });
+      .send({ partId: refaccion.id, cantidad: 1 });
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
       id: expect.any(Number),
-      descripcion: 'Juego de pastillas delanteras',
+      partId: refaccion.id,
+      codigo: refaccion.codigo,
+      nombre: refaccion.nombre,
       cantidad: 1,
+      stockActual: 4,
     });
   });
 
   test('devuelve 400 si la cantidad es menor que 1 (RN-06)', async () => {
     const ordenId = await crearOrden(10000);
+    const refaccion = await crearRefaccion(3);
 
     const response = await api
       .post(`/api/service-orders/${ordenId}/repuestos`)
       .set(bearer(adminToken))
-      .send({ descripcion: 'Repuesto inválido', cantidad: 0 });
+      .send({ partId: refaccion.id, cantidad: 0 });
 
     expect(response.status).toBe(400);
     expect(response.body.error.mensaje).toContain('cantidad');
@@ -239,12 +265,13 @@ describe('contrato POST /api/service-orders/:id/repuestos', () => {
 });
 
 describe('contrato DELETE /api/service-orders/:id/repuestos/:repuestoId', () => {
-  test('borra el repuesto registrado', async () => {
+  test('retira la refacción y devuelve su stock (R-09)', async () => {
     const ordenId = await crearOrden(11000);
+    const refaccion = await crearRefaccion(5);
     const created = await api
       .post(`/api/service-orders/${ordenId}/repuestos`)
       .set(bearer(adminToken))
-      .send({ descripcion: 'Filtro de aceite', cantidad: 2 });
+      .send({ partId: refaccion.id, cantidad: 2 });
     expect(created.status).toBe(201);
 
     const response = await api
@@ -252,7 +279,10 @@ describe('contrato DELETE /api/service-orders/:id/repuestos/:repuestoId', () => 
       .set(bearer(adminToken));
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ mensaje: 'Repuesto eliminado' });
+    expect(response.body).toEqual({
+      mensaje: 'Refacción retirada de la orden.',
+      stockActual: 5,
+    });
 
     const detalle = await api
       .get(`/api/service-orders/${ordenId}`)
@@ -347,11 +377,13 @@ describe('permisos y orden entregada del contenido (US4)', () => {
       .send({ descripcion: 'Servicio tardío', duracionMinutos: 10 });
     expect(servicios.status).toBe(409);
 
+    const refaccion = await crearRefaccion(4);
     const repuestos = await api
       .post(`/api/service-orders/${ordenId}/repuestos`)
       .set(bearer(adminToken))
-      .send({ descripcion: 'Repuesto tardío', cantidad: 1 });
+      .send({ partId: refaccion.id, cantidad: 1 });
     expect(repuestos.status).toBe(409);
+    expect(repuestos.body.error.codigo).toBe('ORDEN_ENTREGADA');
 
     const recomendaciones = await api
       .post(`/api/service-orders/${ordenId}/recomendaciones`)

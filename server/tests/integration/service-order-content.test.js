@@ -9,10 +9,12 @@ import { prepareTestDatabase, uniqueSuffix } from '../helpers/db.js';
 let mechanicToken;
 let mechanicId;
 let receptionistToken;
+let adminToken;
 let suffix;
 let clientId;
 let vehicleId;
 let kilometraje = 20000;
+let contadorRefacciones = 0;
 
 // Crea una orden asignada al mecánico de las pruebas (o a otro si se indica).
 async function crearOrdenAsignada(mecanicoAsignado = mechanicId) {
@@ -32,11 +34,30 @@ async function crearOrdenAsignada(mecanicoAsignado = mechanicId) {
   return response.body.id;
 }
 
+// Crea una refacción de la corrida: el alta en la orden recibe `partId`
+// desde el Sprint 3, así que el repuesto sale del catálogo de inventario.
+async function crearRefaccion(stock = 5) {
+  contadorRefacciones += 1;
+  const response = await api
+    .post('/api/parts')
+    .set(bearer(adminToken))
+    .send({
+      codigo: `INT-${suffix}-${contadorRefacciones}`,
+      nombre: `Repuesto de integración ${suffix} ${contadorRefacciones}`,
+      categoria: 'Frenos',
+      stockInicial: stock,
+      stockMinimo: 1,
+    });
+  expect(response.status).toBe(201);
+  return response.body;
+}
+
 beforeAll(async () => {
   await prepareTestDatabase();
   suffix = uniqueSuffix();
   mechanicToken = await loginAs('mecanico', 'Mecanico2026!');
   receptionistToken = await loginAs('recepcion', 'Recepcion2026!');
+  adminToken = await loginAs('admin', 'Admin2026!');
 
   const mecanico = await api
     .get('/api/auth/me')
@@ -45,7 +66,6 @@ beforeAll(async () => {
   mechanicId = mecanico.body.id;
 
   // Un segundo mecánico para probar órdenes ajenas.
-  const adminToken = await loginAs('admin', 'Admin2026!');
   const otro = await api
     .post('/api/users')
     .set(bearer(adminToken))
@@ -143,12 +163,14 @@ test('el diagnóstico en borrador se marca y se limpia al guardarlo definitivo (
 
 test('el mecánico registra repuestos y recomendaciones en su orden (RN-06, FR-013)', async () => {
   const ordenId = await crearOrdenAsignada();
+  const refaccion = await crearRefaccion(6);
 
   const repuesto = await api
     .post(`/api/service-orders/${ordenId}/repuestos`)
     .set(bearer(mechanicToken))
-    .send({ descripcion: 'Juego de bujías', cantidad: 4 });
+    .send({ partId: refaccion.id, cantidad: 4 });
   expect(repuesto.status).toBe(201);
+  expect(repuesto.body.stockActual).toBe(2);
 
   const recomendaciones = await api
     .post(`/api/service-orders/${ordenId}/recomendaciones`)
@@ -162,7 +184,7 @@ test('el mecánico registra repuestos y recomendaciones en su orden (RN-06, FR-0
   expect(detalle.body.repuestos).toHaveLength(1);
   expect(detalle.body.repuestos[0]).toEqual({
     id: expect.any(Number),
-    descripcion: 'Juego de bujías',
+    descripcion: refaccion.nombre,
     cantidad: 4,
   });
   expect(detalle.body.recomendaciones).toBe('Cambiar el aceite a los 5,000 km');
