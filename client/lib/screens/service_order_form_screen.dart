@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
+import '../models/appointment.dart';
 import '../models/client.dart';
 import '../models/vehicle.dart';
 import '../providers/clients_provider.dart';
@@ -17,14 +18,28 @@ import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
 import 'vehicle_form_screen.dart';
 
-/// Formulario de nueva orden de servicio (US1/HU1).
+/// Argumento de la ruta de nueva orden de servicio.
+class ServiceOrderFormArgs {
+  const ServiceOrderFormArgs({this.citaRecibida});
+
+  /// Precarga devuelta al recibir una cita (FR-007): cliente, vehículo,
+  /// motivo y la cita de origen que se enviará en el alta.
+  final ReceivedAppointment? citaRecibida;
+}
+
+/// Formulario de nueva orden de servicio (US1/HU1; la US2 lo amplía con la
+/// precarga de una cita recibida, FR-007).
 ///
 /// La orden se crea con cliente y vehículo existentes (RN‑01, RN‑02), motivo
 /// de visita obligatorio, fecha de ingreso y kilometraje; nace en estado
 /// `RECIBIDO` y el backend valida el kilometraje contra la última orden del
 /// vehículo (FR‑018).
 class ServiceOrderFormScreen extends StatefulWidget {
-  const ServiceOrderFormScreen({super.key});
+  const ServiceOrderFormScreen({super.key, this.cita});
+
+  /// Si se pasa una cita recibida, el formulario arranca precargado con ella
+  /// y envía su `citaId` en el alta (FR-007).
+  final ReceivedAppointment? cita;
 
   @override
   State<ServiceOrderFormScreen> createState() =>
@@ -58,6 +73,16 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
     _fechaController = TextEditingController(text: _hoyIso());
     _kilometrajeController = TextEditingController();
 
+    // Precarga desde una cita RECIBIDA (FR-007): cliente y motivo llegan de
+    // la cita; el vehículo se confirma al cargar la lista del cliente para no
+    // pintar el selector con un valor que aún no está en sus ítems.
+    final ReceivedAppointment? cita = widget.cita;
+    if (cita != null) {
+      _clienteId = cita.clienteId;
+      _motivoController.text = cita.motivo;
+      _cargandoVehiculos = true;
+    }
+
     // El selector de clientes necesita la lista; se carga aquí por si el
     // formulario se abre antes de visitar el listado.
     final ClientsProvider clientes = context.read<ClientsProvider>();
@@ -67,6 +92,14 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
           return;
         }
         clientes.load();
+      });
+    }
+    if (_clienteId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _cargarVehiculos(_clienteId!, preseleccionado: widget.cita?.vehiculoId);
       });
     }
   }
@@ -109,7 +142,7 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
 
   /// Carga los vehículos del cliente elegido; vacío significa que ese cliente
   /// aún no tiene ninguno registrado (escenario 5 HU1).
-  Future<void> _cargarVehiculos(int clienteId) async {
+  Future<void> _cargarVehiculos(int clienteId, {int? preseleccionado}) async {
     setState(() {
       _cargandoVehiculos = true;
       _errorVehiculos = null;
@@ -129,6 +162,11 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
           vehiculos.status == LoadStatus.error
               ? vehiculos.error ?? AppMessages.unexpectedError
               : null;
+      // Vehículo de la cita precargada, solo si está en la lista del cliente.
+      if (preseleccionado != null &&
+          _vehiculos.any((Vehicle v) => v.id == preseleccionado)) {
+        _vehiculoId = preseleccionado;
+      }
     });
   }
 
@@ -187,6 +225,20 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
     return null;
   }
 
+  /// Aviso de que la orden deriva de una cita recibida (FR-007).
+  Widget _buildCitaOrigenInfo() {
+    final ReceivedAppointment cita = widget.cita!;
+    return AppPanel(
+      expand: false,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Text(
+        'Orden derivada de la cita #${cita.citaId}: cliente, vehículo y '
+        'motivo precargados desde la cita recibida.',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final FormState? form = _formKey.currentState;
     if (form == null || !form.validate()) {
@@ -209,6 +261,9 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
         motivoVisita: _motivoController.text.trim(),
         fechaIngreso: _fechaController.text.trim(),
         kilometraje: int.parse(_kilometrajeController.text.trim()),
+        // Cita de origen cuando la orden arranca desde una cita recibida
+        // (FR-007); el backend valida que siga RECIBIDA y sin usar.
+        citaId: widget.cita?.citaOrigen,
       );
 
       if (!mounted) {
@@ -280,6 +335,10 @@ class _ServiceOrderFormScreenState extends State<ServiceOrderFormScreen> {
                     children: <Widget>[
                       if (_error.isNotEmpty) ...<Widget>[
                         FormErrorBanner(mensaje: _error),
+                        const SizedBox(height: AppSpacing.lg),
+                      ],
+                      if (widget.cita != null) ...<Widget>[
+                        _buildCitaOrigenInfo(),
                         const SizedBox(height: AppSpacing.lg),
                       ],
                       _buildClienteField(clients),

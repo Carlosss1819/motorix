@@ -37,13 +37,15 @@ class ServiceOrdersService {
   }
 
   /// POST /api/service-orders. El vehículo debe pertenecer al cliente elegido
-  /// (RN-02) y la orden nace siempre en estado `RECIBIDO` (FR-014).
+  /// (RN-02) y la orden nace siempre en estado `RECIBIDO` (FR-014). Con
+  /// [citaId] la orden deriva de una cita `RECIBIDA` (FR-007).
   Future<ServiceOrder> create({
     required int clienteId,
     required int vehiculoId,
     required String motivoVisita,
     required String fechaIngreso,
     required int kilometraje,
+    int? citaId,
   }) async {
     final dynamic data = await _api.post(
       '/service-orders',
@@ -53,6 +55,7 @@ class ServiceOrdersService {
         'motivoVisita': motivoVisita,
         'fechaIngreso': fechaIngreso,
         'kilometraje': kilometraje,
+        'citaId': ?citaId,
       },
     );
     return ServiceOrder.fromJson(asMap(data));

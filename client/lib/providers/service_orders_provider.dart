@@ -140,13 +140,14 @@ class ServiceOrdersProvider extends ChangeNotifier {
   }
 
   /// Registra una orden de servicio (nace en `RECIBIDO`, FR-014) y refresca
-  /// el listado.
+  /// el listado. Con [citaId] deriva de una cita recibida (FR-007).
   Future<ServiceOrder> create({
     required int clienteId,
     required int vehiculoId,
     required String motivoVisita,
     required String fechaIngreso,
     required int kilometraje,
+    int? citaId,
   }) async {
     final ServiceOrder created = await _service.create(
       clienteId: clienteId,
@@ -154,6 +155,7 @@ class ServiceOrdersProvider extends ChangeNotifier {
       motivoVisita: motivoVisita,
       fechaIngreso: fechaIngreso,
       kilometraje: kilometraje,
+      citaId: citaId,
     );
     _pagina = 1;
     await reload();
