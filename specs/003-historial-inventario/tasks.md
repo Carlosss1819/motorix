@@ -107,24 +107,24 @@ el estado vacío (V1 y V2 del quickstart)
 
 ### Tests for User Story 1
 
-- [ ] T009 [P] [US1] Escribir la prueba de contrato `server/tests/contract/vehicle-history.test.js`
+- [X] T009 [P] [US1] Escribir la prueba de contrato `server/tests/contract/vehicle-history.test.js`
   para `GET /api/vehicles/:id/history`: 200 paginado, 401 sin token, 403 por rol
   inválido, 404 vehículo inexistente
-- [ ] T010 [P] [US1] Escribir la prueba de integración `server/tests/integration/vehicle-history.test.js`:
+- [X] T010 [P] [US1] Escribir la prueba de integración `server/tests/integration/vehicle-history.test.js`:
   excluye órdenes no terminadas (FR‑003), no duplica (SC‑002), ordena por
   `fechaServicio` DESC, incluye `refacciones[]` con `partId: null` en filas heredadas
   y estado vacío con total 0
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implementar `server/services/vehicle_history.service.js`
+- [X] T011 [US1] Implementar `server/services/vehicle_history.service.js`
   (`listByVehicle(vehiculoId, { pagina, porPagina })`) sobre el modelo de T008:
   paginación R‑10 (defecto 10, máximo 50, fuera de rango se corrige sin error) y
   mapeo a `{ordenId, fechaServicio, kilometraje, estadoOrden, observaciones,
   diagnostico, servicios[], refacciones[], recomendaciones}` (contracts/history.md)
-- [ ] T012 [US1] Implementar `server/controllers/vehicle_history.controller.js` con el
+- [X] T012 [US1] Implementar `server/controllers/vehicle_history.controller.js` con el
   handler `historyHandler`
-- [ ] T013 [US1] Agregar `GET /:id/history` en `server/routes/vehicles.routes.js` con
+- [X] T013 [US1] Agregar `GET /:id/history` en `server/routes/vehicles.routes.js` con
   `authenticate` + `authorize('ADMIN','RECEPTIONIST','MECHANIC')` y `asyncHandler`
 - [ ] T014 [P] [US1] Crear `client/lib/models/vehicle_history.dart` (entrada del
   historial con todos los campos y `fromJson` tolerante a nulos)

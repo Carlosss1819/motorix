@@ -15,8 +15,19 @@ import {
   createVehicleHandler,
   updateVehicleHandler,
 } from '../controllers/vehicles.controller.js';
+import { vehicleHistoryHandler } from '../controllers/vehicle_history.controller.js';
 
 export const vehiclesRoutes = Router();
+
+// Historial del vehículo (Sprint 3, US1): subrecurso de solo consulta
+// disponible para los TRES roles (FR-004, RN-10); se declara antes del
+// `use` de escritura porque su matriz de permisos es más amplia.
+vehiclesRoutes.get(
+  '/:id/history',
+  authenticate,
+  authorize('ADMIN', 'RECEPTIONIST', 'MECHANIC'),
+  asyncHandler(vehicleHistoryHandler),
+);
 
 vehiclesRoutes.use(authenticate, authorize('ADMIN', 'RECEPTIONIST'));
 
