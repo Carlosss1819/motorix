@@ -8,6 +8,16 @@
 
 **Entrada**: Descripción del usuario: `docs/sprints/sprint-3-historial-inventario.md` (Sprint 3 del MVP de Motorix: historial, mantenimiento e inventario).
 
+## Clarifications
+
+### Session 2026-10-13
+
+- P: ¿Con qué antelación se considera que un mantenimiento está «próximo» a vencer? → R: Antelación propia de cada mantenimiento, medida en días y en kilómetros, con valores por defecto de 30 días y 500 km; nunca es un umbral global.
+- P: ¿Qué ocurre con un mantenimiento cuando el servicio correspondiente se realiza? → R: El mecánico lo marca como «servicio realizado» y el mismo registro se renueva: actualiza la fecha y el kilometraje del último servicio, recalcula el objetivo con su intervalo configurable y vuelve a estado «normal»; un único registro por vehículo y tipo de servicio, sin duplicados.
+- P: ¿Qué nombre canónico usará el sistema para las piezas del inventario: «refacción» o «repuesto»? → R: «Refacción» en toda la aplicación, la documentación y las pruebas; el «repuesto» del Sprint 2 (pantalla y endpoint `/repuestos` de la orden) es el mismo concepto, cuyo nombre se unifica. Los endpoints heredados pueden conservarse por compatibilidad.
+- P: ¿Qué roles pueden crear y editar mantenimientos, y quién registra las entradas de inventario por reabastecimiento? → R: Mantenimientos: mecánico y administrador (crean y editan); entradas de inventario por reabastecimiento: solo el administrador. Las consultas quedan abiertas a los tres roles.
+- P: ¿Cómo se limita la consulta del historial de un vehículo con muchas órdenes terminadas? → R: Se pagina con el patrón de paginación del proyecto (R‑10): 10 entradas por página por defecto, máximo 50, conservando el orden cronológico.
+
 ## Escenarios de usuario y pruebas
 
 ### Historia 1 - Consultar el historial de servicios del vehículo (Prioridad: P1)
@@ -138,7 +148,7 @@ Como administrador, quiero visualizar alertas de stock bajo para reabastecer a t
 
 ### Casos límite
 
-- ¿Qué sucede cuando el vehículo tiene muchas órdenes terminadas? El historial debe paginarse o limitarse sin perder el orden cronológico.
+- ¿Qué sucede cuando el vehículo tiene muchas órdenes terminadas? El historial se pagina con el patrón de paginación del proyecto (10 entradas por página por defecto, máximo 50) sin perder el orden cronológico.
 - ¿Qué sucede cuando dos mecánicos agregan la misma refacción al mismo tiempo y el stock solo alcanza para una unidad? El sistema impide que el stock quede negativo y la segunda operación recibe un error claro.
 - ¿Qué sucede cuando una refacción ya usada en órdenes se quiere eliminar? No se elimina: se desactiva y su historial se conserva.
 - ¿Qué sucede cuando el kilometraje de un servicio es menor al registrado en la orden anterior? Solo se permite con corrección explícita y motivo.
@@ -152,7 +162,7 @@ Como administrador, quiero visualizar alertas de stock bajo para reabastecer a t
 
 ### Historial del vehículo
 
-- **FR-001**: El sistema mostrará el historial de servicios de un vehículo derivado de sus órdenes terminadas, en orden cronológico, sin crear registros duplicados (RN-10).
+- **FR-001**: El sistema mostrará el historial de servicios de un vehículo derivado de sus órdenes terminadas, en orden cronológico, sin crear registros duplicados (RN-10); la consulta se paginará con el patrón de paginación del proyecto (10 entradas por página por defecto, máximo 50).
 - **FR-002**: Cada entrada del historial incluirá la fecha del servicio, el kilometraje, la orden relacionada, el diagnóstico, los servicios realizados, las refacciones utilizadas, las observaciones y las recomendaciones.
 - **FR-003**: El historial excluirá las órdenes que no estén terminadas ni entregadas.
 - **FR-004**: Mecánico, recepcionista y administrador podrán consultar el historial de cualquier vehículo; el mecánico podrá abrirlo desde sus órdenes asignadas.
@@ -165,45 +175,46 @@ Como administrador, quiero visualizar alertas de stock bajo para reabastecer a t
 
 ### Mantenimiento preventivo
 
-- **FR-008**: El sistema permitirá registrar un próximo mantenimiento por tipo de servicio, indicando fecha objetivo, kilometraje objetivo o ambos (RN-11).
+- **FR-008**: El sistema permitirá registrar un próximo mantenimiento por tipo de servicio, indicando fecha objetivo, kilometraje objetivo o ambos (RN-11); solo el mecánico y el administrador podrán crear y editar mantenimientos (RN-15).
 - **FR-009**: El sistema impedirá guardar un mantenimiento sin fecha objetivo y sin kilometraje objetivo.
 - **FR-010**: El sistema no asumirá intervalos universales: cada mantenimiento se configura por vehículo y tipo de servicio (RN-12).
-- **FR-011**: El sistema calculará el estado de cada mantenimiento como normal, próximo o vencido a partir de la fecha y el kilometraje actuales.
+- **FR-011**: El sistema calculará el estado de cada mantenimiento como normal, próximo o vencido a partir de la fecha y el kilometraje actuales; se marcará como próximo cuando falten, como mínimo, la antelación configurada en el mantenimiento (días antes de la fecha objetivo o kilómetros antes de la kilometraje objetivo), con valores por defecto de 30 días y 500 km.
 - **FR-012**: El sistema marcará un mantenimiento como vencido cuando se alcance el kilometraje objetivo o se cumpla la fecha objetivo, lo que ocurra primero.
 - **FR-013**: El sistema permitirá consultar los mantenimientos próximos y vencidos con el vehículo y el cliente asociados.
 - **FR-014**: El sistema permitirá registrar las recomendaciones del mecánico en cada mantenimiento.
+- **FR-015**: El sistema permitirá atender un mantenimiento marcándolo como «servicio realizado»: el mismo registro actualizará la fecha y el kilometraje del último servicio, recalculará su objetivo con el intervalo configurable y volverá al estado «normal», sin crear un registro duplicado por vehículo y tipo de servicio.
 
 ### Inventario de refacciones
 
-- **FR-015**: El sistema permitirá registrar refacciones con código único, nombre, categoría, marca, stock actual, stock mínimo, precio de compra y precio de venta.
-- **FR-016**: El sistema impedirá registrar dos refacciones con el mismo código.
-- **FR-017**: El sistema permitirá consultar el stock disponible y filtrarlo por nombre o código.
-- **FR-018**: El sistema permitirá desactivar una refacción para que no se use en órdenes nuevas, conservando siempre su historial de uso.
-- **FR-019**: El sistema impedirá que el stock de una refacción quede negativo en cualquier operación (RN-8).
-- **FR-020**: El sistema marcará una refacción como stock bajo cuando su stock actual sea menor o igual a su stock mínimo.
-- **FR-021**: Solo el administrador podrá registrar, editar, desactivar refacciones y ajustar su stock; el resto de los roles solo podrán consultar el inventario (RN-15).
+- **FR-016**: El sistema permitirá registrar refacciones con código único, nombre, categoría, marca, stock actual, stock mínimo, precio de compra y precio de venta.
+- **FR-017**: El sistema impedirá registrar dos refacciones con el mismo código.
+- **FR-018**: El sistema permitirá consultar el stock disponible y filtrarlo por nombre o código.
+- **FR-019**: El sistema permitirá desactivar una refacción para que no se use en órdenes nuevas, conservando siempre su historial de uso.
+- **FR-020**: El sistema impedirá que el stock de una refacción quede negativo en cualquier operación (RN-8).
+- **FR-021**: El sistema marcará una refacción como stock bajo cuando su stock actual sea menor o igual a su stock mínimo.
+- **FR-022**: Solo el administrador podrá registrar, editar, desactivar refacciones y ajustar su stock; el resto de los roles solo podrán consultar el inventario (RN-15).
 
 ### Uso de refacciones en órdenes
 
-- **FR-022**: El sistema permitirá agregar a una orden solo refacciones existentes y activas del catálogo, con su cantidad (RN-6).
-- **FR-023**: Cada refacción agregada a una orden generará un movimiento de salida de inventario con la cantidad y la orden asociada (RN-7).
-- **FR-024**: El sistema rechazará el uso de una refacción si la cantidad supera el stock disponible, sin modificar el inventario.
-- **FR-025**: El sistema permitirá retirar una refacción de una orden mientras esta no esté terminada ni entregada, reponiendo el stock y dejando constancia del movimiento.
-- **FR-026**: Mecánico, recepcionista y administrador podrán agregar o retirar refacciones en una orden; el mecánico solo en las órdenes que le están asignadas (RN-15).
+- **FR-023**: El sistema permitirá agregar a una orden solo refacciones existentes y activas del catálogo, con su cantidad (RN-6).
+- **FR-024**: Cada refacción agregada a una orden generará un movimiento de salida de inventario con la cantidad y la orden asociada (RN-7).
+- **FR-025**: El sistema rechazará el uso de una refacción si la cantidad supera el stock disponible, sin modificar el inventario.
+- **FR-026**: El sistema permitirá retirar una refacción de una orden mientras esta no esté terminada ni entregada, reponiendo el stock y dejando constancia del movimiento.
+- **FR-027**: Mecánico, recepcionista y administrador podrán agregar o retirar refacciones en una orden; el mecánico solo en las órdenes que le están asignadas (RN-15).
 
 ### Movimientos de inventario
 
-- **FR-027**: El sistema registrará un movimiento por cada entrada, salida o ajuste de stock, con tipo, cantidad, motivo, fecha y la orden asociada cuando corresponda.
-- **FR-028**: El administrador podrá registrar ajustes de inventario con motivo obligatorio; los movimientos de salida por orden y las entradas por reabastecimiento quedarán trazados igualmente.
-- **FR-029**: El historial de movimientos podrá consultarse por refacción para explicar cualquier cambio de stock.
+- **FR-028**: El sistema registrará un movimiento por cada entrada, salida o ajuste de stock, con tipo, cantidad, motivo, fecha y la orden asociada cuando corresponda.
+- **FR-029**: El administrador podrá registrar ajustes de inventario con motivo obligatorio; las entradas por reabastecimiento también las registrará únicamente el administrador, y las salidas por orden y las entradas quedarán trazadas igualmente (RN-15).
+- **FR-030**: El historial de movimientos podrá consultarse por refacción para explicar cualquier cambio de stock.
 
 ### Datos de ejemplo
 
-- **FR-030**: El sistema cargará datos de ejemplo idempotentes al iniciar (refacciones con existencias variadas, algunos mantenimientos próximos y vencidos, y movimientos de inventario) de modo que la aplicación muestre información desde el primer arranque, sin duplicarlos en reinicios sucesivos.
+- **FR-031**: El sistema cargará datos de ejemplo idempotentes al iniciar (refacciones con existencias variadas, algunos mantenimientos próximos y vencidos, y movimientos de inventario) de modo que la aplicación muestre información desde el primer arranque, sin duplicarlos en reinicios sucesivos.
 
 ### Entidades clave
 
-- **Mantenimiento**: representa un servicio preventivo programado para un vehículo; incluye el tipo de servicio, la fecha del último servicio, el kilometraje del último servicio, la fecha objetivo, el kilometraje objetivo, las notas o recomendaciones del mecánico y su estado. Se relaciona con un vehículo.
+- **Mantenimiento**: representa un servicio preventivo programado para un vehículo; incluye el tipo de servicio, la fecha del último servicio, el kilometraje del último servicio, la fecha objetivo, el kilometraje objetivo, el intervalo configurable en días y/o kilómetros con el que se renueva el objetivo tras cada servicio, la antelación en días y en kilómetros para el estado «próximo», las notas o recomendaciones del mecánico y su estado. Sus estados posibles son «normal», «próximo» y «vencido». Se relaciona con un vehículo y existe un único registro por vehículo y tipo de servicio.
 - **Refacción**: representa una pieza del inventario del taller; incluye un código único, nombre, categoría, marca, stock actual, stock mínimo, precio de compra, precio de venta y su estado activo. Es el catálogo del que se alimentan las órdenes.
 - **Movimiento de inventario**: representa un cambio puntual del stock de una refacción; incluye el tipo (entrada, salida o ajuste), la cantidad, el motivo, la fecha y, cuando el cambio proviene de una orden de servicio, la orden asociada.
 - **Refacción utilizada en la orden**: representa el vínculo entre una refacción del catálogo y una orden de servicio, con la cantidad usada; su creación o retiro provoca el movimiento de inventario correspondiente.
@@ -213,7 +224,7 @@ Como administrador, quiero visualizar alertas de stock bajo para reabastecer a t
 
 ### Resultados medibles
 
-- **SC-001**: Un mecánico puede ver el historial completo de un vehículo con 10 o más servicios registrados en menos de 5 segundos, en orden cronológico.
+- **SC-001**: Un mecánico puede ver el historial de un vehículo con 10 o más servicios registrados —una página del historial paginado, 10 entradas por defecto— en menos de 5 segundos, en orden cronológico.
 - **SC-002**: El 100% de las órdenes terminadas aparecen una sola vez en el historial de su vehículo.
 - **SC-003**: El personal de recepción puede identificar los próximos mantenimientos de la semana en menos de 30 segundos desde la pantalla correspondiente.
 - **SC-004**: Registrar un próximo nuevo toma menos de 1 minuto y no requiere conocimientos técnicos.
@@ -226,12 +237,14 @@ Como administrador, quiero visualizar alertas de stock bajo para reabastecer a t
 ## Supuestos
 
 - El historial del vehículo se deriva de las órdenes terminadas (RN-10); no se crea un registro de historial separado que pueda desincronizarse.
-- La vigencia de un mantenimiento se cumple al alcanzar el kilometraje objetivo o la fecha objetivo, lo que ocurra primero; el estado "próximo" se calcula con un umbral configurable por mantenimiento, no global.
+- La vigencia de un mantenimiento se cumple al alcanzar el kilometraje objetivo o la fecha objetivo, lo que ocurra primero; el estado "próximo" se calcula con una antelación configurable por mantenimiento en días y kilómetros (valores por defecto 30 días / 500 km), nunca con un umbral global.
 - El stock negativo está prohibido (RN-8); no se contempla una política de tolerancia.
 - Los movimientos de inventario son de tres tipos: entrada, salida y ajuste; el ajuste requiere motivo y es exclusivo del administrador.
 - "Stock bajo" significa stock actual menor o igual al stock mínimo definido en la refacción; un stock mínimo de 0 no genera alerta.
 - Las refacciones que se usan en una orden deben provenir del catálogo de refacciones (RN-6); la lista de refacciones por orden existente desde el Sprint 2 se amplía para ligarse al catálogo.
+- Término canónico: «refacción». El «repuesto» del Sprint 2 (pantalla y endpoint de refacciones de la orden) designa el mismo concepto y su nombre se unifica en UI, documentación y pruebas; los endpoints heredados pueden conservarse por compatibilidad.
 - Los mantenimientos se programan por vehículo y tipo de servicio, con intervalos configurables por mantenimiento (RN-12); no se asumen periodos universales como 6 meses o 5,000 km.
+- Existe un único registro de mantenimiento por vehículo y tipo de servicio: al marcarlo como «servicio realizado» el mismo registro se renueva (último servicio y nuevo objetivo desde el intervalo configurable) en lugar de acumular registros cumplidos.
 - El kilometraje sigue la misma regla de no-regresión ya aplicada en el Sprint 2, con corrección explícita reservada al administrador.
 - Este sprint se apoya en las órdenes de servicio, clientes y vehículos entregados en los sprints 1 y 2.
 - Están fuera de alcance: pagos, Mercado Pago, tickets, panel general (dashboard) y notificaciones externas (correo, WhatsApp). El aviso al cliente sobre mantenimientos próximos lo realiza el personal de recepción de forma manual.
