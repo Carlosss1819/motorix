@@ -225,3 +225,52 @@ describe('asignación de mecánico (US3 / FR-009)', () => {
     expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
   });
 });
+
+describe('selector de mecánicos para la asignación (FR-009)', () => {
+  test('devuelve solo los mecánicos activos con id y usuario', async () => {
+    const response = await api
+      .get('/api/users/mechanics')
+      .set(bearer(receptionistToken));
+
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBeGreaterThan(0);
+    expect(response.body).toEqual(
+      expect.arrayContaining([
+        { id: mecanicoId, username: 'mecanico' },
+        { id: mechanic2Id, username: `asig_${suffix}` },
+      ]),
+    );
+    for (const mechanic of response.body) {
+      expect(Object.keys(mechanic).sort()).toEqual(['id', 'username']);
+    }
+    // Ni el administrador ni recepción aparecen como mecánicos.
+    const ids = response.body.map((mechanic) => mechanic.id);
+    expect(ids).not.toContain(1);
+    expect(ids).not.toContain(recepcionId);
+  });
+
+  test('un mecánico desactivado deja de aparecer en la lista', async () => {
+    const disabled = await api
+      .patch(`/api/users/${mechanic2Id}`)
+      .set(bearer(adminToken))
+      .send({ estado: 'INACTIVO' });
+    expect(disabled.status).toBe(200);
+
+    const response = await api
+      .get('/api/users/mechanics')
+      .set(bearer(adminToken));
+
+    expect(response.status).toBe(200);
+    const ids = response.body.map((mechanic) => mechanic.id);
+    expect(ids).not.toContain(mechanic2Id);
+  });
+
+  test('un mecánico no puede consultar la lista (403)', async () => {
+    const response = await api
+      .get('/api/users/mechanics')
+      .set(bearer(mechanicToken));
+
+    expect(response.status).toBe(403);
+    expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
+  });
+});
