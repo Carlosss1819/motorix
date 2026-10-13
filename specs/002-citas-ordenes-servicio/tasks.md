@@ -157,20 +157,20 @@ implementación y pruebas independientes.
 
 ### Tests for User Story 4
 
-- [ ] T050 [P] [US4] Prueba de contrato de diagnóstico/servicios/repuestos/recomendaciones en server/tests/contract/service-order-content.test.js (201/200, `400` con datos inválidos, `409` en orden `ENTREGADO`)
-- [ ] T051 [P] [US4] Prueba de integración de contenido de la orden en server/tests/integration/service-order-content.test.js (servicio y mano de obra atómicos, `403` de mecánico en orden ajena, borrador de diagnóstico)
+- [X] T050 [P] [US4] Prueba de contrato de diagnóstico/servicios/repuestos/recomendaciones en server/tests/contract/service-order-content.test.js (201/200, `400` con datos inválidos, `409` en orden `ENTREGADO`)
+- [X] T051 [P] [US4] Prueba de integración de contenido de la orden en server/tests/integration/service-order-content.test.js (servicio y mano de obra atómicos, `403` de mecánico en orden ajena, borrador de diagnóstico)
 
 ### Implementation for User Story 4
 
-- [ ] T052 [P] [US4] Crear server/models/order_items.js con `createServiceWithLabor` (transacción: fila en `order_services` y en `order_labor` con `service_id`), `deleteServiceById` (cascada de mano de obra), `createPart`, `deletePartById`, `listServicesByOrder` y `listPartsByOrder` según data-model.md
-- [ ] T053 [US4] Ampliar server/validators/service-order.validator.js: `texto` no vacío para diagnóstico y recomendaciones, `borrador` booleano, `descripcion` no vacía, `duracionMinutos` entero > 0, `precio` decimal ≥ 0 opcional, `cantidad` entero ≥ 1 (mensajes en español)
-- [ ] T054 [US4] Ampliar server/services/service_order.service.js: guardar diagnóstico con `diagnosis_draft` (FR‑011) y descarte en cliente al no guardar (FR‑019); crear servicio con su mano de obra en la misma transacción (R‑13); registrar repuestos con cantidad ≥ 1 sin consultar inventario (RN‑06, Sprint 3 fuera de alcance); guardar recomendaciones; rechazar con `409` toda alta o baja cuando el estado sea `ENTREGADO` (FR‑016); exigir a `MECHANIC` que la orden sea suya
-- [ ] T055 [P] [US4] Agregar los handlers de diagnóstico, servicios (alta y `DELETE`), repuestos (alta y `DELETE`) y recomendaciones en server/controllers/service_orders.controller.js
-- [ ] T056 [US4] Registrar las rutas `POST /:id/diagnostico`, `POST /:id/servicios`, `DELETE /:id/servicios/:servicioId`, `POST /:id/repuestos`, `DELETE /:id/repuestos/:repuestoId` y `POST /:id/recomendaciones` en server/routes/service_orders.routes.js con `validate` y permisos por rol
-- [ ] T057 [US4] Agregar la sección de diagnóstico en client/lib/screens/service_order_detail_screen.dart con **Guardar borrador** y **Guardar y continuar**, descartando lo no guardado al salir y marcando visualmente el borrador
-- [ ] T058 [US4] Agregar en client/lib/screens/service_order_detail_screen.dart el alta y la baja (con confirmación) de servicios con duración/precio y de repuestos con cantidad, ocultando las acciones en `ENTREGADO`
-- [ ] T059 [US4] Agregar el bloque de recomendaciones en client/lib/screens/service_order_detail_screen.dart y su persistencia en client/lib/services/service_orders_service.dart
-- [ ] T060 [P] [US4] Prueba flutter test del detalle con contenido y borrador en client/test/service_order_detail_test.dart
+- [X] T052 [P] [US4] Crear server/models/order_items.js con `createServiceWithLabor` (transacción: fila en `order_services` y en `order_labor` con `service_id`), `deleteServiceById` (cascada de mano de obra), `createPart`, `deletePartById`, `listServicesByOrder` y `listPartsByOrder` según data-model.md
+- [X] T053 [US4] Ampliar server/validators/service-order.validator.js: `texto` no vacío para diagnóstico y recomendaciones, `borrador` booleano, `descripcion` no vacía, `duracionMinutos` entero > 0, `precio` decimal ≥ 0 opcional, `cantidad` entero ≥ 1 (mensajes en español)
+- [X] T054 [US4] Ampliar server/services/service_order.service.js: guardar diagnóstico con `diagnosis_draft` (FR‑011) y descarte en cliente al no guardar (FR‑019); crear servicio con su mano de obra en la misma transacción (R‑13); registrar repuestos con cantidad ≥ 1 sin consultar inventario (RN‑06, Sprint 3 fuera de alcance); guardar recomendaciones; rechazar con `409` toda alta o baja cuando el estado sea `ENTREGADO` (FR‑016); exigir a `MECHANIC` que la orden sea suya
+- [X] T055 [P] [US4] Agregar los handlers de diagnóstico, servicios (alta y `DELETE`), repuestos (alta y `DELETE`) y recomendaciones en server/controllers/service_orders.controller.js
+- [X] T056 [US4] Registrar las rutas `POST /:id/diagnostico`, `POST /:id/servicios`, `DELETE /:id/servicios/:servicioId`, `POST /:id/repuestos`, `DELETE /:id/repuestos/:repuestoId` y `POST /:id/recomendaciones` en server/routes/service_orders.routes.js con `validate` y permisos por rol
+- [X] T057 [US4] Agregar la sección de diagnóstico en client/lib/screens/service_order_detail_screen.dart con **Guardar borrador** y **Guardar y continuar**, descartando lo no guardado al salir y marcando visualmente el borrador
+- [X] T058 [US4] Agregar en client/lib/screens/service_order_detail_screen.dart el alta y la baja (con confirmación) de servicios con duración/precio y de repuestos con cantidad, ocultando las acciones en `ENTREGADO`
+- [X] T059 [US4] Agregar el bloque de recomendaciones en client/lib/screens/service_order_detail_screen.dart y su persistencia en client/lib/services/service_orders_service.dart
+- [X] T060 [P] [US4] Prueba flutter test del detalle con contenido y borrador en client/test/service_order_detail_test.dart
 
 **Checkpoint**: la constancia técnica de la orden queda completa y probada
 
