@@ -83,4 +83,23 @@ class ServiceOrdersService {
     );
     return ServiceOrder.fromJson(asMap(data));
   }
+
+  /// POST /api/service-orders/:id/asignar. `mecanicoId` nulo desasigna la
+  /// orden; el backend responde `409` si la orden está cerrada (FR-009).
+  Future<AssignedMechanic> assign({
+    required int id,
+    required int? mecanicoId,
+  }) async {
+    final dynamic data = await _api.post(
+      '/service-orders/$id/asignar',
+      body: <String, dynamic>{'mecanicoId': mecanicoId},
+    );
+    return AssignedMechanic.fromJson(asMap(data));
+  }
+
+  /// GET /api/users/mechanics: mecánicos activos para la asignación (FR-009).
+  Future<List<MechanicOption>> listMechanics() async {
+    final dynamic data = await _api.get('/users/mechanics');
+    return asList(data).map(MechanicOption.fromJson).toList();
+  }
 }

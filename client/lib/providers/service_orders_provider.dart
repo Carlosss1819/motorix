@@ -183,4 +183,26 @@ class ServiceOrdersProvider extends ChangeNotifier {
     await reload();
     return updated;
   }
+
+  /// Asigna o desasigna el mecánico de la orden (FR-009) y refresca el
+  /// listado y la ficha. Lanza [ApiException] con el mensaje del backend
+  /// (p. ej. el `409` de una orden terminada o entregada).
+  Future<AssignedMechanic> assign({
+    required int id,
+    required int? mecanicoId,
+  }) async {
+    final AssignedMechanic assigned = await _service.assign(
+      id: id,
+      mecanicoId: mecanicoId,
+    );
+    if (_selected?.id == id) {
+      _selected = await _service.detail(id);
+      notifyListeners();
+    }
+    await reload();
+    return assigned;
+  }
+
+  /// Lista los mecánicos activos para el selector de asignación (FR-009).
+  Future<List<MechanicOption>> loadMechanics() => _service.listMechanics();
 }

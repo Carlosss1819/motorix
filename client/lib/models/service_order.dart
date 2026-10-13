@@ -223,3 +223,38 @@ class ServiceOrderPage {
   final int paginas;
   final int total;
 }
+
+/// Opción del selector de mecánicos (`GET /api/users/mechanics`, FR-009).
+class MechanicOption {
+  const MechanicOption({required this.id, required this.username});
+
+  factory MechanicOption.fromJson(Map<String, dynamic> json) => MechanicOption(
+        id: asInt(json['id']),
+        username: asString(json['username']),
+      );
+
+  final int id;
+  final String username;
+}
+
+/// Respuesta de la asignación de mecánico (`POST /:id/asignar`, FR-009).
+class AssignedMechanic {
+  const AssignedMechanic({
+    required this.id,
+    required this.mecanicoId,
+    required this.mecanico,
+  });
+
+  factory AssignedMechanic.fromJson(Map<String, dynamic> json) =>
+      AssignedMechanic(
+        id: asInt(json['id']),
+        mecanicoId: asIntOrNull(json['mecanicoId']),
+        mecanico: asStringOrNull(json['mecanico']),
+      );
+
+  final int id;
+
+  /// `null` cuando la orden quedó desasignada.
+  final int? mecanicoId;
+  final String? mecanico;
+}
