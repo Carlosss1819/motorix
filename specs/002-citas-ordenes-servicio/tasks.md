@@ -223,14 +223,14 @@ implementación y pruebas independientes.
 
 **Purpose**: verificación transversal, documentación y cierre del sprint
 
-- [ ] T072 [P] Ejecutar `cd server && npm run lint` y `cd server && npm test` completo, corrigiendo cualquier regresión del Sprint 1
-- [ ] T073 [P] Ejecutar `cd client && flutter analyze` y `cd client && flutter test` completo
-- [ ] T074 Ejecutar los escenarios V1 a V8 de specs/002-citas-ordenes-servicio/quickstart.md y registrar el resultado
-- [ ] T075 [P] Verificar la idempotencia final: reaplicar database/migrations/002_citas_ordenes_servicio.sql y database/seeds/002_ejemplos_citas_ordenes.sql sin duplicados (SC‑006)
-- [ ] T076 [P] Revisar seguridad: sin secretos en el código, `.env` ignorado, `.env.example` completo, permisos de todos los endpoints nuevos comprobados en backend (RN‑15)
-- [ ] T077 Actualizar docs/guia-spec-kit.md con el checklist del Sprint 2 marcado y, si alguna regla cambió durante la implementación, docs/project-context.md (Principio I de la constitución)
-- [ ] T078 Documentar en el reporte final de implementación los archivos modificados, historias cubiertas, pruebas realizadas, pendientes y decisiones abiertas (R‑11 de research.md incluida)
-- [ ] T079 Crear commits incrementales con Conventional Commits y descripción en español, un commit por tarea o grupo lógico relacionado
+- [X] T072 [P] Ejecutar `cd server && npm run lint` y `cd server && npm test` completo, corrigiendo cualquier regresión del Sprint 1
+- [X] T073 [P] Ejecutar `cd client && flutter analyze` y `cd client && flutter test` completo
+- [X] T074 Ejecutar los escenarios V1 a V8 de specs/002-citas-ordenes-servicio/quickstart.md y registrar el resultado
+- [X] T075 [P] Verificar la idempotencia final: reaplicar database/migrations/002_citas_ordenes_servicio.sql y database/seeds/002_ejemplos_citas_ordenes.sql sin duplicados (SC‑006)
+- [X] T076 [P] Revisar seguridad: sin secretos en el código, `.env` ignorado, `.env.example` completo, permisos de todos los endpoints nuevos comprobados en backend (RN‑15)
+- [X] T077 Actualizar docs/guia-spec-kit.md con el checklist del Sprint 2 marcado y, si alguna regla cambió durante la implementación, docs/project-context.md (Principio I de la constitución)
+- [X] T078 Documentar en el reporte final de implementación los archivos modificados, historias cubiertas, pruebas realizadas, pendientes y decisiones abiertas (R‑11 de research.md incluida)
+- [X] T079 Crear commits incrementales con Conventional Commits y descripción en español, un commit por tarea o grupo lógico relacionado
 
 ---
 
