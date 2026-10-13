@@ -252,13 +252,13 @@ escritura y sus escrituras devuelven 403 (HU4, V3)
 
 ### Tests for User Story 4
 
-- [ ] T036 [P] [US4] Escribir `server/tests/contract/maintenance-list.test.js`:
+- [X] T036 [P] [US4] Escribir `server/tests/contract/maintenance-list.test.js`:
   `GET /api/maintenance` con `?estado=`, `?vehiculoId=`, `?buscar=` y paginación;
   `200` para los tres roles; `403` de `POST` con token de `recepcion`
 
 ### Implementation for User Story 4
 
-- [ ] T037 [US4] Completar en `server/services/maintenance.service.js` y
+- [X] T037 [US4] Completar en `server/services/maintenance.service.js` y
   `server/models/maintenance.js` el `list` con filtros (estado calculado, vehículo,
   búsqueda por tipo/placas), joins de `vehiculo`/`placas`/`cliente` y paginación
 - [ ] T038 [US4] Crear `client/lib/screens/maintenance_screen.dart` con lista,
