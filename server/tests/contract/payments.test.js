@@ -137,6 +137,50 @@ describe('GET /api/payments/orden/:ordenId', () => {
   });
 });
 
+describe('GET /api/payments/orden/:ordenId/total (T062, FR-015)', () => {
+  test('responde 200 con subtotales y desglose calculados con precios vigentes', async () => {
+    const ordenId = await crearOrden({ estado: 'TERMINADO', conManoDeObra: 450 });
+
+    const response = await api
+      .get(`/api/payments/orden/${ordenId}/total`)
+      .set(bearer(receptionistToken));
+
+    expect(response.status).toBe(200);
+    expect(response.body.ordenId).toBe(ordenId);
+    expect(response.body.subtotalManoDeObra).toBe(450);
+    expect(response.body.subtotalRefacciones).toBe(0);
+    expect(response.body.total).toBe(450);
+    expect(response.body.desglose.manoDeObra).toHaveLength(1);
+    expect(response.body.desglose.manoDeObra[0]).toMatchObject({
+      descripcion: expect.any(String),
+      precio: 450,
+      aviso: null,
+    });
+    expect(response.body.desglose.refacciones).toEqual([]);
+  });
+
+  test('responde 401 sin token', async () => {
+    const response = await api.get('/api/payments/orden/1/total');
+    expect(response.status).toBe(401);
+  });
+
+  test('responde 403 para el rol de mecánico (FR-003, RN-15)', async () => {
+    const response = await api
+      .get('/api/payments/orden/1/total')
+      .set(bearer(mechanicToken));
+    expect(response.status).toBe(403);
+    expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
+  });
+
+  test('responde 404 ORDEN_NO_ENCONTRADA cuando la orden no existe', async () => {
+    const response = await api
+      .get('/api/payments/orden/999999/total')
+      .set(bearer(adminToken));
+    expect(response.status).toBe(404);
+    expect(response.body.error.codigo).toBe('ORDEN_NO_ENCONTRADA');
+  });
+});
+
 describe('POST /api/payments — registro y rechazos (FR-004, FR-015)', () => {
   test('registra el pago de una orden TERMINADO y responde 201', async () => {
     const ordenId = await crearOrden({ estado: 'TERMINADO', conManoDeObra: 650 });

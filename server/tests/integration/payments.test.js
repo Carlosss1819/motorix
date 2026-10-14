@@ -169,6 +169,16 @@ test('el monto debe coincidir con el total calculado con precios vigentes (FR-01
   expect(agregada.status).toBe(201);
   await fijarEstado(ordenId, 'TERMINADO');
 
+  // El total mostrado por el formulario es el mismo que valida el registro
+  // (T062): precios vigentes del catálogo y mismo módulo de cálculo.
+  const total = await api
+    .get(`/api/payments/orden/${ordenId}/total`)
+    .set(bearer(receptionistToken));
+  expect(total.status).toBe(200);
+  expect(total.body.subtotalManoDeObra).toBe(450);
+  expect(total.body.subtotalRefacciones).toBe(640);
+  expect(total.body.total).toBe(1090);
+
   const malo = await registrarPago(ordenId, 450);
   expect(malo.status).toBe(409);
   expect(malo.body.error.codigo).toBe('MONTO_NO_COINCIDE');
