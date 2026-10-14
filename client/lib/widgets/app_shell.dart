@@ -74,6 +74,11 @@ abstract final class ShellSections {
     icon: LucideIcons.circleUser,
     label: 'Mi cuenta',
   );
+  static const ShellSection dashboard = ShellSection(
+    route: Routes.dashboard,
+    icon: LucideIcons.layoutDashboard,
+    label: 'Panel',
+  );
 
   /// Secciones visibles para cada rol. Ocultar no es seguridad: el backend
   /// valida cada operación protegida (RN-15).
@@ -81,11 +86,14 @@ abstract final class ShellSections {
   /// Mantenimientos (US4, R-12 §16) es visible para los TRES roles: recepción
   /// hace el llamado de seguimiento (FR-013) y el mecánico consulta y renueva.
   /// Inventario (US5, R-12 §16) es visible solo para ADMIN (FR-022).
+  /// Panel (Sprint 4, US5) solo para ADMIN, en conjunto con el 403 del
+  /// backend (HU5-2, RN-15).
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
       Rol.admin =>
         const <ShellSection>[
           home,
+          dashboard,
           clients,
           vehicles,
           appointments,
@@ -115,6 +123,7 @@ abstract final class ShellSections {
   static String titleForRoute(String? route) {
     return switch (route) {
       Routes.home => 'Inicio',
+      Routes.dashboard => 'Panel de control',
       Routes.reception => 'Panel de recepción',
       Routes.clients => 'Clientes',
       Routes.clientNew => 'Nuevo cliente',

@@ -15,6 +15,7 @@ import 'providers/maintenance_provider.dart';
 import 'providers/part_detail_provider.dart';
 import 'providers/parts_provider.dart';
 import 'providers/payment_provider.dart';
+import 'providers/dashboard_provider.dart';
 import 'providers/ticket_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
@@ -37,6 +38,7 @@ import 'screens/part_detail_screen.dart';
 import 'screens/part_form_screen.dart';
 import 'screens/parts_screen.dart';
 import 'screens/payment_form_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/ticket_screen.dart';
 import 'screens/vehicle_form_screen.dart';
 import 'screens/vehicles_screen.dart';
@@ -135,6 +137,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<TicketProvider>(
           create: (_) => TicketProvider(api: _api),
+        ),
+        ChangeNotifierProvider<DashboardProvider>(
+          create: (_) => DashboardProvider(api: _api),
         ),
       ],
       child: Builder(
@@ -256,6 +261,9 @@ class _MotorixAppState extends State<MotorixApp> {
         TicketScreen(
           args: _arg<TicketScreenArgs>(settings) ?? const TicketScreenArgs(),
         ),
+      // Panel de control (US5, FR-010): solo lo abre el administrador; el
+      // backend responde 403 PANEL_SOLO_ADMIN a los demás roles.
+      Routes.dashboard => const DashboardScreen(),
       Routes.users => const UsersScreen(),
       Routes.account => const AccountScreen(),
       _ => const HomeScreen(),
@@ -313,6 +321,10 @@ class _MotorixAppState extends State<MotorixApp> {
       case Routes.paymentForm:
       case Routes.ticket:
         return rol == Rol.admin || rol == Rol.receptionist;
+      // Panel de control (US5, FR-010, RN-15): exclusivo de ADMIN; la
+      // sección «Panel» también está oculta en la navegación (HU5-2).
+      case Routes.dashboard:
+        return rol == Rol.admin;
       case Routes.users:
         return rol == Rol.admin;
       default:
