@@ -447,7 +447,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
   `client/` (0 problemas) y corregir lo que aparezca
 - [X] T072 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
   en `client/` (todas en verde; Jest puede requerir `--forceExit` conocido)
-- [ ] T073 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
+- [X] T073 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
   desarrollo) **solo con la aprobación del usuario**, verificando que las migraciones
   se aplican sin tocar datos existentes
 - [ ] T074 Ejecutar los escenarios V1 a V7 del [quickstart.md](quickstart.md) contra el
