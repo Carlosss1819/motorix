@@ -308,3 +308,92 @@ describe('POST /api/payments — registro y rechazos (FR-004, FR-015)', () => {
     expect(response.body.error.codigo).toBe('ORDEN_NO_ENCONTRADA');
   });
 });
+
+describe('POST /api/payments/:id/confirmar (US3, FR-005, D7)', () => {
+  // Cobro Mercado Pago que nace PENDIENTE sobre una orden TERMINADO.
+  async function cobroPendiente(precio = 400) {
+    const ordenId = await crearOrden({
+      estado: 'TERMINADO',
+      conManoDeObra: precio,
+    });
+    const registro = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: precio, metodo: 'MERCADO_PAGO' });
+    expect(registro.status).toBe(201);
+    expect(registro.body.estado).toBe('PENDIENTE');
+    return { ordenId, pago: registro.body };
+  }
+
+  function confirmar(pagoId, estado, token = receptionistToken) {
+    return api
+      .post(`/api/payments/${pagoId}/confirmar`)
+      .set(bearer(token))
+      .send({ estado });
+  }
+
+  test('responde 200 y liquida la orden al confirmar a PAGADO (SC-004)', async () => {
+    const { ordenId, pago } = await cobroPendiente(500);
+    const response = await confirmar(pago.id, 'PAGADO');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      id: pago.id,
+      metodo: 'MERCADO_PAGO',
+      estado: 'PAGADO',
+    });
+
+    // Liquidada: un cobro nuevo se rechaza (FR-004).
+    const segundo = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 500, metodo: 'EFECTIVO' });
+    expect(segundo.status).toBe(409);
+    expect(segundo.body.error.codigo).toBe('ORDEN_YA_LIQUIDADA');
+  });
+
+  test('responde 400 VALIDACION con un estado fuera de los permitidos', async () => {
+    const { pago } = await cobroPendiente(410);
+    const response = await confirmar(pago.id, 'ANULADO');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.codigo).toBe('VALIDACION');
+  });
+
+  test('responde 404 PAGO_NO_ENCONTRADO con un pago inexistente', async () => {
+    const response = await confirmar(999999, 'PAGADO');
+
+    expect(response.status).toBe(404);
+    expect(response.body.error.codigo).toBe('PAGO_NO_ENCONTRADO');
+  });
+
+  test('responde 409 TRANSICION_INVALIDA sobre un pago que no está PENDIENTE', async () => {
+    const ordenId = await crearOrden({
+      estado: 'TERMINADO',
+      conManoDeObra: 450,
+    });
+    const registro = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 450, metodo: 'EFECTIVO' });
+    expect(registro.status).toBe(201);
+
+    const response = await confirmar(registro.body.id, 'RECHAZADO');
+
+    expect(response.status).toBe(409);
+    expect(response.body.error.codigo).toBe('TRANSICION_INVALIDA');
+  });
+
+  test('responde 401 sin token y 403 para el mecánico (FR-003)', async () => {
+    const { pago } = await cobroPendiente(430);
+
+    const sinToken = await api
+      .post(`/api/payments/${pago.id}/confirmar`)
+      .send({ estado: 'PAGADO' });
+    expect(sinToken.status).toBe(401);
+
+    const response = await confirmar(pago.id, 'PAGADO', mechanicToken);
+    expect(response.status).toBe(403);
+    expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
+  });
+});

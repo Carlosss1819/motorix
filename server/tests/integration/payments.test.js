@@ -339,3 +339,98 @@ test('sin método el registro responde 400 «método de pago requerido» (HU2-3)
   expect(response.body.error.codigo).toBe('VALIDACION');
   expect(response.body.error.mensaje).toContain('método de pago requerido');
 });
+
+test('el cobro Mercado Pago nace PENDIENTE con referencia, enlace y modo (SC-004)', async () => {
+  const ordenId = await crearOrdenCobrable({ precio: 900 });
+  const response = await registrarPago(ordenId, 900, 'MERCADO_PAGO');
+
+  expect(response.status).toBe(201);
+  expect(response.body).toMatchObject({
+    ordenId,
+    metodo: 'MERCADO_PAGO',
+    estado: 'PENDIENTE',
+    // Sin credenciales en el entorno de pruebas se usa la pasarela simulada (D1).
+    modoPasarela: 'simulado',
+  });
+  expect(response.body.referenciaExterna).toBeTruthy();
+  expect(response.body.enlacePago).toBeTruthy();
+
+  // Mientras el pendiente siga abierto no se admite ningún segundo cobro
+  // (FR-005): ni presencial ni otro Mercado Pago.
+  const enEfectivo = await registrarPago(ordenId, 900, 'EFECTIVO');
+  expect(enEfectivo.status).toBe(409);
+  expect(enEfectivo.body.error.codigo).toBe('PAGO_PENDIENTE');
+
+  const otroMercadoPago = await registrarPago(ordenId, 900, 'MERCADO_PAGO');
+  expect(otroMercadoPago.status).toBe(409);
+  expect(otroMercadoPago.body.error.codigo).toBe('PAGO_PENDIENTE');
+});
+
+test('confirmar a PAGADO liquida la orden y su entrega se vuelve posible (FR-014)', async () => {
+  const ordenId = await crearOrdenCobrable({ precio: 750 });
+  const registro = await registrarPago(ordenId, 750, 'MERCADO_PAGO');
+  expect(registro.status).toBe(201);
+
+  const confirmado = await api
+    .post(`/api/payments/${registro.body.id}/confirmar`)
+    .set(bearer(receptionistToken))
+    .send({ estado: 'PAGADO' });
+  expect(confirmado.status).toBe(200);
+  expect(confirmado.body).toMatchObject({
+    metodo: 'MERCADO_PAGO',
+    estado: 'PAGADO',
+  });
+
+  // Liquidada: no admite otro cobro (FR-004).
+  const otro = await registrarPago(ordenId, 750, 'EFECTIVO');
+  expect(otro.status).toBe(409);
+  expect(otro.body.error.codigo).toBe('ORDEN_YA_LIQUIDADA');
+
+  // Y con su pago aprobado la entrega pasa (FR-014).
+  expect((await entregarOrden(ordenId)).status).toBe(200);
+});
+
+test('rechazar o cancelar el pendiente libera la orden para otro intento (HU3-3, HU3-4)', async () => {
+  for (const estado of ['RECHAZADO', 'CANCELADO']) {
+    const ordenId = await crearOrdenCobrable({ precio: 650 });
+    const registro = await registrarPago(ordenId, 650, 'MERCADO_PAGO');
+    expect(registro.status).toBe(201);
+
+    const confirmado = await api
+      .post(`/api/payments/${registro.body.id}/confirmar`)
+      .set(bearer(receptionistToken))
+      .send({ estado });
+    expect(confirmado.status).toBe(200);
+    expect(confirmado.body.estado).toBe(estado);
+
+    // La orden admite de inmediato un nuevo cobro presencial.
+    const nuevo = await registrarPago(ordenId, 650, 'EFECTIVO');
+    expect(nuevo.status).toBe(201);
+    expect(nuevo.body.estado).toBe('PAGADO');
+  }
+});
+
+test('el flujo Mercado Pago no guarda ni devuelve datos de tarjeta ni credenciales (RN-14)', async () => {
+  const ordenId = await crearOrdenCobrable({ precio: 550 });
+  const response = await registrarPago(ordenId, 550, 'MERCADO_PAGO');
+  expect(response.status).toBe(201);
+
+  // Ni en la respuesta...
+  const cuerpo = JSON.stringify(response.body);
+  expect(cuerpo).not.toMatch(/card|cvv|cvc|tarjeta|accessToken|MP_ACCESS_TOKEN/i);
+
+  // ...ni en la fila guardada en la base de datos.
+  const filas = await consultaDirecta(
+    'SELECT * FROM payments WHERE service_order_id = ?',
+    [ordenId],
+  );
+  expect(filas).toHaveLength(1);
+  const columnas = Object.keys(filas[0]);
+  expect(columnas.join(',')).not.toMatch(/card|cvv|cvc|password|token/i);
+  expect(JSON.stringify(filas[0])).not.toMatch(/card|cvv|cvc|MP_ACCESS_TOKEN/i);
+
+  // Si el entorno tuviera el access token real, tampoco se filtraría.
+  if (process.env.MP_ACCESS_TOKEN) {
+    expect(cuerpo).not.toContain(process.env.MP_ACCESS_TOKEN);
+  }
+});
