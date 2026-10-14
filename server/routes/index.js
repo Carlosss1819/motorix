@@ -10,6 +10,7 @@ import { maintenanceRoutes } from './maintenance.routes.js';
 import { partsRoutes } from './parts.routes.js';
 import { paymentsRoutes } from './payments.routes.js';
 import { ticketsRoutes } from './tickets.routes.js';
+import { dashboardRoutes } from './dashboard.routes.js';
 
 export const apiRoutes = Router();
 
@@ -23,3 +24,4 @@ apiRoutes.use('/maintenance', maintenanceRoutes);
 apiRoutes.use('/parts', partsRoutes);
 apiRoutes.use('/payments', paymentsRoutes);
 apiRoutes.use('/tickets', ticketsRoutes);
+apiRoutes.use('/dashboard', dashboardRoutes);
