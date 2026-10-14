@@ -14,6 +14,7 @@ import 'providers/vehicle_history_provider.dart';
 import 'providers/maintenance_provider.dart';
 import 'providers/part_detail_provider.dart';
 import 'providers/parts_provider.dart';
+import 'providers/payment_provider.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -34,6 +35,7 @@ import 'screens/maintenance_screen.dart';
 import 'screens/part_detail_screen.dart';
 import 'screens/part_form_screen.dart';
 import 'screens/parts_screen.dart';
+import 'screens/payment_form_screen.dart';
 import 'screens/vehicle_form_screen.dart';
 import 'screens/vehicles_screen.dart';
 import 'services/api_client.dart';
@@ -125,6 +127,9 @@ class _MotorixAppState extends State<MotorixApp> {
         ),
         ChangeNotifierProvider<UsersProvider>(
           create: (_) => UsersProvider(api: _api),
+        ),
+        ChangeNotifierProvider<PaymentsProvider>(
+          create: (_) => PaymentsProvider(api: _api),
         ),
       ],
       child: Builder(
@@ -234,6 +239,13 @@ class _MotorixAppState extends State<MotorixApp> {
         ServiceOrderDetailScreen(
           orderId: _arg<ServiceOrderDetailArgs>(settings)?.orderId ?? 0,
         ),
+      // Formulario de cobro de una orden (US1, FR-001): recepción y
+      // administración, como la consulta de pagos (FR-003, RN-15).
+      Routes.paymentForm =>
+        PaymentFormScreen(
+          args: _arg<PaymentFormArgs>(settings) ??
+              const PaymentFormArgs(ordenId: 0),
+        ),
       Routes.users => const UsersScreen(),
       Routes.account => const AccountScreen(),
       _ => const HomeScreen(),
@@ -285,6 +297,9 @@ class _MotorixAppState extends State<MotorixApp> {
       case Routes.serviceOrders:
       case Routes.serviceOrderNew:
       case Routes.serviceOrderDetail:
+      // Cobro (US1, FR-003): recepción y administración registran y anulan
+      // pagos; el mecánico no consulta ni registra cobros.
+      case Routes.paymentForm:
         return rol == Rol.admin || rol == Rol.receptionist;
       case Routes.users:
         return rol == Rol.admin;

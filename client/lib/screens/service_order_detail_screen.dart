@@ -5,10 +5,12 @@ import 'package:provider/provider.dart';
 import '../models/app_user.dart';
 import '../models/enums.dart';
 import '../models/part.dart';
+import '../models/payment.dart';
 import '../models/service_order.dart';
 import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
 import '../providers/parts_provider.dart';
+import '../providers/payment_provider.dart';
 import '../providers/service_orders_provider.dart';
 import '../services/api_client.dart';
 import '../utils/app_routes.dart';
@@ -17,8 +19,10 @@ import '../utils/formatters.dart';
 import '../utils/messages.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
+import '../widgets/payment_status_chip.dart';
 import '../widgets/status_chip.dart';
 import 'client_detail_screen.dart';
+import 'payment_form_screen.dart';
 import 'vehicle_detail_screen.dart';
 import 'vehicle_history_screen.dart';
 
@@ -46,6 +50,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
 
   /// Catálogo de refacciones del selector del panel de inventario (US7).
   late final PartsProvider _parts;
+
+  /// Pagos y total de la orden para el bloque de cobro (HU1, Sprint 4); solo
+  /// lo usan recepción y administración (FR-003, RN-15).
+  late final PaymentsProvider _pagos;
 
   /// El selector de asignación es de recepción/administración (FR-009); el
   /// mecánico solo consulta su orden.
@@ -92,6 +100,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     super.initState();
     _orders = context.read<ServiceOrdersProvider>();
     _parts = context.read<PartsProvider>();
+    _pagos = context.read<PaymentsProvider>();
     final AppUser? usuario = context.read<AuthProvider>().user;
     final String rol = usuario?.rol ?? '';
     _esMecanico = rol == Rol.mechanic;
@@ -107,6 +116,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
       _parts.loadCatalog();
       if (!_esMecanico) {
         _cargarMecanicos();
+        // Historial de pagos y total vigente del bloque de cobro (HU1).
+        _pagos.load(widget.orderId);
+        _pagos.loadTotal(widget.orderId);
       }
     });
   }
@@ -1007,6 +1019,195 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     );
   }
 
+  /// Abre el formulario de cobro (HU1, FR-001) y refresca el historial de
+  /// pagos al volver con el pago registrado.
+  Future<void> _irACobro(ServiceOrder order) async {
+    final dynamic registrado = await Navigator.pushNamed(
+      context,
+      Routes.paymentForm,
+      arguments: PaymentFormArgs(ordenId: order.id),
+    );
+    if (registrado == true) {
+      await _pagos.reload();
+    }
+  }
+
+  /// Anulación de un pago por error de captura (FR-016, RN-15): confirmación
+  /// obligatoria con motivo de 1 a 255 caracteres; el pago se conserva como
+  /// historial con estado `ANULADO` (RN-9).
+  Future<void> _anularPago(Payment pago) async {
+    final String? motivo = await showAppDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) => _AnnulPaymentDialog(pago: pago),
+    );
+    if (motivo == null) {
+      return;
+    }
+    try {
+      await _pagos.annul(id: pago.id, motivo: motivo);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pago anulado correctamente.')),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.mensaje)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppMessages.unexpectedError)),
+      );
+    }
+  }
+
+  /// Bloque de cobro y pago (HU1/HU2): total vigente de la orden con su
+  /// desglose resumido (FR-015), historial de pagos con monto, método, fecha
+  /// y estado (SC-001) y, en órdenes `TERMINADO` sin cobro aprobado, el
+  /// botón que abre el formulario (FR-004). Solo recepción y administración
+  /// (FR-003, RN-15); la anulación es exclusiva de ADMIN (FR-016).
+  Widget _buildCobro(ServiceOrder order) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+    // watch para refrescar el bloque al registrar o anular un pago.
+    final PaymentsProvider pagos = context.watch<PaymentsProvider>();
+
+    final bool liquidada = pagos.tienePagoAprobado;
+    final bool puedeCobrar = order.estado == 'TERMINADO' && !liquidada;
+
+    String total = 'Calculando…';
+    if (pagos.totalStatus == LoadStatus.ready && pagos.totalOrden != null) {
+      total = Formatters.money(pagos.totalOrden!.total);
+    } else if (pagos.totalStatus == LoadStatus.error) {
+      total = 'Total no disponible';
+    }
+
+    return AppPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: Text('Cobro y pago', style: textTheme.titleMedium),
+              ),
+              Text(
+                total,
+                key: const Key('total-orden'),
+                style: textTheme.titleMedium?.copyWith(color: colors.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Total calculado con los precios vigentes: mano de obra + '
+            'refacciones × cantidad.',
+            style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+          ),
+          if (pagos.totalStatus == LoadStatus.error &&
+              pagos.totalError != null) ...<Widget>[
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              pagos.totalError!,
+              style: textTheme.bodySmall?.copyWith(color: colors.danger),
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          if (pagos.isLoading && pagos.items.isEmpty)
+            const LoadingView(mensaje: 'Cargando pagos…')
+          else if (pagos.status == LoadStatus.error)
+            Text(
+              pagos.error ?? AppMessages.unexpectedError,
+              style: textTheme.bodySmall?.copyWith(color: colors.danger),
+            )
+          else if (pagos.items.isEmpty)
+            Text(
+              'Sin pagos registrados.',
+              key: const Key('sin-pagos'),
+              style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+            )
+          else
+            for (final Payment pago in pagos.items)
+              _buildFilaPago(pago, esAdmin: _esAdmin),
+          if (puedeCobrar) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            FilledButton.icon(
+              key: const Key('boton-registrar-pago'),
+              onPressed: () => _irACobro(order),
+              icon: const Icon(
+                LucideIcons.banknote,
+                size: AppMetrics.iconSizeSmall,
+              ),
+              label: const Text('Registrar pago'),
+            ),
+          ] else if (liquidada) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Orden liquidada: ya tiene su pago aprobado.',
+              style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Fila del historial de pagos: monto y método, fecha y quien lo registró,
+  /// motivo de anulación si aplica, chip de estado y la anulación (solo ADMIN
+  /// y solo para pagos `PAGADO`).
+  Widget _buildFilaPago(Payment pago, {required bool esAdmin}) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  '${Formatters.money(pago.monto)} · '
+                  '${paymentMethodLabel(pago.metodo)}',
+                  key: Key('pago-${pago.id}'),
+                  style: textTheme.bodyMedium,
+                ),
+                Text(
+                  '${Formatters.dateTime(pago.fecha)} · '
+                  '${pago.registradoPor.isEmpty ? 'sin usuario' : pago.registradoPor}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
+                ),
+                if (pago.motivoAnulacion != null &&
+                    pago.motivoAnulacion!.isNotEmpty)
+                  Text(
+                    'Motivo de anulación: ${pago.motivoAnulacion}',
+                    style: textTheme.bodySmall?.copyWith(color: colors.danger),
+                  ),
+                if (esAdmin && pago.estaPagado)
+                  TextButton(
+                    onPressed: () => _anularPago(pago),
+                    child: const Text('Anular pago'),
+                  ),
+              ],
+            ),
+          ),
+          PaymentStatusChip(estado: pago.estado),
+        ],
+      ),
+    );
+  }
+
   /// Historial de cambios de estado (US5, FR-015): estado, usuario y fecha
   /// de cada transición registrada en el backend.
   Widget _buildHistorial(ServiceOrder order) {
@@ -1201,6 +1402,12 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
             const SizedBox(height: AppSpacing.lg),
             _buildRecomendaciones(order),
             const SizedBox(height: AppSpacing.lg),
+            // Bloque de cobro (HU1): historial y total junto al que se
+            // muestran los pagos; oculto para el mecánico (FR-003, RN-15).
+            if (!_esMecanico) ...<Widget>[
+              _buildCobro(order),
+              const SizedBox(height: AppSpacing.lg),
+            ],
             _buildHistorial(order),
             const SizedBox(height: AppSpacing.lg),
             AppPanel(
@@ -1260,6 +1467,91 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Diálogo de anulación de un pago (FR-016): pide el motivo obligatorio de
+/// 1 a 255 caracteres y solo se cierra con "Anular pago" cuando ya se
+/// escribió (mismo patrón que la cancelación de citas).
+class _AnnulPaymentDialog extends StatefulWidget {
+  const _AnnulPaymentDialog({required this.pago});
+
+  final Payment pago;
+
+  @override
+  State<_AnnulPaymentDialog> createState() => _AnnulPaymentDialogState();
+}
+
+class _AnnulPaymentDialogState extends State<_AnnulPaymentDialog> {
+  late final TextEditingController _motivoController;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _motivoController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _motivoController.dispose();
+    super.dispose();
+  }
+
+  void _confirmar() {
+    final String motivo = _motivoController.text.trim();
+    if (motivo.isEmpty) {
+      setState(() => _error = 'El motivo de la anulación es obligatorio.');
+      return;
+    }
+    if (motivo.length > 255) {
+      setState(() => _error = 'El motivo no puede pasar de 255 caracteres.');
+      return;
+    }
+    Navigator.of(context).pop(motivo);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Anular pago'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '¿Seguro que quieres anular el pago de '
+            '${Formatters.money(widget.pago.monto)} del '
+            '${Formatters.dateTime(widget.pago.fecha)}? El pago queda como '
+            'historial y la orden vuelve a estar libre para registrar un '
+            'pago nuevo correcto.',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            key: const Key('campo-motivo-anulacion'),
+            controller: _motivoController,
+            maxLength: 255,
+            maxLines: 3,
+            decoration: InputDecoration(
+              labelText: 'Motivo de la anulación *',
+              hintText: 'Ej. Monto capturado incorrectamente',
+              errorText: _error,
+            ),
+          ),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Volver'),
+        ),
+        FilledButton(
+          key: const Key('boton-confirmar-anulacion'),
+          onPressed: _confirmar,
+          child: const Text('Anular pago'),
+        ),
+      ],
     );
   }
 }
