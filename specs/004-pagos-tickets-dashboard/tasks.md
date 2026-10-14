@@ -210,20 +210,20 @@ quickstart, pasos 5)
 
 ### Tests for User Story 2
 
-- [ ] T024 [P] [US2] Ampliar `server/tests/contract/payments.test.js` y
+- [x] T024 [P] [US2] Ampliar `server/tests/contract/payments.test.js` y
   `server/tests/integration/payments.test.js` con los métodos `EFECTIVO`, `TARJETA` y
   `TRANSFERENCIA`: cada registro responde `201` con `estado: "PAGADO"` y su `metodo`
   correcto; un `metodo` fuera del enum responde `400 VALIDACION` (FR‑002, HU2‑3)
 
 ### Implementation for User Story 2
 
-- [ ] T025 [US2] Asegurar en `server/validators/payment.validator.js` el enum
+- [x] T025 [US2] Asegurar en `server/validators/payment.validator.js` el enum
   `EFECTIVO`, `TARJETA`, `TRANSFERENCIA`, `MERCADO_PAGO` con mensaje «método de pago
   requerido» cuando falta (HU2‑3), y en
   `client/lib/screens/payment_form_screen.dart` un selector de los cuatro métodos con
   etiqueta legible (Efectivo, Tarjeta, Transferencia, Mercado Pago) y validación de
   requerido antes de enviar (FR‑002)
-- [ ] T026 [US2] Escribir `client/test/payment_methods_test.dart` (cada método se
+- [x] T026 [US2] Escribir `client/test/payment_methods_test.dart` (cada método se
   muestra con su etiqueta, sin método no envía y muestra el mensaje de validación)
 
 **Checkpoint**: la forma de cobro queda registrada de forma fiel
