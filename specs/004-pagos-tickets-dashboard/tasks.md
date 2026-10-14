@@ -301,13 +301,13 @@ el pago» (E5 del quickstart)
 
 ### Tests for User Story 4
 
-- [ ] T034 [P] [US4] Escribir la prueba de contrato
+- [x] T034 [P] [US4] Escribir la prueba de contrato
   `server/tests/contract/tickets.test.js` para `POST /api/tickets`,
   `GET /api/tickets/:id` y `GET /api/tickets/orden/:ordenId`: `201` primera
   generación, `200` en reintento y en la consulta por orden (`existe`/`ticket`),
   `400 VALIDACION`, `401`, `403`, `404 ORDEN_NO_ENCONTRADA`, `404 TICKET_NO_ENCONTRADO`
   y `409 TICKET_REQUIERE_PAGO` (contracts/tickets.md)
-- [ ] T035 [P] [US4] Escribir la prueba de integración
+- [x] T035 [P] [US4] Escribir la prueba de integración
   `server/tests/integration/tickets.test.js`: folio consecutivo por año con formato
   `T000001‑2026` (SC‑003), idempotencia al regenerar (mismo folio y mismo id, HU4‑2),
   el ticket reconstruye el detalle desde la orden y su pago con los subtotales de
@@ -316,38 +316,38 @@ el pago» (E5 del quickstart)
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Crear `server/models/ticket.js` con `findByServiceOrder`,
+- [x] T036 [US4] Crear `server/models/ticket.js` con `findByServiceOrder`,
   `findById`, `findByFolio`, `nextFolio` (consecutivo por año sobre el máximo
   existente, formato `T000001‑2026`) y `create` (D3)
-- [ ] T037 [US4] Implementar `server/services/ticket.service.js` con
+- [x] T037 [US4] Implementar `server/services/ticket.service.js` con
   `generateTicket(ordenId, usuario)`: exige orden existente con al menos un pago
   `PAGADO` (`409 TICKET_REQUIERE_PAGO`); si ya existe ticket devuelve el existente
   (idempotente, HU4‑2); `getTicket(id)` y `getTicketByOrder(ordenId)` reconstruyen el
   comprobante (taller, cliente, vehículo con placas y kilometraje, servicios con mano
   de obra y refacciones, subtotales, total, método y estado del pago, fecha) desde la
   orden y su pago con `calcularTotal` (FR‑007, FR‑012)
-- [ ] T038 [US4] Crear `server/validators/ticket.validator.js` (`ordenId` entero > 0),
+- [x] T038 [US4] Crear `server/validators/ticket.validator.js` (`ordenId` entero > 0),
   `server/controllers/tickets.controller.js` (`generateTicketHandler`,
   `getTicketHandler`, `getTicketByOrderHandler`) y `server/routes/tickets.routes.js`
   con `authenticate` + `authorize('ADMIN','RECEPTIONIST')`, montada como
   `/api/tickets` en `server/routes/index.js`
-- [ ] T039 [P] [US4] Crear `client/lib/models/ticket.dart` con el formato completo del
+- [x] T039 [P] [US4] Crear `client/lib/models/ticket.dart` con el formato completo del
   contrato (incluye `taller`, `cliente`, `vehiculo`, `servicios[]` con
   `refacciones[]`, subtotales, total, método y estado del pago) y `fromJson` tolerante
   a nulos
-- [ ] T040 [US4] Crear `client/lib/services/tickets_service.dart` (`generateTicket`,
+- [x] T040 [US4] Crear `client/lib/services/tickets_service.dart` (`generateTicket`,
   `fetchTicket`, `fetchTicketByOrder`) y `client/lib/providers/ticket_provider.dart`
   con estados de carga/vacío/error
-- [ ] T041 [US4] Crear `client/lib/screens/ticket_screen.dart` con formato de
+- [x] T041 [US4] Crear `client/lib/screens/ticket_screen.dart` con formato de
   comprobante (folio, datos del taller, cliente, vehículo, placas, kilometraje,
   servicios, refacciones, mano de obra, subtotales, total, método y estado del pago,
   fecha) y botón de imprimir que delega al diálogo de impresión del navegador/sistema
   (FR‑008, CA‑5, sin PDF almacenado)
-- [ ] T042 [US4] Ampliar `client/lib/screens/service_order_detail_screen.dart` con
+- [x] T042 [US4] Ampliar `client/lib/screens/service_order_detail_screen.dart` con
   «Generar ticket» en órdenes pagadas y «Ver ticket» cuando ya existe (consulta
   `GET /api/tickets/orden/:ordenId`), y registrar `Routes.ticket` en
   `client/lib/utils/app_routes.dart`
-- [ ] T043 [US4] Escribir `client/test/ticket_screen_test.dart` (comprobante con todos
+- [x] T043 [US4] Escribir `client/test/ticket_screen_test.dart` (comprobante con todos
   los campos, folio visible, estado sin pago con el mensaje «primero debe registrarse
   el pago»; viewport 1280×3000 y
   `GoogleFonts.config.allowRuntimeFetching = false`)
