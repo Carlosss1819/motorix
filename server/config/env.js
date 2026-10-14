@@ -51,4 +51,12 @@ export const config = {
     // Cierre automatico por inactividad: 30 minutos (especificación, aclaración Q1).
     idleMs: toNumber(process.env.SESSION_IDLE_MS, 30 * 60 * 1000),
   },
+  // Pasarela de cobro (Sprint 4, D1, CA-7): credenciales SOLO por variables
+  // de entorno; con access token se usa Mercado Pago real en sandbox, sin él
+  // la simulada. El token nunca se registra ni se devuelve en respuestas
+  // (RN-14, FR-006).
+  payments: {
+    mpAccessToken: process.env.MP_ACCESS_TOKEN ?? '',
+    mpPublicUrl: process.env.MP_PUBLIC_URL ?? 'http://localhost:3000',
+  },
 };

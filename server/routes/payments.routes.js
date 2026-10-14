@@ -10,6 +10,7 @@ import { asyncHandler } from '../middlewares/asyncHandler.js';
 import {
   paymentSchema,
   paymentAnnulSchema,
+  paymentConfirmSchema,
   paymentListQuerySchema,
 } from '../validators/payment.validator.js';
 import {
@@ -17,6 +18,7 @@ import {
   listByOrderHandler,
   getOrderChargeHandler,
   annulPaymentHandler,
+  confirmPaymentHandler,
 } from '../controllers/payments.controller.js';
 
 export const paymentsRoutes = Router();
@@ -45,6 +47,15 @@ paymentsRoutes.post(
   authorize('ADMIN', 'RECEPTIONIST'),
   validate(paymentSchema),
   asyncHandler(registerPaymentHandler),
+);
+
+// Confirmación manual de un cobro Mercado Pago pendiente (US3, FR-005, D7):
+// el rol verifica el cobro en el panel del proveedor y marca el resultado.
+paymentsRoutes.post(
+  '/:id/confirmar',
+  authorize('ADMIN', 'RECEPTIONIST'),
+  validate(paymentConfirmSchema),
+  asyncHandler(confirmPaymentHandler),
 );
 
 // Anulación de un pago por error de captura (FR-016): solo ADMIN.

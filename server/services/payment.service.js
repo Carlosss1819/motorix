@@ -17,8 +17,10 @@ import { findServiceOrderById } from '../models/service_order.js';
 import { calcularTotal } from '../utils/order-total.js';
 import {
   PAYMENT_STATUSES,
+  PAYMENT_METHODS,
   evaluatePaymentTransition,
 } from '../utils/payment-transitions.js';
+import { crearPreferencia, modoPasarela } from './payment_gateway/index.js';
 import { conflict, forbidden, notFound } from '../utils/errors.js';
 import { ORDER_STATUSES } from '../utils/status-constants.js';
 
@@ -90,15 +92,27 @@ function assertOrderChargeable(order) {
   }
 }
 
-// Registro de un pago (FR-001, FR-004, FR-015). Por ahora todos los métodos
-// nacen PAGADO (cobro presencial verificado); la US3 hará que MERCADO_PAGO
-// nazca PENDIENTE a través del adaptador de la pasarela.
+// Registro de un pago (FR-001, FR-004, FR-005, FR-015). Los cobros
+// presenciales nacen PAGADO (verificados en el momento); el cobro Mercado
+// Pago nace PENDIENTE con su referencia externa, enlace y modo de pasarela
+// (D1) hasta que se confirme manualmente (aclaración 3). Ninguna respuesta
+// ni fila guarda datos de tarjeta ni credenciales (RN-14).
 export async function registerPayment(data, user) {
   const order = await assertOrderExists(data.ordenId);
   assertOrderChargeable(order);
 
   if ((await countPaymentsByStatus(order.id, PAYMENT_STATUSES.PAGADO)) > 0) {
     throw conflict('La orden ya está liquidada: tiene un pago aprobado', 'ORDEN_YA_LIQUIDADA');
+  }
+
+  // Mientras exista un cobro Mercado Pago sin confirmar no se admite otro
+  // intento (FR-005): la orden queda en disputa hasta confirmarlo o
+  // rechazarlo, y así nunca conviven dos cobros abiertos.
+  if ((await countPaymentsByStatus(order.id, PAYMENT_STATUSES.PENDIENTE)) > 0) {
+    throw conflict(
+      'La orden ya tiene un cobro Mercado Pago pendiente de confirmar',
+      'PAGO_PENDIENTE',
+    );
   }
 
   const total = await getOrderTotal(order.id);
@@ -109,11 +123,24 @@ export async function registerPayment(data, user) {
     );
   }
 
+  const esMercadoPago = data.metodo === PAYMENT_METHODS.MERCADO_PAGO;
+
+  // D1: la pasarela (real o simulada) devuelve el id externo y el enlace del
+  // cobro; nunca datos de tarjeta ni el access token (RN-14).
+  let preferencia = null;
+  if (esMercadoPago) {
+    const referencia = `MOT-${order.id}-${Date.now()}`;
+    preferencia = await crearPreferencia(order, total.total, referencia);
+  }
+
   const created = await createPayment({
     serviceOrderId: order.id,
     amount: total.total,
     method: data.metodo,
-    status: PAYMENT_STATUSES.PAGADO,
+    status: esMercadoPago ? PAYMENT_STATUSES.PENDIENTE : PAYMENT_STATUSES.PAGADO,
+    externalReference: preferencia ? preferencia.idExterno : null,
+    paymentLink: preferencia ? preferencia.enlace : null,
+    gatewayMode: preferencia ? modoPasarela : null,
     createdBy: user.id,
   });
 
@@ -173,6 +200,32 @@ export async function annulPayment(id, data, user) {
     annulledAt: toDbDateTime(),
   });
 
+  return toApiPayment(updated);
+}
+
+// Confirmación manual de un cobro Mercado Pago (FR-005, aclaración 3, D7): el
+// recepcionista verifica el cobro en el panel del proveedor y marca el
+// resultado. Solo aplica a pagos `PENDIENTE` de método `MERCADO_PAGO` y la
+// transición sigue la máquina de estados; nunca se piden ni se guardan datos
+// de tarjeta (RN-14). Al aprobarse, la orden queda liquidada (FR-004); al
+// rechazarse o cancelarse, admite otro intento (HU3-3, HU3-4).
+export async function confirmPayment(id, data) {
+  const payment = await findPaymentById(id);
+  if (!payment) throw notFound('El pago no existe', 'PAGO_NO_ENCONTRADO');
+
+  if (payment.method !== PAYMENT_METHODS.MERCADO_PAGO) {
+    throw conflict('Solo se confirma un cobro Mercado Pago pendiente', 'TRANSICION_INVALIDA');
+  }
+
+  const transition = evaluatePaymentTransition({
+    fromStatus: payment.status,
+    toStatus: data.estado,
+  });
+  if (!transition.permitida) {
+    throw conflict(transition.mensaje, transition.codigo);
+  }
+
+  const updated = await updatePaymentStatus(payment.id, { status: data.estado });
   return toApiPayment(updated);
 }
 

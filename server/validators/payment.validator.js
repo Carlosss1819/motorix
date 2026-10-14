@@ -38,6 +38,20 @@ export const paymentAnnulSchema = z.object({
     .max(255, 'El motivo no puede exceder 255 caracteres'),
 });
 
+// Confirmación manual de un cobro Mercado Pago (FR-005, aclaración 3): el
+// estado a marcar es solo PAGADO, RECHAZADO o CANCELADO (ANULADO no aplica
+// aquí: es el error de captura del cobro presencial, FR-016).
+export const paymentConfirmSchema = z.object({
+  estado: z.enum(['PAGADO', 'RECHAZADO', 'CANCELADO'], {
+    errorMap: (issue) => ({
+      message:
+        issue.code === 'invalid_type' && issue.received === 'undefined'
+          ? 'estado requerido'
+          : 'El estado debe ser PAGADO, RECHAZADO o CANCELADO',
+    }),
+  }),
+});
+
 // Listado de pagos de una orden con la paginación estándar.
 export const paymentListQuerySchema = z.object({
   pagina: z.coerce.number().int().positive().optional(),
