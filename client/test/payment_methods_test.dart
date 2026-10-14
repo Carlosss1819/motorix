@@ -121,6 +121,19 @@ void main() {
             valor,
             reason: 'el valor guardado debe ser el enum del contrato',
           );
+
+          // Mercado Pago (US3) deja el cobro PENDIENTE y la pantalla se
+          // queda mostrándolo; los demás métodos cierran con su aviso.
+          if (valor == 'MERCADO_PAGO') {
+            expect(
+              fake.ultimoRegistrado!.estado,
+              'PENDIENTE',
+              reason: 'el cobro Mercado Pago nace pendiente (FR-005)',
+            );
+            expect(find.byType(PaymentFormScreen), findsOneWidget);
+            await tester.tap(find.byKey(const Key('boton-volver-orden')));
+            await tester.pumpAndSettle();
+          }
           expect(find.byType(PaymentFormScreen), findsNothing);
 
           // Deja pasar la duración del snackbar para no encolar avisos.

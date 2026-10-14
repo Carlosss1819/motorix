@@ -14,6 +14,7 @@ class FakePaymentsService extends PaymentsService {
     this.errorTotal,
     this.errorRegistro,
     this.errorAnulacion,
+    this.errorConfirmacion,
   }) : super(ApiClient());
 
   /// Pagos "vivientes" de la orden; se actualizan al registrar o anular.
@@ -28,15 +29,18 @@ class FakePaymentsService extends PaymentsService {
   ApiException? errorTotal;
   ApiException? errorRegistro;
   ApiException? errorAnulacion;
+  ApiException? errorConfirmacion;
 
   /// Veces que se pidieron la lista y el total: permite comprobar recargas.
   int llamadasLista = 0;
   int llamadasTotal = 0;
 
-  /// Último pago registrado y último anulado con su motivo.
+  /// Último pago registrado, último anulado con su motivo y última
+  /// confirmación manual de un cobro Mercado Pago (US3).
   Payment? ultimoRegistrado;
   int? ultimoAnulado;
   String? ultimoMotivo;
+  ({int id, String estado})? ultimoConfirmado;
 
   int _siguienteId = 100;
 
@@ -86,12 +90,22 @@ class FakePaymentsService extends PaymentsService {
     if (fallo != null) {
       throw fallo;
     }
+    // Como el backend (FR-005): el cobro Mercado Pago nace PENDIENTE con su
+    // referencia, enlace y modo de pasarela simulado; los demás, PAGADO.
+    final bool esMercadoPago = metodo == 'MERCADO_PAGO';
+    final int id = _siguienteId++;
     final Payment creado = Payment(
-      id: _siguienteId++,
+      id: id,
       ordenId: ordenId,
       monto: monto,
       metodo: metodo,
-      estado: 'PAGADO',
+      estado: esMercadoPago ? 'PENDIENTE' : 'PAGADO',
+      referenciaExterna: esMercadoPago ? 'SIM-MOT-$ordenId-$id' : null,
+      enlacePago: esMercadoPago
+          ? 'https://sandbox.mercadopago.com.mx/motorix/checkout/v1/redirect'
+              '?preference=MOT-$ordenId-$id&monto=${monto.toStringAsFixed(2)}'
+          : null,
+      modoPasarela: esMercadoPago ? 'simulado' : null,
       registradoPor: 'recepcion',
       fecha: fecha == null || fecha.isEmpty ? '2026-10-14 10:00:00' : fecha,
     );
@@ -129,6 +143,35 @@ class FakePaymentsService extends PaymentsService {
     ultimoMotivo = motivo;
     return actualizados.firstWhere((Payment pago) => pago.id == id);
   }
+
+  @override
+  Future<Payment> confirm({required int id, required String estado}) async {
+    final ApiException? fallo = errorConfirmacion;
+    if (fallo != null) {
+      throw fallo;
+    }
+    final List<Payment> actualizados = <Payment>[
+      for (final Payment pago in pagos)
+        pago.id == id
+            ? Payment(
+                id: pago.id,
+                ordenId: pago.ordenId,
+                monto: pago.monto,
+                metodo: pago.metodo,
+                estado: estado,
+                referenciaExterna: pago.referenciaExterna,
+                enlacePago: pago.enlacePago,
+                modoPasarela: pago.modoPasarela,
+                motivoAnulacion: pago.motivoAnulacion,
+                registradoPor: pago.registradoPor,
+                fecha: pago.fecha,
+              )
+            : pago,
+    ];
+    pagos = actualizados;
+    ultimoConfirmado = (id: id, estado: estado);
+    return actualizados.firstWhere((Payment pago) => pago.id == id);
+  }
 }
 
 /// Fábrica compacta de un pago para las pruebas.
@@ -139,6 +182,9 @@ Payment pagoDePrueba({
   String estado = 'PAGADO',
   String fecha = '2026-10-14 10:15:00',
   String? motivoAnulacion,
+  String? referenciaExterna,
+  String? enlacePago,
+  String? modoPasarela,
 }) =>
     Payment(
       id: id,
@@ -147,6 +193,9 @@ Payment pagoDePrueba({
       metodo: metodo,
       estado: estado,
       motivoAnulacion: motivoAnulacion,
+      referenciaExterna: referenciaExterna,
+      enlacePago: enlacePago,
+      modoPasarela: modoPasarela,
       registradoPor: 'recepcion',
       fecha: fecha,
     );
