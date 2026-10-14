@@ -41,6 +41,42 @@ coincidir con él.
 - **Respuesta `200`**: paginada con el formato de arriba en `elementos`.
 - **Errores**: `401`; `403 rol`; `404 ORDEN_NO_ENCONTRADA`.
 
+## `GET /api/payments/orden/:ordenId/total`
+
+- **Roles**: `ADMIN`, `RECEPTIONIST`.
+- **Proporciona**: el total y su desglose calculados en backend con los precios
+  vigentes (FR‑015, `order-total.js`), para que el formulario de pago muestre el
+  desglose y precargue el monto (data-model.md, sección «Cálculo del total»).
+- **Respuesta `200`**:
+
+  ```json
+  {
+    "ordenId": 12,
+    "subtotalManoDeObra": 450.00,
+    "subtotalRefacciones": 640.00,
+    "total": 1090.00,
+    "desglose": {
+      "manoDeObra": [
+        { "id": 9, "descripcion": "Cambio de pastillas", "precio": 450.00, "aviso": null }
+      ],
+      "refacciones": [
+        {
+          "id": 3,
+          "descripcion": "Juego de pastillas delanteras",
+          "cantidad": 2,
+          "precioUnitario": 320.00,
+          "subtotal": 640.00,
+          "aviso": null
+        }
+      ]
+    }
+  }
+  ```
+
+- `aviso` (`"sin precio registrado"`) marca partidas con precio `NULL` o filas
+  heredadas sin catálogo, valoradas en 0 (D2.1).
+- **Errores**: `401`; `403 rol`; `404 ORDEN_NO_ENCONTRADA`.
+
 ## `POST /api/payments`
 
 - **Roles**: `ADMIN`, `RECEPTIONIST` (FR‑003).

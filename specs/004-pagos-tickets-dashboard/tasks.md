@@ -157,6 +157,19 @@ un nuevo cobro (E1, E2 y E3 del quickstart)
   justo antes de aplicar la transición a `ENTREGADO`, si la orden no tiene un pago
   `PAGADO` responder `409 PAGO_PENDIENTE` con mensaje claro «primero debe registrarse
   el pago»; no se toca `server/utils/order-transitions.js` (FR‑014, D5)
+- [ ] T062 [US1] *(agregado al implementar, 2026‑10‑14)* Documentar en
+  `contracts/payments.md` y crear `GET /api/payments/orden/:ordenId/total` (handler en
+  `server/controllers/payments.controller.js`, método `getOrderCharge` en
+  `server/services/payment.service.js`, ruta en `server/routes/payments.routes.js`):
+  devuelve `{ordenId, subtotalManoDeObra, subtotalRefacciones, total, desglose}` del
+  módulo `order-total.js` para que el formulario de pago muestre el desglose
+  (cierra el hueco entre `data-model.md`, que dice que el desglose «se envía al
+  formulario», y `contracts/payments.md`, que no definía la ruta; aprobado por el
+  usuario el 2026‑10‑14)
+- [ ] T063 [US1] *(agregado al implementar, 2026‑10‑14)* Crear
+  `client/lib/models/order_total.dart` con el formato de la nueva ruta y agregar
+  `fetchOrderTotal(ordenId)` a `client/lib/services/payments_service.dart`, para que
+  `payment_form_screen.dart` (T020) precargue el monto y muestre el desglose
 - [ ] T017 [P] [US1] Crear `client/lib/models/payment.dart` con todos los campos del
   contrato (`id`, `ordenId`, `monto`, `metodo`, `estado`, `referenciaExterna`,
   `enlacePago`, `modoPasarela`, `motivoAnulacion`, `registradoPor`, `fecha`) y
