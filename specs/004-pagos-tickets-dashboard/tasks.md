@@ -418,7 +418,7 @@ del quickstart)
 
 ### Tests for User Story 6
 
-- [ ] T052 [P] [US6] Ampliar `server/tests/integration/dashboard.test.js` con los
+- [x] T052 [P] [US6] Ampliar `server/tests/integration/dashboard.test.js` con los
   bloques operativos: `citas.hoy` cuenta las de la fecha de referencia con estado
   `PROGRAMADA` o `RECIBIDA` y `citas.proximas` lista máximo 5 en orden ascendente;
   `mantenimientos.proximos` y `vencidos` reutilizan `calcMaintenanceState` con su
@@ -428,16 +428,16 @@ del quickstart)
 
 ### Implementation for User Story 6
 
-- [ ] T053 [US6] Ampliar `server/services/dashboard.service.js` (y
+- [x] T053 [US6] Ampliar `server/services/dashboard.service.js` (y
   `server/models/dashboard.js` si hace falta) con los bloques `citas` (hoy y próximas,
   máximo 5), `mantenimientos` (próximos y vencidos reutilizando el cálculo existente
   `calcMaintenanceState` y su servicio, con `objetivo` = fecha o kilometraje que
   disparó la alerta) y `alertasInventario` (regla de stock bajo del inventario, sin
   duplicar datos) (FR‑011, D4)
-- [ ] T054 [US6] Ampliar `client/lib/screens/dashboard_screen.dart` con los bloques de
+- [x] T054 [US6] Ampliar `client/lib/screens/dashboard_screen.dart` con los bloques de
   citas, mantenimientos y alertas de inventario, cada uno con estados de carga, vacío
   amigable y error, sobre los tokens de `docs/design-system.md`
-- [ ] T055 [US6] Ampliar `client/test/dashboard_blocks_test.dart` (bloques de citas,
+- [x] T055 [US6] Ampliar `client/test/dashboard_blocks_test.dart` (bloques de citas,
   mantenimientos y alertas con datos, bloques vacíos y «Actualizar»; viewport
   1280×3000 y `GoogleFonts.config.allowRuntimeFetching = false`)
 
