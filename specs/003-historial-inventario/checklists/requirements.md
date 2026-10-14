@@ -31,10 +31,12 @@
 
 ## Notas
 
-- La especificación no deja marcadores [NEEDS CLARIFICATION]: las cuatro decisiones pendientes
-  listadas en `docs/sprints/sprint-3-historial-inventario.md` §9 se documentaron como supuestos
-  razonables (historial derivado, vencimiento por fecha y/o kilometraje, stock negativo prohibido
-  y tipos de movimiento entrada/salida/ajuste). Se recomienda confirmarlas en `/speckit.clarify`
-  antes de planificar.
+- Revalidado al cierre del sprint (T075, 2026-10-13): la especificación sigue sin marcadores
+  `[NEEDS CLARIFICATION]` y sus requisitos quedaron cubiertos por la implementación y sus pruebas
+  (ver `reporte-implementacion.md`).
+- Las cuatro decisiones pendientes de `docs/sprints/sprint-3-historial-inventario.md` §9 se
+  resolvieron en `/speckit.clarify` y quedaron incorporadas a la spec: historial derivado de las
+  órdenes terminadas, vencimiento por fecha y/o kilometraje, stock negativo prohibido y tipos de
+  movimiento entrada/salida/ajuste.
 - Dependencia heredada: las historias 7 y 8 amplían la lista de refacciones por orden creada en el
   Sprint 2 para ligarla al catálogo de refacciones.

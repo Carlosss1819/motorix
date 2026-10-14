@@ -453,7 +453,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
 - [X] T074 Ejecutar los escenarios V1 a V7 del [quickstart.md](quickstart.md) contra el
   backend local (puerto del `.env`, `DB_NAME=motorix_v2_test`) con los tres roles y
   registrar el resultado
-- [ ] T075 Revalidar [checklists/requirements.md](checklists/requirements.md) y
+- [X] T075 Revalidar [checklists/requirements.md](checklists/requirements.md) y
   [../guia-spec-kit.md](../../docs/guia-spec-kit.md) (checklist del sprint) y redactar
   `specs/003-historial-inventario/reporte-implementacion.md` con alcance, decisiones,
   métricas y decisiones abiertas
