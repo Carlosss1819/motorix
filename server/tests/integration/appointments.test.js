@@ -63,7 +63,7 @@ describe('alta y listado de la cita (FR-005, FR-006)', () => {
     expect(creada.ordenId).toBeNull();
 
     const listado = await api
-      .get('/api/appointments?fecha=2027-04-10')
+      .get('/api/appointments?fecha=2027-04-10&porPagina=50')
       .set(bearer(adminToken));
     expect(listado.status).toBe(200);
     expect(listado.body.elementos.every((a) => a.fecha === '2027-04-10')).toBe(true);
@@ -289,7 +289,7 @@ describe('detección perezosa de NO_PRESENTADA (FR-006, R-06)', () => {
     expect(vencida.body.estado).toBe('PROGRAMADA'); // el alta no marca vencidas
 
     const listado = await api
-      .get('/api/appointments?fecha=2020-01-01')
+      .get('/api/appointments?fecha=2020-01-01&porPagina=50')
       .set(bearer(adminToken));
     expect(listado.status).toBe(200);
 

@@ -172,6 +172,20 @@ describe('contrato POST /api/service-orders/:id/estado', () => {
     const ordenId = await crearOrden(500);
     await fijarEstado(ordenId, 'TERMINADO');
 
+    // Sprint 4 / FR-014: la entrega exige un pago aprobado; se registra
+    // primero la mano de obra y su cobro (el total debe coincidir, FR-015).
+    const servicio = await api
+      .post(`/api/service-orders/${ordenId}/servicios`)
+      .set(bearer(adminToken))
+      .send({ descripcion: 'Servicio de entrega', duracionMinutos: 30, precio: 150 });
+    expect(servicio.status).toBe(201);
+
+    const pago = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 150, metodo: 'EFECTIVO' });
+    expect(pago.status).toBe(201);
+
     const rechazoMecanico = await cambiarEstado(ordenId, mechanicToken, {
       estado: 'ENTREGADO',
     });
@@ -190,6 +204,18 @@ describe('contrato POST /api/service-orders/:id/estado', () => {
       a: 'ENTREGADO',
       usuario: 'recepcion',
     });
+  });
+
+  test('FR-014: la entrega sin un pago aprobado responde 409 PAGO_PENDIENTE', async () => {
+    const ordenId = await crearOrden(550);
+    await fijarEstado(ordenId, 'TERMINADO');
+
+    const response = await cambiarEstado(ordenId, receptionistToken, {
+      estado: 'ENTREGADO',
+    });
+
+    expect(response.status).toBe(409);
+    expect(response.body.error.codigo).toBe('PAGO_PENDIENTE');
   });
 
   test('409 cuando la orden ya está ENTREGADO (estado terminal)', async () => {

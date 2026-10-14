@@ -14,6 +14,8 @@ let vehicleId;
 
 // Avanza la orden por la secuencia de estados hasta el indicado. Usa ADMIN,
 // que puede transicionar cualquier orden sin necesidad de asignación (R-03).
+// Sprint 4 / FR-014: la entrega exige un pago aprobado, así que antes del
+// último paso se registra mano de obra y su pago (la orden no tiene contenido).
 async function llevarAEstado(orderId, estado) {
   const secuencia = {
     DIAGNOSTICO: ['DIAGNOSTICO'],
@@ -21,12 +23,36 @@ async function llevarAEstado(orderId, estado) {
     TERMINADO: ['DIAGNOSTICO', 'EN_REPARACION', 'TERMINADO'],
     ENTREGADO: ['DIAGNOSTICO', 'EN_REPARACION', 'TERMINADO', 'ENTREGADO'],
   }[estado];
-  for (const paso of secuencia) {
+
+  const entregar = estado === 'ENTREGADO';
+  const pasos = entregar ? secuencia.slice(0, -1) : secuencia;
+
+  for (const paso of pasos) {
     const response = await api
       .post(`/api/service-orders/${orderId}/estado`)
       .set(bearer(adminToken))
       .send({ estado: paso });
     expect(response.status).toBe(200);
+  }
+
+  if (entregar) {
+    const servicio = await api
+      .post(`/api/service-orders/${orderId}/servicios`)
+      .set(bearer(adminToken))
+      .send({ descripcion: 'Servicio de entrega', duracionMinutos: 30, precio: 150 });
+    expect(servicio.status).toBe(201);
+
+    const pago = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId: orderId, monto: 150, metodo: 'EFECTIVO' });
+    expect(pago.status).toBe(201);
+
+    const entrega = await api
+      .post(`/api/service-orders/${orderId}/estado`)
+      .set(bearer(adminToken))
+      .send({ estado: 'ENTREGADO' });
+    expect(entrega.status).toBe(200);
   }
 }
 
