@@ -450,7 +450,7 @@ marcada al abrir el inventario; una con `stock_min = 0` nunca se marca (V4)
 - [X] T073 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
   desarrollo) **solo con la aprobación del usuario**, verificando que las migraciones
   se aplican sin tocar datos existentes
-- [ ] T074 Ejecutar los escenarios V1 a V7 del [quickstart.md](quickstart.md) contra el
+- [X] T074 Ejecutar los escenarios V1 a V7 del [quickstart.md](quickstart.md) contra el
   backend local (puerto del `.env`, `DB_NAME=motorix_v2_test`) con los tres roles y
   registrar el resultado
 - [ ] T075 Revalidar [checklists/requirements.md](checklists/requirements.md) y
