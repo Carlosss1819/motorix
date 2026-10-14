@@ -31,6 +31,10 @@ import { findById as findClientById } from '../models/client.js';
 import { findById as findVehicleById, refreshCurrentMileage } from '../models/vehicle.js';
 import { findById as findUserById } from '../models/user.js';
 import { findAppointmentById } from '../models/appointment.js';
+import {
+  hasApprovedPayment,
+  pagoPendienteError,
+} from './payment.service.js';
 import { getConnection } from '../config/db.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
 import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
@@ -558,7 +562,14 @@ export async function changeStatus(id, data, user) {
       : conflict(evaluacion.mensaje, evaluacion.codigo);
   }
 
+  // Sprint 4 / FR-014 (aclaración 1): el cobro es previo a la entrega; la
+  // orden solo pasa a ENTREGADO con un pago aprobado que la respalde. La
+  // regla vive en el servicio, no en la función pura (D5).
   const entregar = data.estado === ORDER_STATUSES.ENTREGADO;
+  if (entregar && !(await hasApprovedPayment(order.id))) {
+    throw pagoPendienteError();
+  }
+
   const updated = await updateServiceOrder(order.id, {
     status: data.estado,
     // Solo la entrega llena la fecha; el resto de campos no cambian.
