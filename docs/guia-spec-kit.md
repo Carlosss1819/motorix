@@ -70,14 +70,14 @@ Checklist Sprint 2:
     /speckit.implement
 
 Checklist Sprint 3:
-- [ ] Historial cronologico por vehiculo a partir de ordenes terminadas.
-- [ ] Registro de proximo mantenimiento por fecha y/o kilometraje.
-- [ ] Consulta de mantenimientos proximos y vencidos.
-- [ ] Registrar refacciones y consultar stock.
-- [ ] Agregar refaccion a una orden genera salida de inventario.
-- [ ] No se permite stock negativo.
-- [ ] Alertas de stock bajo visibles.
-- [ ] Pruebas pasan; sin secretos.
+- [x] Historial cronologico por vehiculo a partir de ordenes terminadas.
+- [x] Registro de proximo mantenimiento por fecha y/o kilometraje.
+- [x] Consulta de mantenimientos proximos y vencidos.
+- [x] Registrar refacciones y consultar stock.
+- [x] Agregar refaccion a una orden genera salida de inventario.
+- [x] No se permite stock negativo.
+- [x] Alertas de stock bajo visibles.
+- [x] Pruebas pasan; sin secretos.
 
 ### Sprint 4 - Pagos, tickets y dashboard
 
