@@ -244,12 +244,12 @@ del quickstart)
 
 ### Tests for User Story 3
 
-- [ ] T027 [P] [US3] Ampliar `server/tests/contract/payments.test.js` con
+- [x] T027 [P] [US3] Ampliar `server/tests/contract/payments.test.js` con
   `POST /api/payments/:id/confirmar`: `200` con el pago actualizado, `400 VALIDACION`
   con estado fuera del permitido, `404 PAGO_NO_ENCONTRADO`,
   `409 TRANSICION_INVALIDA` sobre pago no `PENDIENTE`, y `403` para `mecanico`
   (contracts/payments.md)
-- [ ] T028 [P] [US3] Ampliar `server/tests/integration/payments.test.js` con el flujo
+- [x] T028 [P] [US3] Ampliar `server/tests/integration/payments.test.js` con el flujo
   Mercado Pago usando el gateway simulado: registro `MERCADO_PAGO` nace `PENDIENTE`
   con `referenciaExterna`, `enlacePago` y `modoPasarela` (SC‑004); segundo cobro
   pendiente sobre la misma orden → `409 PAGO_PENDIENTE`; confirmar a `PAGADO` liquida
@@ -259,29 +259,29 @@ del quickstart)
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Crear `server/services/payment_gateway/index.js` (selección al
+- [x] T029 [US3] Crear `server/services/payment_gateway/index.js` (selección al
   arrancar: con `MP_ACCESS_TOKEN` usa `mercadopago.js`, sin él usa `simulado.js`), `server/services/payment_gateway/mercadopago.js`
   (`crearPreferencia(orden, monto, referencia)` vía `fetch` nativo a la API REST de
   Mercado Pago en sandbox, credenciales solo por variables de entorno, CA‑7) y
   `server/services/payment_gateway/simulado.js` (enlace de prueba e id externo
   ficticio) tras la interfaz única `{ idExterno, enlace }` (D1)
-- [ ] T030 [US3] Ampliar `server/services/payment.service.js`: cuando `metodo` es
+- [x] T030 [US3] Ampliar `server/services/payment.service.js`: cuando `metodo` es
   `MERCADO_PAGO`, el pago nace `PENDIENTE` llamando `crearPreferencia`, guarda
   `external_reference`, `payment_link` y `gateway_mode`, y responde con esos campos;
   rechaza un segundo cobro pendiente (`409 PAGO_PENDIENTE`) (FR‑005, D1)
-- [ ] T031 [US3] Completar `POST /api/payments/:id/confirmar`: esquema `estado` enum
+- [x] T031 [US3] Completar `POST /api/payments/:id/confirmar`: esquema `estado` enum
   `PAGADO|RECHAZADO|CANCELADO` en `server/validators/payment.validator.js`, handler
   `confirmPaymentHandler` en `server/controllers/payments.controller.js`, método
   `confirmPayment` en `server/services/payment.service.js` que aplica
   `evaluatePaymentTransition` (solo `PENDIENTE` y `MERCADO_PAGO`,
   `409 TRANSICION_INVALIDA`) y la ruta en `server/routes/payments.routes.js` con
   `authorize('ADMIN','RECEPTIONIST')` (aclaración 3, D7)
-- [ ] T032 [US3] Ampliar `client/lib/screens/payment_form_screen.dart` con la opción
+- [x] T032 [US3] Ampliar `client/lib/screens/payment_form_screen.dart` con la opción
   Mercado Pago y, tras registrar, mostrar el estado `PENDIENTE` con referencia externa,
   enlace de pago y modo usado (`sandbox`/`simulado`); ampliar el bloque de cobro de
   `client/lib/screens/service_order_detail_screen.dart` con las acciones «Marcar como
   aprobado», «Marcar como rechazado» y «Cancelar cobro» para pagos pendientes
-- [ ] T033 [US3] Escribir `client/test/payment_gateway_test.dart` (opción Mercado
+- [x] T033 [US3] Escribir `client/test/payment_gateway_test.dart` (opción Mercado
   Pago, estado pendiente con enlace y modo, acciones de confirmación; viewport
   1280×3000 y `GoogleFonts.config.allowRuntimeFetching = false`)
 
