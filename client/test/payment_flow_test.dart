@@ -17,6 +17,7 @@ import 'package:motorix_client/models/service_order.dart';
 import 'package:motorix_client/providers/auth_provider.dart';
 import 'package:motorix_client/providers/parts_provider.dart';
 import 'package:motorix_client/providers/payment_provider.dart';
+import 'package:motorix_client/providers/ticket_provider.dart';
 import 'package:motorix_client/providers/service_orders_provider.dart';
 import 'package:motorix_client/screens/payment_form_screen.dart';
 import 'package:motorix_client/screens/service_order_detail_screen.dart';
@@ -26,6 +27,7 @@ import 'package:motorix_client/utils/app_theme.dart';
 
 import 'fake_parts_service.dart';
 import 'fake_payments_service.dart';
+import 'fake_tickets_service.dart';
 
 /// Total de ejemplo del backend (FR-015): mano de obra de 450 y dos
 /// refacciones a 320 = 1,090.
@@ -185,6 +187,12 @@ void main() {
           ChangeNotifierProvider<PaymentsProvider>(
             create: (_) =>
                 PaymentsProvider(api: ApiClient(), service: service),
+          ),
+          ChangeNotifierProvider<TicketProvider>(
+            create: (_) => TicketProvider(
+              api: ApiClient(),
+              service: FakeTicketsService(),
+            ),
           ),
         ],
         child: MaterialApp(
