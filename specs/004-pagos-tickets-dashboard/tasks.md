@@ -449,20 +449,20 @@ del quickstart)
 
 **Purpose**: Mejoras transversales y cierre del sprint
 
-- [ ] T056 [P] Verificar que `server/.env.example` documenta las variables opcionales
+- [x] T056 [P] Verificar que `server/.env.example` documenta las variables opcionales
   de Mercado Pago (`MP_ACCESS_TOKEN`, `MP_PUBLIC_URL`) sin valores reales y que no hay
   secretos ni datos de tarjeta en el código ni en la base (CA‑7, RN‑14, FR‑006)
-- [ ] T057 [P] Ejecutar `npx eslint .` en `server/` (0 errores) y `flutter analyze` en
+- [x] T057 [P] Ejecutar `npx eslint .` en `server/` (0 errores) y `flutter analyze` en
   `client/` (0 problemas) y corregir lo que aparezca
-- [ ] T058 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
+- [x] T058 [P] Ejecutar las suites completas: `npm test` en `server/` y `flutter test`
   en `client/` (todas en verde; Jest puede requerir `--forceExit` conocido)
-- [ ] T059 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
+- [x] T059 Aplicar `aplicar-migraciones.ps1 -Seeds` contra `motorix_v2` (base local de
   desarrollo) **solo con la aprobación del usuario**, verificando que las migraciones
   se aplican sin tocar datos existentes
-- [ ] T060 Ejecutar los escenarios E1 a E7 del [quickstart.md](quickstart.md) contra el
+- [x] T060 Ejecutar los escenarios E1 a E7 del [quickstart.md](quickstart.md) contra el
   backend local (puerto del `.env`, `DB_NAME=motorix_v2_test`) con los tres roles y
   registrar el resultado
-- [ ] T061 Revalidar [checklists/requirements.md](checklists/requirements.md) y
+- [x] T061 Revalidar [checklists/requirements.md](checklists/requirements.md) y
   [../guia-spec-kit.md](../../docs/guia-spec-kit.md) (checklist del sprint) y redactar
   `specs/004-pagos-tickets-dashboard/reporte-implementacion.md` con alcance, decisiones,
   métricas y decisiones abiertas

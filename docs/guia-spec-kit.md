@@ -88,11 +88,11 @@ Checklist Sprint 3:
     /speckit.implement
 
 Checklist Sprint 4:
-- [ ] Registrar pago asociado a una orden (efectivo, tarjeta, transferencia, Mercado Pago).
-- [ ] Mercado Pago en sandbox; sin almacenar datos de tarjeta.
-- [ ] Generar ticket con folio, cliente, vehiculo, servicios, refacciones, subtotal, total, metodo y estado del pago.
-- [ ] Dashboard con datos reales (no duplicados solo para estadisticas).
-- [ ] Pruebas pasan; sin secretos.
+- [x] Registrar pago asociado a una orden (efectivo, tarjeta, transferencia, Mercado Pago).
+- [x] Mercado Pago en sandbox; sin almacenar datos de tarjeta.
+- [x] Generar ticket con folio, cliente, vehiculo, servicios, refacciones, subtotal, total, metodo y estado del pago.
+- [x] Dashboard con datos reales (no duplicados solo para estadisticas).
+- [x] Pruebas pasan; sin secretos.
 
 ---
 
