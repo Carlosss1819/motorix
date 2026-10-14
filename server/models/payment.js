@@ -129,7 +129,8 @@ export async function findChargeContent(serviceOrderId) {
     [serviceOrderId],
   );
   const partRows = await query(
-    `SELECT op.id, op.description, op.quantity, op.part_id, pa.sale_price
+    `SELECT op.id, op.description, op.quantity, op.part_id,
+            pa.code, pa.name, pa.sale_price
      FROM order_parts op
      LEFT JOIN parts pa ON pa.id = op.part_id
      WHERE op.service_order_id = ?
@@ -149,6 +150,10 @@ export async function findChargeContent(serviceOrderId) {
       descripcion: row.description,
       cantidad: row.quantity,
       partId: row.part_id,
+      // `codigo` y `nombre` del catálogo los usa el ticket (FR-007); el
+      // cálculo del total solo mira cantidad y precioUnitario.
+      codigo: row.code ?? null,
+      nombre: row.name ?? null,
       precioUnitario: row.sale_price === null ? null : Number(row.sale_price),
     })),
   };

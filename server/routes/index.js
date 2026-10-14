@@ -9,6 +9,7 @@ import { appointmentsRoutes } from './appointments.routes.js';
 import { maintenanceRoutes } from './maintenance.routes.js';
 import { partsRoutes } from './parts.routes.js';
 import { paymentsRoutes } from './payments.routes.js';
+import { ticketsRoutes } from './tickets.routes.js';
 
 export const apiRoutes = Router();
 
@@ -21,3 +22,4 @@ apiRoutes.use('/appointments', appointmentsRoutes);
 apiRoutes.use('/maintenance', maintenanceRoutes);
 apiRoutes.use('/parts', partsRoutes);
 apiRoutes.use('/payments', paymentsRoutes);
+apiRoutes.use('/tickets', ticketsRoutes);
