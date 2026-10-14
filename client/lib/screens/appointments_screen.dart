@@ -73,7 +73,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   void _goToNew() async {
-    final bool? creado = await Navigator.pushNamed<bool>(
+    // Sin el parámetro <bool> a propósito: `onGenerateRoute` devuelve una
+    // ruta `Route<dynamic>` y el cast a `Route<bool>` revienta `pushNamed`
+    // en tiempo de ejecución (la navegación moriría en silencio).
+    final Object? creado = await Navigator.pushNamed(
       context,
       Routes.appointmentNew,
     );
@@ -83,7 +86,8 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   }
 
   void _goToEdit(Appointment cita) async {
-    final bool? editada = await Navigator.pushNamed<bool>(
+    // Sin <bool>: el cast de la ruta generada fallaría (ver `_goToNew`).
+    final Object? editada = await Navigator.pushNamed(
       context,
       Routes.appointmentEdit,
       arguments: AppointmentFormArgs(cita: cita),

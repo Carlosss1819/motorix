@@ -76,7 +76,10 @@ class _PartsScreenState extends State<PartsScreen> {
   }
 
   Future<void> _goToNew() async {
-    final bool? creado = await Navigator.pushNamed<bool>(
+    // Sin el parámetro <bool> a propósito: `onGenerateRoute` devuelve una
+    // ruta `Route<dynamic>` y el cast a `Route<bool>` revienta `pushNamed`
+    // en tiempo de ejecución (la navegación moriría en silencio).
+    final Object? creado = await Navigator.pushNamed(
       context,
       Routes.partNew,
     );
@@ -86,7 +89,8 @@ class _PartsScreenState extends State<PartsScreen> {
   }
 
   Future<void> _goToEdit(Part part) async {
-    final bool? editado = await Navigator.pushNamed<bool>(
+    // Sin <bool>: el cast de la ruta generada fallaría (ver `_goToNew`).
+    final Object? editado = await Navigator.pushNamed(
       context,
       Routes.partEdit,
       arguments: PartFormArgs(refaccion: part),

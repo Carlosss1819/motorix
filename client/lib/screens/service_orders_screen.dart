@@ -75,7 +75,10 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
   }
 
   void _goToNew() async {
-    final bool? creado = await Navigator.pushNamed<bool>(
+    // Sin el parámetro <bool> a propósito: `onGenerateRoute` devuelve una
+    // ruta `Route<dynamic>` y el cast a `Route<bool>` revienta `pushNamed`
+    // en tiempo de ejecución (la navegación moriría en silencio).
+    final Object? creado = await Navigator.pushNamed(
       context,
       Routes.serviceOrderNew,
     );

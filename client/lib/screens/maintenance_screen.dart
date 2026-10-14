@@ -73,7 +73,10 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Future<void> _goToNew() async {
-    final bool? creado = await Navigator.pushNamed<bool>(
+    // Sin el parámetro <bool> a propósito: `onGenerateRoute` devuelve una
+    // ruta `Route<dynamic>` y el cast a `Route<bool>` revienta `pushNamed`
+    // en tiempo de ejecución (la navegación moriría en silencio).
+    final Object? creado = await Navigator.pushNamed(
       context,
       Routes.maintenanceNew,
     );
@@ -83,7 +86,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Future<void> _goToEdit(Maintenance item) async {
-    final bool? editado = await Navigator.pushNamed<bool>(
+    // Sin <bool>: el cast de la ruta generada fallaría (ver `_goToNew`).
+    final Object? editado = await Navigator.pushNamed(
       context,
       Routes.maintenanceEdit,
       arguments: MaintenanceFormArgs(mantenimiento: item),
