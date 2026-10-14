@@ -60,6 +60,12 @@ void main() {
   testWidgets(
     'el shell muestra las secciones del rol administrador',
     (WidgetTester tester) async {
+      // Altura de escritorio: la lista del rol admin (ahora con «Panel»,
+      // US5) necesita más alto que el viewport por defecto de 600.
+      tester.view.physicalSize = const Size(1280, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       await tester.pumpWidget(
         MultiProvider(
           providers: [
@@ -80,6 +86,8 @@ void main() {
 
       expect(find.text('Motorix'), findsOneWidget);
       expect(find.text('Inicio'), findsWidgets);
+      // Sección «Panel» del administrador (US5, HU5-2).
+      expect(find.text('Panel'), findsOneWidget);
       expect(find.text('Clientes'), findsOneWidget);
       expect(find.text('Vehículos'), findsOneWidget);
       expect(find.text('Usuarios'), findsOneWidget);
