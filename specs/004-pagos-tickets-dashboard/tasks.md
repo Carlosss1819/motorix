@@ -367,7 +367,7 @@ por estado calculado con datos reales; forzar `GET /api/dashboard` como `recepci
 
 ### Tests for User Story 5
 
-- [ ] T044 [P] [US5] Escribir la prueba de contrato
+- [x] T044 [P] [US5] Escribir la prueba de contrato
   `server/tests/contract/dashboard.test.js` + la prueba de integración
   `server/tests/integration/dashboard.test.js`: `200` para `admin` con `fecha`,
   `ordenes.total`, `ordenes.abiertas`, `ordenes.entregadas` y `ordenes.porEstado` con
@@ -377,28 +377,28 @@ por estado calculado con datos reales; forzar `GET /api/dashboard` como `recepci
 
 ### Implementation for User Story 5
 
-- [ ] T045 [US5] Crear `server/models/dashboard.js` con la consulta de órdenes por
+- [x] T045 [US5] Crear `server/models/dashboard.js` con la consulta de órdenes por
   estado (contadores sobre `service_orders`, sin tablas derivadas)
-- [ ] T046 [US5] Implementar `server/services/dashboard.service.js` con
+- [x] T046 [US5] Implementar `server/services/dashboard.service.js` con
   `getSummary(fecha)`: bloque `ordenes` (`total`, `abiertas` = todo lo no entregado
   según `OPEN_ORDER_STATUSES`, `entregadas`, `porEstado` con los seis valores de
   `ORDER_STATUSES`) calculado con datos reales (FR‑010, D4)
-- [ ] T047 [US5] Crear `server/controllers/dashboard.controller.js`
+- [x] T047 [US5] Crear `server/controllers/dashboard.controller.js`
   (`getDashboardHandler`) y `server/routes/dashboard.routes.js` con
   `GET /` bajo `authenticate` + `authorize('ADMIN')` que responde
   `403 PANEL_SOLO_ADMIN` a otros roles, montada como `/api/dashboard` en
   `server/routes/index.js` (RN‑15)
-- [ ] T048 [P] [US5] Crear `client/lib/models/dashboard_summary.dart` con todos los
+- [x] T048 [P] [US5] Crear `client/lib/models/dashboard_summary.dart` con todos los
   bloques de la respuesta (`fecha`, `ordenes`, `citas`, `mantenimientos`,
   `alertasInventario`) y `fromJson` tolerante a nulos y arreglos vacíos
-- [ ] T049 [US5] Crear `client/lib/services/dashboard_service.dart` y
+- [x] T049 [US5] Crear `client/lib/services/dashboard_service.dart` y
   `client/lib/providers/dashboard_provider.dart` con carga al abrir, acción
   «Actualizar», estados de carga/vacío/error (D4)
-- [ ] T050 [US5] Crear `client/lib/screens/dashboard_screen.dart` con el bloque de
+- [x] T050 [US5] Crear `client/lib/screens/dashboard_screen.dart` con el bloque de
   resumen de órdenes (totales y por estado) y ampliar
   `client/lib/utils/app_shell.dart` con la sección **Panel** visible únicamente para
   `ADMIN` (doble filtro con el 403 del backend, HU5‑2)
-- [ ] T051 [US5] Escribir `client/test/dashboard_screen_test.dart` (panel con datos de
+- [x] T051 [US5] Escribir `client/test/dashboard_screen_test.dart` (panel con datos de
   prueba, bloque vacío amigable y error de carga; viewport 1280×3000 y
   `GoogleFonts.config.allowRuntimeFetching = false`)
 
