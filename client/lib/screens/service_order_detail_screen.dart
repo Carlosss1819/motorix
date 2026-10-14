@@ -12,6 +12,7 @@ import '../providers/load_status.dart';
 import '../providers/parts_provider.dart';
 import '../providers/payment_provider.dart';
 import '../providers/service_orders_provider.dart';
+import '../providers/ticket_provider.dart';
 import '../services/api_client.dart';
 import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
@@ -23,6 +24,7 @@ import '../widgets/payment_status_chip.dart';
 import '../widgets/status_chip.dart';
 import 'client_detail_screen.dart';
 import 'payment_form_screen.dart';
+import 'ticket_screen.dart';
 import 'vehicle_detail_screen.dart';
 import 'vehicle_history_screen.dart';
 
@@ -54,6 +56,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   /// Pagos y total de la orden para el bloque de cobro (HU1, Sprint 4); solo
   /// lo usan recepción y administración (FR-003, RN-15).
   late final PaymentsProvider _pagos;
+
+  /// Existencia del ticket de la orden (US4, T042): decide el botón
+  /// «Generar ticket» o «Ver ticket»; también solo recepción/administración.
+  late final TicketProvider _tickets;
 
   /// El selector de asignación es de recepción/administración (FR-009); el
   /// mecánico solo consulta su orden.
@@ -101,6 +107,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     _orders = context.read<ServiceOrdersProvider>();
     _parts = context.read<PartsProvider>();
     _pagos = context.read<PaymentsProvider>();
+    _tickets = context.read<TicketProvider>();
     final AppUser? usuario = context.read<AuthProvider>().user;
     final String rol = usuario?.rol ?? '';
     _esMecanico = rol == Rol.mechanic;
@@ -119,6 +126,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         // Historial de pagos y total vigente del bloque de cobro (HU1).
         _pagos.load(widget.orderId);
         _pagos.loadTotal(widget.orderId);
+        // ¿La orden ya tiene ticket? Para el botón «Ver/Generar ticket»
+        // (US4, FR-009); el fallo de esta consulta solo oculta el botón.
+        _tickets.consultarExistencia(widget.orderId);
       }
     });
   }
@@ -1132,6 +1142,21 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     }
   }
 
+  /// Abre el comprobante de la orden (US4, FR-008): si aún no existe, la
+  /// pantalla de ticket lo genera; al volver se vuelve a consultar para
+  /// cambiar el botón a «Ver ticket».
+  Future<void> _abrirTicket(ServiceOrder order) async {
+    await Navigator.pushNamed(
+      context,
+      Routes.ticket,
+      arguments: TicketScreenArgs(ordenId: order.id),
+    );
+    if (!mounted) {
+      return;
+    }
+    await _tickets.consultarExistencia(order.id);
+  }
+
   /// Bloque de cobro y pago (HU1/HU2/HU3): total vigente de la orden con su
   /// desglose resumido (FR-015), historial de pagos con monto, método, fecha
   /// y estado (SC-001) y, en órdenes `TERMINADO` sin cobro aprobado ni
@@ -1145,6 +1170,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     final MotorixColors colors = context.motorixColors;
     // watch para refrescar el bloque al registrar, confirmar o anular un pago.
     final PaymentsProvider pagos = context.watch<PaymentsProvider>();
+    // watch para cambiar entre «Generar ticket» y «Ver ticket» (US4).
+    final TicketProvider tickets = context.watch<TicketProvider>();
 
     final bool liquidada = pagos.tienePagoAprobado;
     final bool pendiente = pagos.tienePagoPendiente;
@@ -1231,6 +1258,32 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               'Orden liquidada: ya tiene su pago aprobado.',
               style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
             ),
+            // Ticket de la orden (US4, FR-009): «Ver» cuando ya existe y
+            // «Generar» cuando aún no; la pantalla se encarga de crearlo.
+            if (tickets.lookup == LoadStatus.ready && tickets.existe) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              OutlinedButton.icon(
+                key: const Key('boton-ver-ticket'),
+                onPressed: () => _abrirTicket(order),
+                icon: const Icon(
+                  LucideIcons.fileText,
+                  size: AppMetrics.iconSizeSmall,
+                ),
+                label: const Text('Ver ticket'),
+              ),
+            ] else if (tickets.lookup == LoadStatus.ready &&
+                !tickets.existe) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              FilledButton.icon(
+                key: const Key('boton-generar-ticket'),
+                onPressed: () => _abrirTicket(order),
+                icon: const Icon(
+                  LucideIcons.ticket,
+                  size: AppMetrics.iconSizeSmall,
+                ),
+                label: const Text('Generar ticket'),
+              ),
+            ],
           ],
         ],
       ),

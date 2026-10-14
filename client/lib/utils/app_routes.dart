@@ -53,6 +53,9 @@ abstract final class Routes {
   /// Registro de pago de una orden (US1, Sprint 4).
   static const String paymentForm = '/service-orders/payment';
 
+  /// Ticket de servicio de una orden (US4, Sprint 4).
+  static const String ticket = '/service-orders/ticket';
+
   /// Órdenes propias del mecánico (US3).
   static const String myOrders = '/my-orders';
 
