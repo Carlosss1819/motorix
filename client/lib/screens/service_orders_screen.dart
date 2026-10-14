@@ -12,6 +12,7 @@ import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 import '../utils/messages.dart';
+import '../widgets/app_table.dart';
 import '../widgets/common_views.dart';
 import '../widgets/status_chip.dart';
 import 'service_order_detail_screen.dart';
@@ -217,24 +218,21 @@ class _ServiceOrdersScreenState extends State<ServiceOrdersScreen> {
     final MotorixColors colors = context.motorixColors;
     return AppPanel(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Folio')),
-            DataColumn(label: Text('Cliente')),
-            DataColumn(label: Text('Vehículo')),
-            DataColumn(label: Text('Estado')),
-            DataColumn(label: Text('Motivo de visita')),
-            DataColumn(label: Text('Ingreso')),
-            DataColumn(label: Text('Kilometraje')),
-            DataColumn(label: Text('Mecánico')),
-            DataColumn(label: Text('Acciones')),
-          ],
-          rows: <DataRow>[
-            for (final ServiceOrder order in items) _buildRow(order, colors),
-          ],
-        ),
+      child: FullWidthTable(
+        columns: <DataColumn>[
+          fluidColumn('Folio', weight: 1, minWidth: 110),
+          fluidColumn('Cliente', weight: 1.4, minWidth: 130),
+          fluidColumn('Vehículo', weight: 1.5, minWidth: 140),
+          fluidColumn('Estado', weight: 1.2, minWidth: 120),
+          fluidColumn('Motivo de visita', weight: 1.8, minWidth: 150),
+          fluidColumn('Ingreso', weight: 1.2, minWidth: 130),
+          fluidColumn('Kilometraje', weight: 1, minWidth: 130),
+          fluidColumn('Mecánico', weight: 1.3, minWidth: 130),
+          fluidColumn('Acciones', weight: 1, minWidth: 120),
+        ],
+        rows: <DataRow>[
+          for (final ServiceOrder order in items) _buildRow(order, colors),
+        ],
       ),
     );
   }

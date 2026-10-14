@@ -10,6 +10,7 @@ import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 import '../utils/messages.dart';
+import '../widgets/app_table.dart';
 import '../widgets/common_views.dart';
 import 'client_detail_screen.dart';
 import 'client_form_screen.dart';
@@ -146,21 +147,18 @@ class _ClientsScreenState extends State<ClientsScreen> {
     final MotorixColors colors = context.motorixColors;
     return AppPanel(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Nombre')),
-            DataColumn(label: Text('Teléfono')),
-            DataColumn(label: Text('Correo')),
-            DataColumn(label: Text('Registro')),
-            DataColumn(label: Text('Estado')),
-            DataColumn(label: Text('Acciones')),
-          ],
-          rows: <DataRow>[
-            for (final Client client in items) _buildRow(client, colors),
-          ],
-        ),
+      child: FullWidthTable(
+        columns: <DataColumn>[
+          fluidColumn('Nombre', weight: 1.6, minWidth: 140),
+          fluidColumn('Teléfono', weight: 1.2, minWidth: 120),
+          fluidColumn('Correo', weight: 2, minWidth: 150),
+          fluidColumn('Registro', weight: 1.2, minWidth: 130),
+          fluidColumn('Estado', weight: 1, minWidth: 120),
+          fluidColumn('Acciones', weight: 1, minWidth: 150),
+        ],
+        rows: <DataRow>[
+          for (final Client client in items) _buildRow(client, colors),
+        ],
       ),
     );
   }

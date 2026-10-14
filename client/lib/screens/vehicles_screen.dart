@@ -10,6 +10,7 @@ import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 import '../utils/messages.dart';
+import '../widgets/app_table.dart';
 import '../widgets/common_views.dart';
 import 'vehicle_detail_screen.dart';
 import 'vehicle_form_screen.dart';
@@ -146,21 +147,18 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     final MotorixColors colors = context.motorixColors;
     return AppPanel(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Vehículo')),
-            DataColumn(label: Text('Placas')),
-            DataColumn(label: Text('Año')),
-            DataColumn(label: Text('Kilometraje')),
-            DataColumn(label: Text('Propietario')),
-            DataColumn(label: Text('Acciones')),
-          ],
-          rows: <DataRow>[
-            for (final Vehicle vehicle in items) _buildRow(vehicle, colors),
-          ],
-        ),
+      child: FullWidthTable(
+        columns: <DataColumn>[
+          fluidColumn('Vehículo', weight: 1.8, minWidth: 150),
+          fluidColumn('Placas', weight: 1.2, minWidth: 110),
+          fluidColumn('Año', weight: 0.8, minWidth: 90),
+          fluidColumn('Kilometraje', weight: 1.2, minWidth: 130),
+          fluidColumn('Propietario', weight: 1.6, minWidth: 140),
+          fluidColumn('Acciones', weight: 1, minWidth: 150),
+        ],
+        rows: <DataRow>[
+          for (final Vehicle vehicle in items) _buildRow(vehicle, colors),
+        ],
       ),
     );
   }

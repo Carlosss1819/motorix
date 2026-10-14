@@ -11,6 +11,7 @@ import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 import '../utils/messages.dart';
+import '../widgets/app_table.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/status_chip.dart';
@@ -355,21 +356,18 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     final MotorixColors colors = context.motorixColors;
     return AppPanel(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Hora')),
-            DataColumn(label: Text('Cliente')),
-            DataColumn(label: Text('Vehículo')),
-            DataColumn(label: Text('Motivo')),
-            DataColumn(label: Text('Estado')),
-            DataColumn(label: Text('Acciones')),
-          ],
-          rows: <DataRow>[
-            for (final Appointment cita in items) _buildRow(cita, colors),
-          ],
-        ),
+      child: FullWidthTable(
+        columns: <DataColumn>[
+          fluidColumn('Hora', weight: 1, minWidth: 110),
+          fluidColumn('Cliente', weight: 1.6, minWidth: 140),
+          fluidColumn('Vehículo', weight: 1.6, minWidth: 150),
+          fluidColumn('Motivo', weight: 1.8, minWidth: 150),
+          fluidColumn('Estado', weight: 1, minWidth: 110),
+          fluidColumn('Acciones', weight: 1.8, minWidth: 180),
+        ],
+        rows: <DataRow>[
+          for (final Appointment cita in items) _buildRow(cita, colors),
+        ],
       ),
     );
   }

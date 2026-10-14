@@ -12,6 +12,7 @@ import '../services/users_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/messages.dart';
 import '../utils/validators.dart';
+import '../widgets/app_table.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
 
@@ -238,20 +239,17 @@ class _UsersScreenState extends State<UsersScreen> {
     final MotorixColors colors = context.motorixColors;
     return AppPanel(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: DataTable(
-          columns: const <DataColumn>[
-            DataColumn(label: Text('Usuario')),
-            DataColumn(label: Text('Correo')),
-            DataColumn(label: Text('Rol')),
-            DataColumn(label: Text('Estado')),
-            DataColumn(label: Text('Acciones')),
-          ],
-          rows: <DataRow>[
-            for (final UserRecord user in items) _buildRow(user, colors),
-          ],
-        ),
+      child: FullWidthTable(
+        columns: <DataColumn>[
+          fluidColumn('Usuario', weight: 1.6, minWidth: 140),
+          fluidColumn('Correo', weight: 2, minWidth: 150),
+          fluidColumn('Rol', weight: 1.2, minWidth: 110),
+          fluidColumn('Estado', weight: 1, minWidth: 110),
+          fluidColumn('Acciones', weight: 1, minWidth: 140),
+        ],
+        rows: <DataRow>[
+          for (final UserRecord user in items) _buildRow(user, colors),
+        ],
       ),
     );
   }
