@@ -253,6 +253,39 @@ describe('POST /api/payments — registro y rechazos (FR-004, FR-015)', () => {
     expect(response.body.error.mensaje).toContain('método');
   });
 
+  test('registra con cada método: efectivo, tarjeta y transferencia (FR-002, HU2-3)', async () => {
+    for (const metodo of ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']) {
+      const ordenId = await crearOrden({
+        estado: 'TERMINADO',
+        conManoDeObra: 700,
+      });
+      const response = await api
+        .post('/api/payments')
+        .set(bearer(receptionistToken))
+        .send({ ordenId, monto: 700, metodo, fecha: '2026-10-21' });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toMatchObject({
+        ordenId,
+        monto: 700,
+        metodo,
+        estado: 'PAGADO',
+      });
+    }
+  });
+
+  test('responde 400 VALIDACION con «método de pago requerido» si falta el método (HU2-3)', async () => {
+    const ordenId = await crearOrden({ estado: 'TERMINADO', conManoDeObra: 150 });
+    const response = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 150 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.codigo).toBe('VALIDACION');
+    expect(response.body.error.mensaje).toContain('método de pago requerido');
+  });
+
   test('responde 401 sin token y 403 para el mecánico (FR-003)', async () => {
     const sinToken = await api.post('/api/payments').send({ ordenId: 1, monto: 1, metodo: 'EFECTIVO' });
     expect(sinToken.status).toBe(401);

@@ -289,3 +289,53 @@ test('un pago anulado dos veces responde 409 TRANSICION_INVALIDA (D7)', async ()
   expect(segunda.status).toBe(409);
   expect(segunda.body.error.codigo).toBe('TRANSICION_INVALIDA');
 });
+
+test('cada método (efectivo, tarjeta, transferencia) se guarda con su valor correcto (FR-002)', async () => {
+  for (const metodo of ['EFECTIVO', 'TARJETA', 'TRANSFERENCIA']) {
+    const ordenId = await crearOrdenCobrable({ precio: 600 });
+    const response = await registrarPago(ordenId, 600, metodo);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toMatchObject({
+      ordenId,
+      metodo,
+      estado: 'PAGADO',
+    });
+
+    // El valor guardado es el del enum, el que luego se lista como historial.
+    const historial = await api
+      .get(`/api/payments/orden/${ordenId}`)
+      .set(bearer(receptionistToken));
+    expect(historial.status).toBe(200);
+    expect(historial.body.elementos[0].metodo).toBe(metodo);
+  }
+});
+
+test('un método fuera del enum responde 400 VALIDACION sin guardar nada (FR-002)', async () => {
+  const ordenId = await crearOrdenCobrable({ precio: 200 });
+  const response = await api
+    .post('/api/payments')
+    .set(bearer(receptionistToken))
+    .send({ ordenId, monto: 200, metodo: 'CHEQUE' });
+
+  expect(response.status).toBe(400);
+  expect(response.body.error.codigo).toBe('VALIDACION');
+
+  const filas = await consultaDirecta(
+    'SELECT COUNT(*) AS total FROM payments WHERE service_order_id = ?',
+    [ordenId],
+  );
+  expect(filas[0].total).toBe(0);
+});
+
+test('sin método el registro responde 400 «método de pago requerido» (HU2-3)', async () => {
+  const ordenId = await crearOrdenCobrable({ precio: 300 });
+  const response = await api
+    .post('/api/payments')
+    .set(bearer(receptionistToken))
+    .send({ ordenId, monto: 300 });
+
+  expect(response.status).toBe(400);
+  expect(response.body.error.codigo).toBe('VALIDACION');
+  expect(response.body.error.mensaje).toContain('método de pago requerido');
+});
