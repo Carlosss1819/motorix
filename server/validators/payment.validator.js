@@ -14,9 +14,14 @@ export const paymentSchema = z.object({
     .coerce
     .number({ required_error: 'El monto es obligatorio', invalid_type_error: 'El monto debe ser un número' })
     .positive('El monto debe ser un número mayor a 0'),
+  // HU2-3: si falta el método el mensaje es «método de pago requerido»; si
+  // llega un valor fuera del enum se lista lo admitido.
   metodo: z.enum(['EFECTIVO', 'TARJETA', 'TRANSFERENCIA', 'MERCADO_PAGO'], {
-    errorMap: () => ({
-      message: 'El método de pago debe ser EFECTIVO, TARJETA, TRANSFERENCIA o MERCADO_PAGO',
+    errorMap: (issue) => ({
+      message:
+        issue.code === 'invalid_type' && issue.received === 'undefined'
+          ? 'método de pago requerido'
+          : 'El método de pago debe ser EFECTIVO, TARJETA, TRANSFERENCIA o MERCADO_PAGO',
     }),
   }),
   fecha: z
