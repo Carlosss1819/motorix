@@ -1068,19 +1068,90 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     }
   }
 
-  /// Bloque de cobro y pago (HU1/HU2): total vigente de la orden con su
+  /// Confirmación manual de un cobro Mercado Pago pendiente (US3, FR-005,
+  /// aclaración 3): el rol verifica el cobro en el panel del proveedor y
+  /// marca el resultado tras confirmar. Aprobado liquida la orden; rechazado
+  /// o cancelado la libera para otro intento (HU3-3, HU3-4). Nunca se piden
+  /// ni se muestran datos de tarjeta (RN-14).
+  Future<void> _confirmarPago(Payment pago, String estado) async {
+    const Map<String, String> etiquetas = <String, String>{
+      'PAGADO': 'Marcar como aprobado',
+      'RECHAZADO': 'Marcar como rechazado',
+      'CANCELADO': 'Cancelar cobro',
+    };
+    const Map<String, String> preguntas = <String, String>{
+      'PAGADO':
+          '¿Seguro que quieres marcar este cobro Mercado Pago como '
+          'aprobado? La orden quedará liquidada.',
+      'RECHAZADO':
+          '¿Seguro que quieres marcar este cobro Mercado Pago como '
+          'rechazado? La orden quedará libre para otro intento.',
+      'CANCELADO':
+          '¿Seguro que quieres cancelar este cobro Mercado Pago pendiente? '
+          'La orden quedará libre para otro intento.',
+    };
+    const Map<String, String> avisos = <String, String>{
+      'PAGADO': 'Cobro confirmado: el pago queda aprobado.',
+      'RECHAZADO': 'Cobro marcado como rechazado.',
+      'CANCELADO': 'Cobro cancelado.',
+    };
+
+    final bool seguro = await showConfirmDialog(
+      context,
+      titulo: etiquetas[estado]!,
+      mensaje: preguntas[estado]!,
+      confirmarLabel: 'Confirmar',
+      destructive: estado != 'PAGADO',
+    );
+    if (!seguro) {
+      return;
+    }
+
+    try {
+      await _pagos.confirm(id: pago.id, estado: estado);
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(avisos[estado]!)),
+      );
+    } on ApiException catch (e) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.mensaje)),
+      );
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text(AppMessages.unexpectedError)),
+      );
+    }
+  }
+
+  /// Bloque de cobro y pago (HU1/HU2/HU3): total vigente de la orden con su
   /// desglose resumido (FR-015), historial de pagos con monto, método, fecha
-  /// y estado (SC-001) y, en órdenes `TERMINADO` sin cobro aprobado, el
-  /// botón que abre el formulario (FR-004). Solo recepción y administración
-  /// (FR-003, RN-15); la anulación es exclusiva de ADMIN (FR-016).
+  /// y estado (SC-001) y, en órdenes `TERMINADO` sin cobro aprobado ni
+  /// pendiente, el botón que abre el formulario (FR-004, FR-005). Un cobro
+  /// Mercado Pago `PENDIENTE` muestra su referencia y enlace con las
+  /// acciones de confirmación manual (aclaración 3). Solo recepción y
+  /// administración (FR-003, RN-15); la anulación es exclusiva de ADMIN
+  /// (FR-016).
   Widget _buildCobro(ServiceOrder order) {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final MotorixColors colors = context.motorixColors;
-    // watch para refrescar el bloque al registrar o anular un pago.
+    // watch para refrescar el bloque al registrar, confirmar o anular un pago.
     final PaymentsProvider pagos = context.watch<PaymentsProvider>();
 
     final bool liquidada = pagos.tienePagoAprobado;
-    final bool puedeCobrar = order.estado == 'TERMINADO' && !liquidada;
+    final bool pendiente = pagos.tienePagoPendiente;
+    // Con un cobro Mercado Pago pendiente la orden está en disputa: no admite
+    // otro intento hasta confirmarlo o rechazarlo (FR-005, 409 PAGO_PENDIENTE).
+    final bool puedeCobrar =
+        order.estado == 'TERMINADO' && !liquidada && !pendiente;
 
     String total = 'Calculando…';
     if (pagos.totalStatus == LoadStatus.ready && pagos.totalOrden != null) {
@@ -1147,6 +1218,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               ),
               label: const Text('Registrar pago'),
             ),
+          ] else if (pendiente) ...<Widget>[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'Cobro Mercado Pago pendiente de confirmar.',
+              key: const Key('cobro-pendiente'),
+              style: textTheme.bodySmall?.copyWith(color: colors.warning),
+            ),
           ] else if (liquidada) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
             Text(
@@ -1160,8 +1238,9 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   }
 
   /// Fila del historial de pagos: monto y método, fecha y quien lo registró,
-  /// motivo de anulación si aplica, chip de estado y la anulación (solo ADMIN
-  /// y solo para pagos `PAGADO`).
+  /// motivo de anulación si aplica, chip de estado y las acciones que este
+  /// rol puede hacer (anular `PAGADO` solo ADMIN, FR-016; confirmar un
+  /// Mercado Pago `PENDIENTE`, US3 FR-005).
   Widget _buildFilaPago(Payment pago, {required bool esAdmin}) {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final MotorixColors colors = context.motorixColors;
@@ -1194,6 +1273,53 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                     'Motivo de anulación: ${pago.motivoAnulacion}',
                     style: textTheme.bodySmall?.copyWith(color: colors.danger),
                   ),
+                if (pago.estado == 'PENDIENTE') ...<Widget>[
+                  if (pago.referenciaExterna != null &&
+                      pago.referenciaExterna!.isNotEmpty)
+                    Text(
+                      'Referencia externa: ${pago.referenciaExterna}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  if (pago.modoPasarela != null &&
+                      pago.modoPasarela!.isNotEmpty)
+                    Text(
+                      'Pasarela: ${pago.modoPasarela}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  if (pago.enlacePago != null && pago.enlacePago!.isNotEmpty)
+                    Text(
+                      'Enlace de pago: ${pago.enlacePago}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colors.textSecondary,
+                      ),
+                    ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.xs,
+                    children: <Widget>[
+                      FilledButton(
+                        key: Key('aprobar-${pago.id}'),
+                        onPressed: () => _confirmarPago(pago, 'PAGADO'),
+                        child: const Text('Marcar como aprobado'),
+                      ),
+                      OutlinedButton(
+                        key: Key('rechazar-${pago.id}'),
+                        onPressed: () => _confirmarPago(pago, 'RECHAZADO'),
+                        child: const Text('Marcar como rechazado'),
+                      ),
+                      OutlinedButton(
+                        key: Key('cancelar-cobro-${pago.id}'),
+                        onPressed: () => _confirmarPago(pago, 'CANCELADO'),
+                        child: const Text('Cancelar cobro'),
+                      ),
+                    ],
+                  ),
+                ],
                 if (esAdmin && pago.estaPagado)
                   TextButton(
                     onPressed: () => _anularPago(pago),

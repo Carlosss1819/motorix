@@ -12,6 +12,7 @@ import '../utils/formatters.dart';
 import '../utils/messages.dart';
 import '../utils/validators.dart';
 import '../widgets/common_views.dart';
+import '../widgets/payment_status_chip.dart';
 
 /// Argumento de la ruta del formulario de pago.
 class PaymentFormArgs {
@@ -43,6 +44,11 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
   String? _metodo;
   String? _error;
   bool _saving = false;
+
+  /// Pago Mercado Pago recién creado en estado `PENDIENTE` (US3): en lugar
+  /// de cerrar, la pantalla muestra su referencia, enlace y modo de pasarela
+  /// para que el rol verifique el cobro y lo confirme desde la orden.
+  Payment? _pagoCreado;
 
   /// El monto solo se precarga una vez con el total del backend; lo que el
   /// usuario escriba después no se sobreescribe (FR-019).
@@ -82,7 +88,7 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
     final PaymentsProvider pagos = context.read<PaymentsProvider>();
     try {
       final num monto = double.parse(_montoController.text.trim());
-      await pagos.register(
+      final Payment pago = await pagos.register(
         ordenId: widget.args.ordenId,
         monto: monto,
         metodo: _metodo!,
@@ -93,6 +99,14 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         return;
       }
       setState(() => _saving = false);
+
+      // Un cobro Mercado Pago nace PENDIENTE (FR-005): la pantalla se queda
+      // mostrando su referencia, enlace y modo hasta que el rol vuelva.
+      if (pago.estado == 'PENDIENTE') {
+        setState(() => _pagoCreado = pago);
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Pago registrado correctamente.')),
       );
@@ -114,6 +128,84 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
         _error = AppMessages.unexpectedError;
       });
     }
+  }
+
+  /// Resultado del cobro Mercado Pago (US3, FR-005): el pago quedó
+  /// `PENDIENTE` y aquí se muestran su referencia externa, el enlace y el
+  /// modo de pasarela usado (`sandbox` con credenciales, `simulado` sin
+  /// ellas) para verificarlo en el panel del proveedor (RN-14: la app nunca
+  /// ve ni guarda datos de tarjeta ni credenciales).
+  Widget _buildResultadoPendiente(Payment pago) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: AppMetrics.contentMaxWidth),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const BackAction(),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    'Cobro Mercado Pago iniciado',
+                    style: textTheme.titleLarge,
+                  ),
+                ),
+                PaymentStatusChip(estado: pago.estado),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              'El pago quedó como pendiente: verifica el cobro en el panel de '
+              'Mercado Pago y marca el resultado desde la orden (aprobado, '
+              'rechazado o cancelado).',
+              style: textTheme.bodySmall?.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AppPanel(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  DetailRow(
+                    label: 'Monto',
+                    value: Formatters.money(pago.monto),
+                  ),
+                  if (pago.referenciaExterna != null &&
+                      pago.referenciaExterna!.isNotEmpty)
+                    DetailRow(
+                      label: 'Referencia externa',
+                      value: pago.referenciaExterna!,
+                    ),
+                  if (pago.modoPasarela != null &&
+                      pago.modoPasarela!.isNotEmpty)
+                    DetailRow(
+                      label: 'Modo de pasarela',
+                      value: pago.modoPasarela == 'sandbox'
+                          ? 'sandbox (credenciales configuradas)'
+                          : 'simulado (sin credenciales)',
+                    ),
+                  if (pago.enlacePago != null && pago.enlacePago!.isNotEmpty)
+                    DetailRow(label: 'Enlace de pago', value: pago.enlacePago!),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton(
+              key: const Key('boton-volver-orden'),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Volver a la orden'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   /// Total y desglose vigentes de la orden, con estados de carga y error.
@@ -301,6 +393,12 @@ class _PaymentFormScreenState extends State<PaymentFormScreen> {
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final PaymentsProvider pagos = context.watch<PaymentsProvider>();
+
+    // Cobro Mercado Pago recién creado: se muestra su resultado (US3).
+    final Payment? pendiente = _pagoCreado;
+    if (pendiente != null) {
+      return _buildResultadoPendiente(pendiente);
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.xl),

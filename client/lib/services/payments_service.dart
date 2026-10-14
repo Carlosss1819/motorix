@@ -72,4 +72,16 @@ class PaymentsService {
     );
     return Payment.fromJson(asMap(data));
   }
+
+  /// POST /api/payments/:id/confirmar (US3, FR-005): confirmación manual de
+  /// un cobro Mercado Pago pendiente. `estado` es `PAGADO`, `RECHAZADO` o
+  /// `CANCELADO`; el backend exige que el pago esté `PENDIENTE` y sea
+  /// `MERCADO_PAGO` (`409 TRANSICION_INVALIDA` en otro caso).
+  Future<Payment> confirm({required int id, required String estado}) async {
+    final dynamic data = await _api.post(
+      '/payments/$id/confirmar',
+      body: <String, Object?>{'estado': estado},
+    );
+    return Payment.fromJson(asMap(data));
+  }
 }

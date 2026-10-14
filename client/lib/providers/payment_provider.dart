@@ -51,6 +51,11 @@ class PaymentsProvider extends ChangeNotifier {
   /// cobro (FR-004).
   bool get tienePagoAprobado => _items.any((Payment p) => p.estaPagado);
 
+  /// Hay un cobro Mercado Pago esperando confirmación manual (US3, FR-005):
+  /// mientras exista, la orden no admite otro intento de cobro.
+  bool get tienePagoPendiente =>
+      _items.any((Payment p) => p.estado == 'PENDIENTE');
+
   /// Carga la primera página de los pagos de una orden.
   Future<void> load(int ordenId) async {
     _ordenId = ordenId;
@@ -155,5 +160,14 @@ class PaymentsProvider extends ChangeNotifier {
     final Payment anulado = await _service.annul(id: id, motivo: motivo);
     await reload();
     return anulado;
+  }
+
+  /// Confirma manualmente un cobro Mercado Pago pendiente (US3, FR-005) y
+  /// refresca la lista: aprobado liquida la orden; rechazado o cancelado la
+  /// libera para otro intento.
+  Future<Payment> confirm({required int id, required String estado}) async {
+    final Payment confirmado = await _service.confirm(id: id, estado: estado);
+    await reload();
+    return confirmado;
   }
 }
