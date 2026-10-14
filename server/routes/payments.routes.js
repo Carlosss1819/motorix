@@ -15,6 +15,7 @@ import {
 import {
   registerPaymentHandler,
   listByOrderHandler,
+  getOrderChargeHandler,
   annulPaymentHandler,
 } from '../controllers/payments.controller.js';
 
@@ -28,6 +29,14 @@ paymentsRoutes.get(
   authorize('ADMIN', 'RECEPTIONIST'),
   validate(paymentListQuerySchema, 'query'),
   asyncHandler(listByOrderHandler),
+);
+
+// Total y desglose vigentes de la orden para el formulario de pago (FR-015,
+// T062): el monto precargado sale del mismo cálculo que valida el registro.
+paymentsRoutes.get(
+  '/orden/:ordenId/total',
+  authorize('ADMIN', 'RECEPTIONIST'),
+  asyncHandler(getOrderChargeHandler),
 );
 
 // Registro del cobro (FR-001, FR-003).

@@ -64,6 +64,15 @@ export async function getOrderTotal(serviceOrderId) {
   return calcularTotal(contenido);
 }
 
+// Total y desglose de la orden para el formulario de pago (FR-015, T062):
+// misma fuente de verdad que valida el registro, para que el monto precargado
+// en el cliente coincida con el que exige el backend.
+export async function getOrderCharge(orderId) {
+  const order = await assertOrderExists(orderId);
+  const total = await getOrderTotal(order.id);
+  return { ordenId: order.id, ...total };
+}
+
 async function assertOrderExists(orderId) {
   const order = await findServiceOrderById(orderId);
   if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
