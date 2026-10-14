@@ -34,7 +34,7 @@ del spec) para implementarlas y probarlas de forma independiente.
 
 **Purpose**: Confirmar la línea base antes de tocar nada
 
-- [ ] T001 Ejecutar la suite del backend (`npm test` en `server/`) y la de Flutter
+- [x] T001 Ejecutar la suite del backend (`npm test` en `server/`) y la de Flutter
   (`flutter test` en `client/`) para confirmar que la línea base del Sprint 3 pasa
   limpia antes de empezar
 
@@ -46,7 +46,7 @@ del spec) para implementarlas y probarlas de forma independiente.
 
 **⚠ CRITICAL**: No puede empezar ninguna historia hasta completar esta fase
 
-- [ ] T002 Escribir `database/migrations/004_pagos_tickets_dashboard.sql` (script nuevo
+- [x] T002 Escribir `database/migrations/004_pagos_tickets_dashboard.sql` (script nuevo
   e inmutable; no se editan `001`, `002` ni `003`) con: tabla `payments` (`id` INT
   AUTO_INCREMENT PK, `service_order_id` INT NOT NULL FK→`service_orders(id)` RESTRICT,
   `amount` DECIMAL(10,2) NOT NULL **CHECK (amount > 0)**, `method` ENUM('EFECTIVO',
@@ -63,29 +63,29 @@ del spec) para implementarlas y probarlas de forma independiente.
   DEFAULT CURRENT_TIMESTAMP, **UNIQUE KEY uq_tickets_service_order (service_order_id)**);
   sin columnas de datos de tarjeta ni credenciales (RN‑14); InnoDB/utf8mb4 y comentarios
   de cabecera al estilo de las migraciones previas (data-model.md)
-- [ ] T003 Escribir `database/seeds/004_ejemplos_pagos_tickets.sql` idempotente (ids
+- [x] T003 Escribir `database/seeds/004_ejemplos_pagos_tickets.sql` idempotente (ids
   fijos + `INSERT IGNORE`): un pago `EFECTIVO` `PAGADO`, uno `TARJETA` `PAGADO`, uno
   `MERCADO_PAGO` `PENDIENTE` (con `external_reference`, `payment_link` y
   `gateway_mode='simulado'`) y uno `MERCADO_PAGO` `ANULADO` con motivo, todos ligados a
   órdenes `TERMINADO`/`ENTREGADO` de los seeds previos (RN‑13), más tickets emitidos
   para las órdenes de ejemplo ya pagadas con folios fijos `T000001‑2026`, `T000002‑2026`
   (FR‑013, D8)
-- [ ] T004 Aplicar migración y seed contra `motorix_v2_test` con
+- [x] T004 Aplicar migración y seed contra `motorix_v2_test` con
   `database/scripts/aplicar-migraciones.ps1 -DbName motorix_v2_test` **dos veces
   seguidas** y comprobar idempotencia (segunda corrida: `[omitida] … ya aplicada`,
   conteos idénticos)
-- [ ] T005 [P] Crear `server/utils/order-total.js` como módulo puro
+- [x] T005 [P] Crear `server/utils/order-total.js` como módulo puro
   `calcularTotal({ manoDeObra, refacciones })`: suma `price` de cada partida de mano
   de obra tratando `NULL` como 0; suma `sale_price × quantity` de cada fila de
   `order_parts` con `part_id` (precio vigente del catálogo); las filas sin `part_id`
   se valoran como 0 con el aviso «sin precio registrado» en el desglose; devuelve
   `{ subtotalManoDeObra, subtotalRefacciones, total, desglose }` (FR‑015, D2 y D2.1)
-- [ ] T006 [P] Crear `server/utils/payment-transitions.js` como módulo puro (estilo
+- [x] T006 [P] Crear `server/utils/payment-transitions.js` como módulo puro (estilo
   `order-transitions.js`): máquina de estados `PENDIENTE → PAGADO | RECHAZADO |
   CANCELADO`, `PAGADO → ANULADO` y `RECHAZADO`, `CANCELADO`, `ANULADO` como estados
   finales, con `evaluatePaymentTransition(actual, destino)` que rechaza cualquier otra
   transición (D7)
-- [ ] T007 [P] Crear `server/models/payment.js` con el CRUD (crear, buscar por id,
+- [x] T007 [P] Crear `server/models/payment.js` con el CRUD (crear, buscar por id,
   listar por orden con paginación incluyendo anulados, contar pagos `PAGADO` y
   `PENDIENTE` de una orden, actualizar estado/motivo/anulador) y la consulta de la
   orden con su pago para el guard de entrega (FR‑014)
@@ -109,21 +109,21 @@ un nuevo cobro (E1, E2 y E3 del quickstart)
 
 ### Tests for User Story 1
 
-- [ ] T008 [P] [US1] Escribir la prueba unitaria `server/tests/unit/order-total.test.js`
+- [x] T008 [P] [US1] Escribir la prueba unitaria `server/tests/unit/order-total.test.js`
   para `calcularTotal`: suma de mano de obra con `NULL` tratado como 0, refacciones con
   `part_id` a precio vigente × cantidad, filas sin `part_id` valoradas en 0 con aviso
   «sin precio registrado», desglose y totales exactos con dos decimales (FR‑015, D2)
-- [ ] T009 [P] [US1] Escribir la prueba unitaria
+- [x] T009 [P] [US1] Escribir la prueba unitaria
   `server/tests/unit/payment-transitions.test.js` para la máquina de estados (D7):
   las tres salidas de `PENDIENTE`, `PAGADO → ANULADO`, estados finales sin salida y
   transiciones inválidas rechazadas, con mensajes de aserción en español
-- [ ] T010 [P] [US1] Escribir la prueba de contrato
+- [x] T010 [P] [US1] Escribir la prueba de contrato
   `server/tests/contract/payments.test.js` para `GET /api/payments/orden/:ordenId` y
   `POST /api/payments`: `200` paginado y `201`, `401` sin token, `403` rol inválido
   (`mecanico`), `404 ORDEN_NO_ENCONTRADA`, `400 VALIDACION`,
   `409 ORDEN_NO_COBRABLE`, `409 ORDEN_YA_LIQUIDADA` y `409 MONTO_NO_COINCIDE`
   (contracts/payments.md)
-- [ ] T011 [P] [US1] Escribir la prueba de integración
+- [x] T011 [P] [US1] Escribir la prueba de integración
   `server/tests/integration/payments.test.js`: pago `EFECTIVO` nace `PAGADO` y ligado
   a la orden (SC‑002, pagos huérfanos = 0), segundo pago rechazado, orden no cobrable
   rechazada, el total coincide con el calculado por `order-total.js`, anulación con
@@ -134,7 +134,7 @@ un nuevo cobro (E1, E2 y E3 del quickstart)
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implementar `server/services/payment.service.js` con
+- [x] T012 [US1] Implementar `server/services/payment.service.js` con
   `registerPayment` (valida orden `TERMINADO` → `409 ORDEN_NO_COBRABLE`; sin pago
   `PAGADO` → `409 ORDEN_YA_LIQUIDADA`; `monto` debe coincidir con
   `calcularTotal(...).total` → `409 MONTO_NO_COINCIDE`; los métodos no Mercado Pago
@@ -142,22 +142,22 @@ un nuevo cobro (E1, E2 y E3 del quickstart)
   `annulPayment` (solo `ADMIN` motivo 1–255, pago `PAGADO` y orden no `ENTREGADO`,
   guarda `annulment_reason`, `annulled_by`, `annulled_at`; FR‑001, FR‑004, FR‑015,
   FR‑016, contracts/payments.md)
-- [ ] T013 [US1] Crear `server/validators/payment.validator.js` con `zod`: esquema de
+- [x] T013 [US1] Crear `server/validators/payment.validator.js` con `zod`: esquema de
   registro (`ordenId` entero > 0, `monto` decimal > 0 con dos decimales, `metodo` enum
   de los cuatro valores FR‑002, `fecha` opcional `AAAA-MM-DD`) y esquema de anulación
   (`motivo` string 1–255 obligatorio), mensajes de error en español
-- [ ] T014 [US1] Crear `server/controllers/payments.controller.js` con
+- [x] T014 [US1] Crear `server/controllers/payments.controller.js` con
   `registerPaymentHandler`, `listByOrderHandler` y `annulPaymentHandler` sobre el
   servicio, usando `asyncHandler` y las respuestas de `utils/response.js`
-- [ ] T015 [US1] Crear `server/routes/payments.routes.js` con
+- [x] T015 [US1] Crear `server/routes/payments.routes.js` con
   `GET /orden/:ordenId`, `POST /` y `POST /:id/anular` bajo `authenticate` +
   `authorize('ADMIN','RECEPTIONIST')` (la anulación se restringe además a `ADMIN` en el
   servicio, FR‑003, RN‑15) y montarla como `/api/payments` en `server/routes/index.js`
-- [ ] T016 [US1] Ampliar `server/services/service_order.service.js` en `changeStatus`:
+- [x] T016 [US1] Ampliar `server/services/service_order.service.js` en `changeStatus`:
   justo antes de aplicar la transición a `ENTREGADO`, si la orden no tiene un pago
   `PAGADO` responder `409 PAGO_PENDIENTE` con mensaje claro «primero debe registrarse
   el pago»; no se toca `server/utils/order-transitions.js` (FR‑014, D5)
-- [ ] T062 [US1] *(agregado al implementar, 2026‑10‑14)* Documentar en
+- [x] T062 [US1] *(agregado al implementar, 2026‑10‑14)* Documentar en
   `contracts/payments.md` y crear `GET /api/payments/orden/:ordenId/total` (handler en
   `server/controllers/payments.controller.js`, método `getOrderCharge` en
   `server/services/payment.service.js`, ruta en `server/routes/payments.routes.js`):
@@ -166,31 +166,31 @@ un nuevo cobro (E1, E2 y E3 del quickstart)
   (cierra el hueco entre `data-model.md`, que dice que el desglose «se envía al
   formulario», y `contracts/payments.md`, que no definía la ruta; aprobado por el
   usuario el 2026‑10‑14)
-- [ ] T063 [US1] *(agregado al implementar, 2026‑10‑14)* Crear
+- [x] T063 [US1] *(agregado al implementar, 2026‑10‑14)* Crear
   `client/lib/models/order_total.dart` con el formato de la nueva ruta y agregar
   `fetchOrderTotal(ordenId)` a `client/lib/services/payments_service.dart`, para que
   `payment_form_screen.dart` (T020) precargue el monto y muestre el desglose
-- [ ] T017 [P] [US1] Crear `client/lib/models/payment.dart` con todos los campos del
+- [x] T017 [P] [US1] Crear `client/lib/models/payment.dart` con todos los campos del
   contrato (`id`, `ordenId`, `monto`, `metodo`, `estado`, `referenciaExterna`,
   `enlacePago`, `modoPasarela`, `motivoAnulacion`, `registradoPor`, `fecha`) y
   `fromJson` tolerante a nulos
-- [ ] T018 [US1] Crear `client/lib/services/payments_service.dart` con
+- [x] T018 [US1] Crear `client/lib/services/payments_service.dart` con
   `fetchPaymentsByOrder(ordenId, pagina)`, `registerPayment(payload)` y
   `annulPayment(id, motivo)` sobre el patrón de `http` ya usado
-- [ ] T019 [US1] Crear `client/lib/providers/payment_provider.dart` con estados de
+- [x] T019 [US1] Crear `client/lib/providers/payment_provider.dart` con estados de
   carga/vacío/error, paginación y refresco tras registrar o anular
-- [ ] T020 [US1] Crear `client/lib/screens/payment_form_screen.dart` con el desglose
+- [x] T020 [US1] Crear `client/lib/screens/payment_form_screen.dart` con el desglose
   del total calculado (mano de obra + refacciones × cantidad), campos monto (con el
   total precargado), método y fecha, validación de «método requerido» y errores
   legibles, sobre `docs/design-system.md` (SC‑001)
-- [ ] T021 [US1] Crear `client/lib/widgets/payment_status_chip.dart` y ampliar
+- [x] T021 [US1] Crear `client/lib/widgets/payment_status_chip.dart` y ampliar
   `client/lib/screens/service_order_detail_screen.dart` con el bloque de cobro: botón
   «Registrar pago» (solo en `TERMINADO`), historial de pagos de la orden con monto,
   método, fecha y estado junto al total (escenario 3), y el botón «Anular pago»
   visible solo para `ADMIN` con confirmación obligatoria y motivo
-- [ ] T022 [US1] Registrar la ruta del formulario de pago en
+- [x] T022 [US1] Registrar la ruta del formulario de pago en
   `client/lib/utils/app_routes.dart`
-- [ ] T023 [US1] Escribir `client/test/payment_flow_test.dart` (formulario con
+- [x] T023 [US1] Escribir `client/test/payment_flow_test.dart` (formulario con
   desglose y total, registro exitoso, error de backend «orden ya liquidada», estado
   vacío de pagos; viewport 1280×3000 y
   `GoogleFonts.config.allowRuntimeFetching = false`)
