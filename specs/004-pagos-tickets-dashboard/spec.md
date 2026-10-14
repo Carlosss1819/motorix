@@ -8,6 +8,16 @@
 
 **Input**: Descripción del usuario: "Usa la descripcion de @docs/sprints/sprint-4-pagos-tickets-dashboard.md"
 
+## Clarifications
+
+### Session 2026-10-13
+
+- Q: ¿En qué momento del ciclo de la orden se debe registrar el pago para que pueda considerarse cerrada? → A: El cobro es previo a la entrega: la orden solo puede pasar de `TERMINADO` a `ENTREGADO` cuando tiene un pago aprobado.
+- Q: ¿De dónde debe salir el total que se cobra en la orden? → A: Se calcula al cobrar con los precios vigentes: mano de obra de los servicios + (precio de venta actual de cada refacción × cantidad usada).
+- Q: ¿Cómo debe confirmarse el estado de un pago iniciado por Mercado Pago para que pase de pendiente a pagado? → A: Confirmación manual: el recepcionista verifica el cobro en el panel del proveedor y marca el pago como aprobado o rechazado en el sistema.
+- Q: ¿Qué debe poder hacer el recepcionista con un pago por Mercado Pago que queda pendiente y nunca recibe confirmación? → A: Puede cancelarlo manualmente: el intento queda registrado como `CANCELADO` y la orden queda libre para otro cobro.
+- Q: ¿Cómo debe corregirse un pago ya registrado por error (por ejemplo, monto o método equivocado)? → A: Anulación con motivo, registrada como pago `ANULADO`; solo administración puede anular y la orden queda libre para registrar un pago nuevo correcto (no es una devolución de dinero).
+
 ## Escenarios de usuario y pruebas *(obligatorio)*
 
 ### Historia de usuario 1 - Registrar el pago de una orden (Prioridad: P1)
@@ -19,14 +29,15 @@ ciclo del servicio y que quede constancia del cobro.
 servicio ni dato para el ticket ni para el dashboard. Es la historia que convierte el
 taller operativo en un taller que factura.
 
-**Prueba independiente**: se puede probar registrando el pago de una orden entregada y
+**Prueba independiente**: se puede probar registrando el pago de una orden terminada y
 verificando que el pago queda guardado, ligado a esa orden y visible en su detalle.
 
 **Escenarios de aceptación**:
 
-1. **Dado** una orden en estado `TERMINADO` con su total calculado, **Cuando** el
-   recepcionista registra el pago con monto, método y fecha, **Entonces** el pago queda
-   guardado, ligado a la orden y el estado del pago es `PAGADO`.
+1. **Dado** una orden en estado `TERMINADO` con su total calculado con los precios
+   vigentes (mano de obra + refacciones), **Cuando** el recepcionista registra el pago
+   con monto, método y fecha, **Entonces** el pago queda guardado, ligado a la orden y
+   el estado del pago es `PAGADO`.
 2. **Dado** una orden que ya tiene un pago `PAGADO` por su total, **Cuando** el
    recepcionista intenta registrar otro pago, **Entonces** el sistema rechaza la
    operación indicando que la orden ya está liquidada.
@@ -36,6 +47,12 @@ verificando que el pago queda guardado, ligado a esa orden y visible en su detal
 4. **Dado** una orden que no está en un estado cobrable (por ejemplo `RECIBIDO`),
    **Cuando** se intenta registrar un pago, **Entonces** el sistema rechaza la
    operación con un mensaje claro.
+5. **Dado** una orden en `TERMINADO` sin un pago aprobado, **Cuando** el personal
+   intenta pasarla a `ENTREGADO`, **Entonces** el sistema rechaza la entrega e
+   indica que primero debe registrarse el pago.
+6. **Dado** una orden con un pago registrado por error, **Cuando** un administrador
+   lo anula indicando el motivo, **Entonces** el pago queda como `ANULADO`, la orden
+   queda libre y puede registrar un pago nuevo correcto.
 
 ---
 
@@ -80,12 +97,16 @@ ningún momento se guarda un dato de tarjeta.
 1. **Dado** una orden terminada, **Cuando** el recepcionista elige Mercado Pago,
    **Entonces** el sistema genera el cobro digital y el pago queda en estado
    `PENDIENTE` hasta que se confirme.
-2. **Dado** un pago `PENDIENTE` por Mercado Pago, **Cuando** la plataforma confirma la
-   aprobación, **Entonces** el pago pasa a `PAGADO` y la orden queda liquidada.
-3. **Dado** un pago por Mercado Pago, **Cuando** la plataforma informa un rechazo o
-   cancelación, **Entonces** el pago queda `RECHAZADO` (o `CANCELADO`) y la orden
-   permite intentar de nuevo.
-4. **Dado** el flujo completo de Mercado Pago, **Cuando** se revisa qué se guardó,
+2. **Dado** un pago `PENDIENTE` por Mercado Pago, **Cuando** el recepcionista verifica
+   el cobro en el panel del proveedor y lo marca como aprobado, **Entonces** el pago
+   pasa a `PAGADO` y la orden queda liquidada.
+3. **Dado** un pago por Mercado Pago, **Cuando** el recepcionista verifica un rechazo o
+   cancelación en el panel del proveedor y lo marca como tal, **Entonces** el pago
+   queda `RECHAZADO` (o `CANCELADO`) y la orden permite intentar de nuevo.
+4. **Dado** un pago `PENDIENTE` que nunca recibe confirmación, **Cuando** el
+   recepcionista lo cancela manualmente, **Entonces** el intento queda registrado como
+   `CANCELADO` y la orden queda libre para otro cobro.
+5. **Dado** el flujo completo de Mercado Pago, **Cuando** se revisa qué se guardó,
    **Entonces** no existe ningún dato de tarjeta ni credencial del proveedor en el
    sistema (RN‑14).
 
@@ -171,6 +192,8 @@ en su bloque del dashboard.
 - ¿Qué pasa cuando se intenta registrar un pago sobre una orden ya pagada o en un
   estado no cobrable?
 - ¿Cómo maneja el sistema un pago por Mercado Pago que nunca recibe confirmación?
+  (resuelto: el recepcionista lo cancela manualmente y la orden queda libre; ver
+  aclaración del 2026-10-13)
 - ¿Qué sucede si el cliente quiere pagar solo una parte del total?
 - ¿Cómo se comporta el ticket de una orden sin servicios ni refacciones registrados?
 - ¿Qué ve el administrador en el dashboard cuando el taller no tiene datos en un
@@ -191,8 +214,9 @@ en su bloque del dashboard.
 - **FR-004**: El sistema DEBE rechazar el registro de un pago cuando la orden ya
   tenga un pago aprobado por su total, o cuando su estado no permita el cobro.
 - **FR-005**: El sistema DEBE gestionar los pagos por Mercado Pago en modo sandbox,
-  iniciando el cobro digital y actualizando el estado del pago (`PENDIENTE`,
-  `PAGADO`, `RECHAZADO`, `CANCELADO`) según la respuesta del proveedor.
+  iniciando el cobro digital con pago `PENDIENTE` y permitiendo al recepcionista
+  marcarlo como `PAGADO`, `RECHAZADO` o `CANCELADO` tras verificar el resultado en el
+  panel del proveedor (confirmación manual).
 - **FR-006**: El sistema NO DEBE almacenar datos de tarjeta ni credenciales del
   procesador de pagos (RN‑14); las credenciales del proveedor se manejan fuera del
   código, por variables de entorno (CA‑7).
@@ -212,17 +236,28 @@ en su bloque del dashboard.
   como historial (RN‑9), sin eliminaciones ordinarias.
 - **FR-013**: Los datos de ejemplo (seeds) DEBEN incluir pagos y tickets de muestra
   para que el taller muestre información al instalar, y DEBEN ser idempotentes.
+- **FR-014**: El sistema DEBE impedir que una orden pase de `TERMINADO` a `ENTREGADO`
+  sin un pago aprobado: el cobro es previo a la entrega.
+- **FR-015**: El sistema DEBE calcular el total de la orden al momento de cobrar con
+  los precios vigentes: la mano de obra de sus servicios más (precio de venta actual de
+  cada refacción × cantidad usada).
+- **FR-016**: El sistema DEBE permitir anular un pago registrado por error, exigiendo un
+  motivo y reservando la acción a administración; el pago anulado queda como
+  `ANULADO` (nunca se borra) y la orden queda libre para registrar un pago nuevo
+  correcto. La anulación registra el hecho; no devuelve dinero.
 
 ### Entidades clave *(incluido porque el rasgo implica datos)*
 
 - **Pago**: representa el cobro de una orden; incluye monto, método, estado
-  (`PENDIENTE`, `PAGADO`, `RECHAZADO`, `CANCELADO`), fecha y la orden a la que
-  pertenece; referencia externa cuando el cobro es por Mercado Pago.
+  (`PENDIENTE`, `PAGADO`, `RECHAZADO`, `CANCELADO`, `ANULADO`), motivo de anulación
+  cuando aplica, fecha y la orden a la que pertenece; referencia externa cuando el
+  cobro es por Mercado Pago.
 - **Ticket**: comprobante de la orden; incluye folio único, datos del taller, cliente,
   vehículo, kilometraje, servicios, refacciones, mano de obra, subtotal, total, método
   y estado del pago, y fecha; nace de una orden pagada.
-- **Orden de servicio** (existente): ahora también consulta su total y su pago para
-  cerrar el ciclo.
+- **Orden de servicio** (existente): ahora también consulta su total —calculado al
+  cobrar con los precios vigentes— y su pago para cerrar el ciclo; su tránsito de
+  `TERMINADO` a `ENTREGADO` exige un pago aprobado.
 - **Datos del dashboard** (consulta): órdenes, citas, mantenimientos y movimientos de
   inventario ya registrados en los sprints anteriores; el panel solo los resume, sin
   crear copias.
@@ -255,10 +290,12 @@ en su bloque del dashboard.
   propia aplicación; no se generan ni se archivan archivos PDF en el servidor (la
   librería y el formato exacto se definen en la fase de planificación).
 - **Confirmación de Mercado Pago**: el cobro digital inicia una preferencia de pago en
-  modo sandbox y el estado del pago se actualiza cuando la plataforma informa el
-  resultado; no se automatiza el envío de notificaciones al cliente.
-- **Sin reembolsos en el MVP**: no se implementa devolución de dinero; si se necesita
-  corregir un pago, queda como decisión abierta (ver marcadores de aclaración).
+  modo sandbox y el estado del pago se confirma de forma manual, tras verificar el
+  resultado en el panel del proveedor; no hay notificaciones automáticas ni envío de
+  avisos al cliente.
+- **Sin reembolsos en el MVP**: no se implementa devolución de dinero; la corrección de
+  un pago erróneo es una anulación con motivo registrada (solo administración), que no
+  mueve dinero (FR‑016).
 - **Dashboard al abrir**: los indicadores se calculan al abrir el panel (y con acción
   de actualizar); no hay actualización en tiempo real ni alertas push.
 - **Folio del ticket**: consecutivo único asignado al generar el ticket.
