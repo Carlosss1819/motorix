@@ -6,9 +6,18 @@
 
 **Estado**: Borrador
 
+**Versión**: 1.1 (2026-10-15). Ver «Historial de versiones».
+
 **Entrada**: Descripción de la usuario: "Usa la descripcion de @docs/sprints/sprint-1-base-clientes-vehiculos.md"
 (Insumo: `docs/sprints/sprint-1-base-clientes-vehiculos.md`; contexto maestro:
 `docs/project-context.md`; constitución: `.specify/memory/constitution.md`)
+
+## Historial de versiones
+
+| Versión | Fecha | Qué cambió |
+| --- | --- | --- |
+| 1.0 | 2026-10-11 | Spec generado con `/speckit.specify` y `/speckit.clarify`: requisitos funcionales redactados con «DEBE» y escenarios de aceptación en Dado / Cuando / Entonces. |
+| 1.1 | 2026-10-15 | Los requisitos funcionales FR-001 a FR-023 se reescriben en formato EARS (misma numeración y mismo significado) y con datos medibles tomados de este mismo spec. Se agregan FR-024 (bloqueo de cuenta tras 5 intentos fallidos, por 15 minutos) y FR-025 (duración máxima de la sesión, 8 horas), que ya estaban definidos en `docs/project-context.md` y en el plan del sprint pero faltaban en el spec. Se agrega la tabla de trazabilidad historia → requisitos. Historias, escenarios, casos límite, entidades, criterios de éxito, alcance y supuestos no cambian. |
 
 ## Clarifications
 
@@ -219,62 +228,100 @@ usándolo para iniciar sesión y verificando que solo ve las funciones de ese ro
 
 ### Requisitos Funcionales
 
-- **FR-001**: El sistema DEBE permitir iniciar sesión indicando el nombre de usuario o
-  el correo electrónico en un mismo campo, junto con la contraseña.
-- **FR-002**: El sistema DEBE identificar al usuario por correo cuando el valor escrito
-  contiene "@" y por nombre de usuario en cualquier otro caso, para todos los roles.
-- **FR-003**: El sistema DEBE denegar el acceso con credenciales inválidas usando un
-  mensaje que no revele cuál de los dos datos es el incorrecto.
-- **FR-004**: El sistema DEBE permitir cerrar la sesión y DEBE cerrarla automáticamente
-  tras 30 minutos de inactividad; en ambos casos el acceso a las pantallas protegidas
-  queda bloqueado de inmediato.
-- **FR-005**: El sistema DEBE ofrecer los roles administrador, recepcionista y mecánico,
-  cada uno con su conjunto de funciones permitidas.
-- **FR-006**: El sistema DEBE verificar el rol autorizado en cada operación protegida
-  antes de ejecutarla, sin depender de lo que la interfaz muestre u oculte (RN-15).
-- **FR-007**: El sistema DEBE proteger las contraseñas para que nunca se almacenen ni se
-  muestren en texto plano.
-- **FR-008**: El sistema DEBE permitir cambiar la contraseña de la cuenta propia
-  validando la política mínima: 8 caracteres como mínimo y al menos una mayúscula, una
-  minúscula y un número (RN-17).
-- **FR-009**: El sistema DEBE entregar las cuentas iniciales `admin`, `recepcion` y
-  `mecanico` listas para usar tras la instalación inicial (CA-10).
-- **FR-010**: El administrador DEBE poder crear usuarios con nombre de usuario y correo
-  únicos, asignarles un rol y verlos en una lista de usuarios.
-- **FR-011**: El administrador DEBE poder cambiar el rol de un usuario y activarlo o
-  desactivarlo; este sprint no elimina usuarios de forma definitiva. El cambio DEBE
-  aplicarse de inmediato: al desactivar un usuario se cierra su sesión abierta y el
-  nuevo rol rige en la siguiente operación que realice.
-- **FR-012**: El sistema DEBE impedir que dos cuentas compartan el mismo nombre de
-  usuario o el mismo correo, informando el motivo del rechazo.
-- **FR-013**: El sistema DEBE permitir registrar clientes con nombre, teléfono, correo
-  electrónico, fecha de registro y estado. Nombre y teléfono son obligatorios; el correo
-  electrónico es opcional.
-- **FR-014**: El sistema DEBE permitir consultar la lista de clientes y la ficha de un
-  cliente con sus vehículos asociados (CA-4).
-- **FR-015**: El sistema DEBE permitir editar la información de un cliente existente
-  conservando sus vehículos asociados.
-- **FR-016**: El sistema DEBE permitir registrar vehículos con propietario, marca,
-  modelo, año, placas, VIN cuando esté disponible y kilometraje actual.
-- **FR-017**: El sistema DEBE impedir el registro de un vehículo sin un propietario
-  seleccionado (RN-1).
-- **FR-018**: El sistema DEBE permitir consultar los vehículos de un cliente y la ficha
-  de un vehículo con su propietario.
-- **FR-019**: El sistema DEBE conservar los registros entre sesiones, reinicios de la
-  aplicación y reinicios del equipo.
-- **FR-020**: El sistema DEBE entregar datos de ejemplo suficientes al instalarse para
-  que la interfaz muestre información al arrancar, y su preparación DEBE ser repetible
-  sin duplicar registros.
-- **FR-021**: El sistema DEBE organizar el acceso desde un sidebar con las secciones
-  Inicio (bienvenida), Clientes, Vehículos, Usuarios y "Mi cuenta" (cambio de
-  contraseña), mostrando las secciones según el rol: administrador ve todas; recepcionista
-  ve Inicio, Clientes, Vehículos y Mi cuenta; mecánico ve solo Inicio y Mi cuenta.
-- **FR-022**: El sistema DEBE ofrecer las pantallas del Sprint 1: inicio de sesión,
-  lista y detalle de cliente, lista y detalle de vehículo, lista de usuarios y cambio de
-  contraseña. El rol mecánico solo usa inicio de sesión, Inicio y Mi cuenta: las
-  pantallas de gestión no están disponibles para él.
-- **FR-023**: El sistema DEBE impedir que dos vehículos compartan las mismas placas, y
-  que compartan el mismo VIN cuando este se registre, informando el motivo del rechazo.
+Los requisitos se redactan con la notación EARS (*Easy Approach to Requirements Syntax*):
+«Cuando» para eventos, «Mientras» para estados, «Si…, entonces» para comportamientos no
+deseados, «Donde» para funciones opcionales y sin palabra clave para lo que siempre debe
+cumplirse. Cada requisito indica su patrón entre paréntesis.
+
+- **FR-001** *(evento)*: Cuando el usuario envía su nombre de usuario o su correo
+  electrónico en un mismo campo, junto con su contraseña, el sistema debe validar las
+  credenciales y abrir la sesión si corresponden a una cuenta activa.
+- **FR-002** *(evento)*: Cuando el valor escrito en el campo de acceso contiene "@", el
+  sistema debe identificar al usuario por correo; en cualquier otro caso, debe
+  identificarlo por nombre de usuario, para los 3 roles.
+- **FR-003** *(no deseado)*: Si las credenciales son inválidas, entonces el sistema debe
+  denegar el acceso con un mensaje que no revele cuál de los dos datos es el incorrecto,
+  y debe mostrar ese mismo mensaje en el 100% de los rechazos.
+- **FR-004** *(evento)*: Cuando el usuario cierra la sesión, el sistema debe bloquear de
+  inmediato el acceso a las pantallas protegidas. Cuando una sesión cumple 30 minutos sin
+  actividad, el sistema debe cerrarla automáticamente y bloquear de inmediato el acceso a
+  las pantallas protegidas.
+- **FR-005** *(siempre)*: El sistema debe ofrecer 3 roles (administrador, recepcionista y
+  mecánico), cada uno con su conjunto de funciones permitidas.
+- **FR-006** *(estado)*: Mientras exista una sesión abierta, el sistema debe verificar el
+  rol autorizado del usuario antes de ejecutar cada operación protegida, sin depender de
+  lo que la interfaz muestre u oculte (RN-15).
+- **FR-007** *(siempre)*: El sistema debe almacenar las contraseñas únicamente de forma
+  protegida y no debe mostrarlas nunca en texto plano.
+- **FR-008** *(evento y no deseado)*: Cuando el usuario cambia la contraseña de su propia
+  cuenta, el sistema debe validar la política mínima: 8 caracteres como mínimo y al menos
+  una mayúscula, una minúscula y un número (RN-17). Si la nueva contraseña no cumple la
+  política, entonces el sistema no debe guardarla y debe indicar qué requisito falta.
+- **FR-009** *(siempre)*: El sistema debe entregar 3 cuentas iniciales (`admin`,
+  `recepcion` y `mecanico`) listas para usar tras la instalación inicial (CA-10).
+- **FR-010** *(evento)*: Cuando el administrador crea un usuario con nombre de usuario y
+  correo únicos y le asigna un rol, el sistema debe guardarlo y mostrarlo en la lista de
+  usuarios.
+- **FR-011** *(evento)*: Cuando el administrador cambia el rol de un usuario o lo activa o
+  desactiva, el sistema debe aplicar el cambio de inmediato: al desactivarlo, debe cerrar
+  su sesión abierta, y el nuevo rol debe regir desde la siguiente operación que el usuario
+  realice. En este sprint el sistema no debe eliminar usuarios de forma definitiva.
+- **FR-012** *(no deseado)*: Si se intenta crear una cuenta con un nombre de usuario o un
+  correo que ya existe, entonces el sistema debe rechazar la operación e informar el
+  motivo del rechazo.
+- **FR-013** *(evento y no deseado)*: Cuando el recepcionista registra un cliente con
+  nombre y teléfono (obligatorios), el sistema debe guardarlo con su correo electrónico
+  (opcional), su fecha de registro y su estado. Si falta el nombre o el teléfono,
+  entonces el sistema no debe crear el registro y debe indicar el dato que hay que
+  corregir.
+- **FR-014** *(evento)*: Cuando un usuario autorizado consulta los clientes, el sistema
+  debe mostrar la lista de clientes y, al abrir uno, su ficha con sus vehículos
+  asociados (CA-4).
+- **FR-015** *(evento)*: Cuando el recepcionista guarda cambios en un cliente existente,
+  el sistema debe actualizar sus datos y conservar el 100% de sus vehículos asociados.
+- **FR-016** *(evento y opcional)*: Cuando el recepcionista registra un vehículo, el
+  sistema debe guardar su propietario, marca, modelo, año, placas y kilometraje actual.
+  Donde el vehículo tenga VIN disponible, el sistema debe guardarlo también.
+- **FR-017** *(no deseado)*: Si se intenta registrar un vehículo sin un propietario
+  seleccionado, entonces el sistema debe rechazar el registro y pedir que se seleccione el
+  propietario (RN-1).
+- **FR-018** *(evento)*: Cuando un usuario autorizado consulta los vehículos de un cliente
+  o abre la ficha de un vehículo, el sistema debe mostrar los vehículos del cliente y, en
+  la ficha del vehículo, su propietario.
+- **FR-019** *(siempre)*: El sistema debe conservar el 100% de los registros entre
+  sesiones, reinicios de la aplicación y reinicios del equipo.
+- **FR-020** *(evento)*: Cuando se prepara la base de datos en la instalación inicial, el
+  sistema debe cargar datos de ejemplo suficientes (al menos 3 clientes, 3 vehículos y 3
+  usuarios) para que la interfaz muestre información al arrancar, y repetir la
+  preparación debe producir 0 registros duplicados.
+- **FR-021** *(estado)*: Mientras el usuario tenga una sesión abierta, el sistema debe
+  mostrar en el sidebar solo las secciones de su rol: administrador, 5 secciones (Inicio,
+  Clientes, Vehículos, Usuarios y "Mi cuenta"); recepcionista, 4 (Inicio, Clientes,
+  Vehículos y "Mi cuenta"); mecánico, 2 (Inicio y "Mi cuenta").
+- **FR-022** *(siempre y no deseado)*: El sistema debe ofrecer las pantallas del Sprint 1:
+  inicio de sesión, lista y detalle de cliente, lista y detalle de vehículo, lista de
+  usuarios y cambio de contraseña. Si un usuario con rol mecánico intenta abrir una
+  pantalla de gestión, entonces el sistema debe denegarle el acceso; el mecánico solo usa
+  inicio de sesión, Inicio y "Mi cuenta".
+- **FR-023** *(no deseado)*: Si se intenta registrar un vehículo con placas ya
+  registradas, o con un VIN ya registrado, entonces el sistema debe rechazar el registro
+  e informar el motivo del rechazo.
+- **FR-024** *(no deseado, nuevo en 1.1)*: Si un usuario acumula 5 intentos consecutivos
+  de inicio de sesión fallidos, entonces el sistema debe bloquear su cuenta durante 15
+  minutos.
+- **FR-025** *(siempre, nuevo en 1.1)*: El sistema debe hacer que toda sesión expire como
+  máximo 8 horas después de abrirse, sin importar la actividad del usuario.
+
+#### Trazabilidad: historia de usuario → requisitos funcionales
+
+| Historia de usuario | Requisitos funcionales |
+| --- | --- |
+| 1 - Inicio de sesión con usuario o correo | FR-001, FR-002, FR-003, FR-004, FR-006, FR-007, FR-024, FR-025 |
+| 2 - Registro y consulta de clientes | FR-013, FR-014 |
+| 3 - Registro de vehículos con su propietario | FR-016, FR-017, FR-018, FR-023 |
+| 4 - Edición de la información de clientes | FR-015 |
+| 5 - Gestión de usuarios y roles | FR-005, FR-010, FR-011, FR-012 |
+| Transversales a todo el sprint | FR-008, FR-009, FR-019, FR-020, FR-021, FR-022 |
 
 ### Entidades clave
 
