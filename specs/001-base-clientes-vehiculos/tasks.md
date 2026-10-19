@@ -37,12 +37,12 @@ US6 del sprint), `[US4]` edición de clientes, `[US2]` gestión de usuarios.
 
 - [X] T001 Create base directory structure client/, server/ and database/ per plan.md structure (client/, server/, database/)
 - [X] T002 Initialize backend with package.json declaring "type": "module" and dependencies express, mysql2, jsonwebtoken, bcryptjs, zod in server/package.json
-- [ ] T003 [P] Initialize Flutter project with flutter create in client/
+- [X] T003 [P] Initialize Flutter project with flutter create in client/
 - [X] T004 [P] Configure .gitignore to exclude .env and database/data/ at .gitignore
 - [X] T005 [P] Create .env.example with DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME without secrets in server/.env.example
 - [X] T006 [P] Create database/ skeleton with migrations/, seeds/, scripts/ and README.md in database/README.md
 - [X] T007 Configure Jest and supertest scripts pointing to motorix_v2_test database in server/package.json
-- [ ] T008 [P] Configure ESLint for backend and analysis_options.yaml for Flutter in server/eslint.config.js and client/analysis_options.yaml
+- [X] T008 [P] Configure ESLint for backend and analysis_options.yaml for Flutter in server/eslint.config.js and client/analysis_options.yaml
 
 ---
 
@@ -62,10 +62,10 @@ US6 del sprint), `[US4]` edición de clientes, `[US2]` gestión de usuarios.
 - [X] T016 [P] Implement zod validation middleware with Spanish messages in server/middlewares/validate.js
 - [X] T017 [P] Implement JWT authentication middleware (401) and role authorization middleware (403) validating active status on every protected request in server/middlewares/auth.js and server/middlewares/authorize.js
 - [X] T018 Create Express app wiring routes, validation and error middleware with /api prefix in server/app.js and server/routes/index.js
-- [ ] T019 Create Flutter theme with color, typography, spacing and radius tokens from docs/design-system.md (Material 3, useMaterial3: true, no default Material theme) in client/lib/utils/app_theme.dart
-- [ ] T020 [P] Create HTTP client with base URL from environment configuration in client/lib/services/api_client.dart
-- [ ] T021 Create role-based collapsible sidebar shell with sections Inicio, Clientes, Vehículos, Usuarios and Mi cuenta filtered by role in client/lib/widgets/app_shell.dart
-- [ ] T022 [P] Create session and sidebar providers skeleton in client/lib/providers/ and wire app entry in client/lib/main.dart
+- [X] T019 Create Flutter theme with color, typography, spacing and radius tokens from docs/design-system.md (Material 3, useMaterial3: true, no default Material theme) in client/lib/utils/app_theme.dart
+- [X] T020 [P] Create HTTP client with base URL from environment configuration in client/lib/services/api_client.dart
+- [X] T021 Create role-based collapsible sidebar shell with sections Inicio, Clientes, Vehículos, Usuarios and Mi cuenta filtered by role in client/lib/widgets/app_shell.dart
+- [X] T022 [P] Create session and sidebar providers skeleton in client/lib/providers/ and wire app entry in client/lib/main.dart
 
 **Checkpoint**: Base lista; las historias pueden comenzar
 
@@ -93,11 +93,11 @@ verificar acceso y denegación con credenciales inválidas y con sesión expirad
 - [X] T027 [US1] Implement auth service with identifier detection by "@", bcryptjs compare (cost 10), lockout after 5 consecutive failures, JWT with 8h max and 30-minute inactivity validation in server/services/auth.service.js
 - [X] T028 [US1] Implement zod schemas for login and change-password enforcing password policy "mínimo 8 caracteres y al menos una mayúscula, una minúscula y un número" in server/validators/auth.validator.js
 - [X] T029 [US1] Implement auth controller and routes: POST /api/auth/login, POST /api/auth/logout, GET /api/auth/me, POST /api/auth/change-password per contracts/auth.md in server/controllers/auth.controller.js and server/routes/auth.routes.js
-- [ ] T030 [P] [US1] Create auth provider with session state, login and logout actions in client/lib/providers/auth_provider.dart
-- [ ] T031 [P] [US1] Create auth service calling the contract endpoints in client/lib/services/auth_service.dart
-- [ ] T032 [US1] Create login screen with single identifier field (username or email) and Spanish error messages in client/lib/screens/login_screen.dart
-- [ ] T033 [US1] Create Inicio (welcome) screen and Mi cuenta screen with change-password form in client/lib/screens/home_screen.dart and client/lib/screens/account_screen.dart
-- [ ] T034 [US1] Wire protected routing and redirect to login on missing or expired session (30-minute inactivity) in client/lib/main.dart
+- [X] T030 [P] [US1] Create auth provider with session state, login and logout actions in client/lib/providers/auth_provider.dart
+- [X] T031 [P] [US1] Create auth service calling the contract endpoints in client/lib/services/auth_service.dart
+- [X] T032 [US1] Create login screen with single identifier field (username or email) and Spanish error messages in client/lib/screens/login_screen.dart
+- [X] T033 [US1] Create Inicio (welcome) screen and Mi cuenta screen with change-password form in client/lib/screens/home_screen.dart and client/lib/screens/account_screen.dart
+- [X] T034 [US1] Wire protected routing and redirect to login on missing or expired session (30-minute inactivity) in client/lib/main.dart
 
 **Checkpoint**: Historia 1 funcional y verificable de forma independiente
 
@@ -124,12 +124,12 @@ lista y abrir su ficha con la lista de vehículos (vacía al inicio).
 - [X] T039 [US3] Implement client service with create including repeated-phone warning and confirmation re-send, list with search, getById with associated vehicles in server/services/client.service.js
 - [X] T040 [US3] Implement zod schema for client payloads with Spanish messages in server/validators/client.validator.js
 - [X] T041 [US3] Implement client controller and routes GET /api/clients, POST /api/clients, GET /api/clients/:id per contracts/clients.md in server/controllers/client.controller.js and server/routes/client.routes.js
-- [ ] T042 [P] [US3] Create clients provider with list and detail state in client/lib/providers/clients_provider.dart
-- [ ] T043 [P] [US3] Create clients service calling the contract endpoints in client/lib/services/clients_service.dart
-- [ ] T044 [US3] Create client list screen with search and empty state in client/lib/screens/clients_screen.dart
-- [ ] T045 [US3] Create client form screen for creation validating required name and phone in client/lib/screens/client_form_screen.dart
-- [ ] T046 [US3] Create client detail screen showing data and associated vehicles with empty-state message in client/lib/screens/client_detail_screen.dart
-- [ ] T047 [US3] Register Clientes section in sidebar for ADMIN and RECEPTIONIST roles in client/lib/widgets/app_shell.dart
+- [X] T042 [P] [US3] Create clients provider with list and detail state in client/lib/providers/clients_provider.dart
+- [X] T043 [P] [US3] Create clients service calling the contract endpoints in client/lib/services/clients_service.dart
+- [X] T044 [US3] Create client list screen with search and empty state in client/lib/screens/clients_screen.dart
+- [X] T045 [US3] Create client form screen for creation validating required name and phone in client/lib/screens/client_form_screen.dart
+- [X] T046 [US3] Create client detail screen showing data and associated vehicles with empty-state message in client/lib/screens/client_detail_screen.dart
+- [X] T047 [US3] Register Clientes section in sidebar for ADMIN and RECEPTIONIST roles in client/lib/widgets/app_shell.dart
 
 **Checkpoint**: Historias 1 y 2 funcionan de forma independiente
 
@@ -157,13 +157,13 @@ verificar el rechazo.
 - [X] T052 [US5] Implement vehicle service enforcing RN-1 owner required, plates and VIN uniqueness and mileage >= 0 in server/services/vehicle.service.js
 - [X] T053 [US5] Implement zod schema for vehicle payloads with Spanish messages in server/validators/vehicle.validator.js
 - [X] T054 [US5] Implement vehicle controller and routes GET /api/vehicles (?buscar, ?clienteId), POST, GET :id, PUT :id per contracts/vehicles.md in server/controllers/vehicle.controller.js and server/routes/vehicle.routes.js
-- [ ] T055 [P] [US5] Create vehicles provider with list and detail state in client/lib/providers/vehicles_provider.dart
-- [ ] T056 [P] [US5] Create vehicles service calling the contract endpoints in client/lib/services/vehicles_service.dart
-- [ ] T057 [US5] Create vehicle form screen with required owner selector and mileage >= 0 validation in client/lib/screens/vehicle_form_screen.dart
-- [ ] T058 [US5] Create vehicle list screen with search by plates, brand or model in client/lib/screens/vehicles_screen.dart
-- [ ] T059 [US5] Create vehicle detail screen showing data and owner in client/lib/screens/vehicle_detail_screen.dart
-- [ ] T060 [US5] Show associated vehicles list linking to vehicle detail from client detail in client/lib/screens/client_detail_screen.dart
-- [ ] T061 [US5] Register Vehículos section in sidebar for ADMIN and RECEPTIONIST roles in client/lib/widgets/app_shell.dart
+- [X] T055 [P] [US5] Create vehicles provider with list and detail state in client/lib/providers/vehicles_provider.dart
+- [X] T056 [P] [US5] Create vehicles service calling the contract endpoints in client/lib/services/vehicles_service.dart
+- [X] T057 [US5] Create vehicle form screen with required owner selector and mileage >= 0 validation in client/lib/screens/vehicle_form_screen.dart
+- [X] T058 [US5] Create vehicle list screen with search by plates, brand or model in client/lib/screens/vehicles_screen.dart
+- [X] T059 [US5] Create vehicle detail screen showing data and owner in client/lib/screens/vehicle_detail_screen.dart
+- [X] T060 [US5] Show associated vehicles list linking to vehicle detail from client detail in client/lib/screens/client_detail_screen.dart
+- [X] T061 [US5] Register Vehículos section in sidebar for ADMIN and RECEPTIONIST roles in client/lib/widgets/app_shell.dart
 
 **Checkpoint**: Historias 1, 2 y 3 funcionan de forma independiente; flujo demostrable completo
 
@@ -187,8 +187,8 @@ dato cambia y los vehículos siguen asociados; cancelar y verificar que nada cam
 
 - [X] T064 [US4] Extend client service with update preserving vehicle associations in server/services/client.service.js
 - [X] T065 [US4] Extend client controller and routes with PUT /api/clients/:id per contracts/clients.md in server/controllers/client.controller.js and server/routes/client.routes.js
-- [ ] T066 [US4] Add edit mode to client form with cancel and confirmation on exit with unsaved changes in client/lib/screens/client_form_screen.dart
-- [ ] T067 [US4] Add edit action from client detail screen showing updated data in client/lib/screens/client_detail_screen.dart
+- [X] T066 [US4] Add edit mode to client form with cancel and confirmation on exit with unsaved changes in client/lib/screens/client_form_screen.dart
+- [X] T067 [US4] Add edit action from client detail screen showing updated data in client/lib/screens/client_detail_screen.dart
 
 **Checkpoint**: Historias 1 a 4 funcionan de forma independiente
 
@@ -216,10 +216,10 @@ desde `admin` y verificar que su sesión abierta se cierra de inmediato.
 - [X] T072 [US2] Implement user service with immediate effect: deactivation closes open sessions and new role applies on next request in server/services/user.service.js
 - [X] T073 [US2] Implement zod schemas for user creation and updates with Spanish messages in server/validators/user.validator.js
 - [X] T074 [US2] Implement user controller and routes GET /api/users, POST /api/users, PATCH /api/users/:id restricted to ADMIN per contracts/users.md in server/controllers/user.controller.js and server/routes/user.routes.js
-- [ ] T075 [P] [US2] Create users provider with list and mutations in client/lib/providers/users_provider.dart
-- [ ] T076 [P] [US2] Create users service calling the contract endpoints in client/lib/services/users_service.dart
-- [ ] T077 [US2] Create users screen with create form, role change and deactivate with confirmation in client/lib/screens/users_screen.dart
-- [ ] T078 [US2] Show Usuarios sidebar section only for ADMIN role in client/lib/widgets/app_shell.dart
+- [X] T075 [P] [US2] Create users provider with list and mutations in client/lib/providers/users_provider.dart
+- [X] T076 [P] [US2] Create users service calling the contract endpoints in client/lib/services/users_service.dart
+- [X] T077 [US2] Create users screen with create form, role change and deactivate with confirmation in client/lib/screens/users_screen.dart
+- [X] T078 [US2] Show Usuarios sidebar section only for ADMIN role in client/lib/widgets/app_shell.dart
 
 **Checkpoint**: Las 5 historias funcionan de forma independiente
 
