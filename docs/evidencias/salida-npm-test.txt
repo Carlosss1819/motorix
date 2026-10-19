@@ -1,0 +1,83 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit
+
+(node:8144) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11008) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23172) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21460) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28140) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30372) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29364) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:24528) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16296) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23868) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27488) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+PASS tests/contract/service-order-status.test.js
+PASS tests/contract/order-parts.test.js
+PASS tests/integration/service-orders-assignment.test.js
+PASS tests/integration/users.test.js
+PASS tests/integration/service-order-content.test.js
+PASS tests/contract/service-order-content.test.js
+PASS tests/contract/payments.test.js
+PASS tests/integration/payments.test.js
+PASS tests/integration/dashboard.test.js
+PASS tests/contract/auth.test.js
+PASS tests/integration/auth.test.js
+PASS tests/integration/appointments.test.js
+PASS tests/integration/vehicle-history.test.js
+PASS tests/integration/mileage-history.test.js
+PASS tests/contract/service-orders-mechanic.test.js
+PASS tests/integration/tickets.test.js
+PASS tests/contract/parts.test.js
+PASS tests/contract/tickets.test.js
+PASS tests/contract/maintenance-list.test.js
+PASS tests/contract/users.test.js
+PASS tests/contract/maintenance.test.js
+PASS tests/contract/dashboard.test.js
+PASS tests/integration/stock-low.test.js
+PASS tests/integration/order-parts-stock.test.js
+PASS tests/integration/clients.test.js
+PASS tests/contract/parts-search.test.js
+PASS tests/contract/service-orders.test.js
+PASS tests/contract/vehicle-history.test.js
+PASS tests/contract/appointments.test.js
+PASS tests/integration/service-orders.test.js
+PASS tests/unit/user.service.test.js
+PASS tests/unit/part.validator.test.js
+PASS tests/unit/auth.validators.test.js
+PASS tests/unit/order-transitions.test.js
+PASS tests/unit/vehicle.validator.test.js
+PASS tests/contract/vehicles.test.js
+PASS tests/integration/parts.test.js
+PASS tests/unit/order-parts-stock.test.js
+PASS tests/unit/client.validator.test.js
+PASS tests/unit/payment-transitions.test.js
+PASS tests/unit/maintenance-status.test.js
+PASS tests/integration/vehicles.test.js
+PASS tests/unit/order-total.test.js
+PASS tests/contract/clients-edit.test.js
+PASS tests/integration/clients-edit.test.js
+PASS tests/integration/maintenance.test.js
+PASS tests/contract/stock-low.test.js
+PASS tests/integration/parts-search.test.js
+PASS tests/contract/clients.test.js
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 49 passed, 49 total
+Tests:       411 passed, 411 total
+Snapshots:   0 total
+Time:        7.618 s, estimated 8 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
