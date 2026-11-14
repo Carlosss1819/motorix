@@ -5,7 +5,7 @@
 > **Nombre formal del proyecto:** Sistema de Gestión para Taller
 > Mecánico\
 > **Nombre provisional del software:** Motorix\
-> **Estado:** Planeación del MVP\
+> **Estado:** MVP terminado (sprints 1 a 4); en desarrollo los sprints 5 a 7\
 > **Tipo:** Proyecto académico de Ingeniería en Sistemas Computacionales
 
 ------------------------------------------------------------------------
@@ -492,6 +492,10 @@ Relaciones esperadas:
 
 -   MySQL, ejecutado de forma **local** durante todo el MVP (ver
     sección 14.1).
+-   Excepción (enmienda 1.1.0): se permite desplegar una instancia en
+    la nube (backend, frontend web y MySQL 8) solo para la demostración
+    escolar, con credenciales únicamente en variables de entorno del
+    proveedor; el desarrollo y las pruebas siguen en MySQL local.
 -   Modelo relacional con llaves foráneas.
 -   Scripts SQL versionados en la carpeta `database/`.
 -   Capa de acceso a datos desde Node.js (driver u ORM) pendiente de
@@ -778,7 +782,22 @@ generatedAt
 
 El MVP se construirá mediante cuatro sprints.
 
+> **Alcance oficial posterior al MVP (enmienda 1.1.0 de la constitución,
+> 2026-11-13):** los sprints 5, 6 y 7 son oficiales y se hacen en orden,
+> uno a la vez, junto con el despliegue en hosting para la demostración
+> escolar y el aviso de privacidad visible en la app. Origen: acuerdo del
+> equipo por WhatsApp el 2026-11-11 y solicitud del profesor. Los sprints
+> 8 a 10 son opcionales y quedan fuera del alcance oficial: cada
+> integrante puede hacerlos por su cuenta registrando su propia enmienda.
+
 ## 14.1 Base de datos del MVP (Sprints 1 a 4)
+
+> **Alcance de esta sección (enmienda 1.1.0):** estas reglas de base
+> local aplican a todo el desarrollo y a las pruebas (`motorix_v2` y
+> `motorix_v2_test`), también en los sprints 5 a 7. Única excepción: el
+> despliegue en la nube (backend, frontend web y MySQL 8) solo para la
+> demostración, con credenciales únicamente en variables de entorno del
+> proveedor y sin ejecutar nunca pruebas contra esa base.
 
 Durante los cuatro sprints del MVP la base de datos **se trabaja de
 manera local con MySQL**. No se contempla una base de datos en la nube
@@ -1105,6 +1124,8 @@ cuando sean suficientes.
 Responsabilidades: - Coordinar el desarrollo. - Definir prioridades. -
 Supervisar el cumplimiento del alcance.
 
+Cada integrante mantiene su propia versión del proyecto (enmienda 1.1.0).
+
 ------------------------------------------------------------------------
 
 # 22. Equipo
@@ -1239,6 +1260,8 @@ El primer objetivo técnico debe ser completar el núcleo del **Sprint
 ```
 
 Después continuar secuencialmente con Sprint 2, Sprint 3 y Sprint 4.
+Tras el Sprint 4 siguen los sprints 5, 6 y 7, en orden y uno a la vez
+(alcance oficial posterior al MVP, enmienda 1.1.0).
 
 ------------------------------------------------------------------------
 
@@ -1311,5 +1334,6 @@ del MVP;
 se debe actualizar este documento para evitar que el código y la
 planeación se contradigan.
 
-**Prioridad actual:** entregar un MVP funcional, demostrable y coherente
-antes de incorporar funcionalidades adicionales.
+**Prioridad actual:** completar los sprints 5 a 7, el despliegue en
+hosting para la demostración escolar y el aviso de privacidad visible en
+la app (enmienda 1.1.0).

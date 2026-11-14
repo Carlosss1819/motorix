@@ -1,35 +1,45 @@
 <!--
 Reporte de Impacto de la Sincronización
-- Cambio de versión: (sin versionar) → 1.0.0
-- Principios modificados: todos nuevos (contenido inicial derivado de MOTORIX_PROJECT_CONTEXT.md)
-- Secciones añadidas: "Tecnologías y Dependencias", "Flujo de Desarrollo", "Decisiones Pendientes", "Gobernanza"
-- Ajuste previo a la ratificación (2026-10-05): la base de datos del MVP pasa de MongoDB/Mongoose
-  a MySQL local, con esquema en la carpeta `database/`. Se actualizan los principios II y III,
-  "Tecnologías y Dependencias" y "Decisiones Pendientes". La versión se mantiene en 1.0.0 porque
-  la constitución aún no ha sido ratificada.
-- Ajuste previo a la ratificación (2026-10-06): se precisa como NO NEGOCIABLE en el Principio III
-  que el código JavaScript del backend usa ES Modules (`import`/`export`) y no CommonJS
-  (`require`/`module.exports`); `package.json` del backend DEBE declarar `"type": "module"`.
-  Se refleja también en "Tecnologías y Dependencias" y se anota en "Decisiones Pendientes" que
-  la elección de driver/ORM debe ser compatible con ESM. La versión se mantiene en 1.0.0 porque
-  la constitución aún no ha sido ratificada.
-- Ajuste previo a la ratificación (2026-10-08): se añade el sistema de diseño de UI en
-  `docs/design-system.md` como documento complementario. El Principio VIII incorpora la
-  regla de que toda pantalla debe seguir ese documento. No cambia el alcance ni el stack;
-  la versión se mantiene en 1.0.0 porque la constitución aún no ha sido ratificada.
-- Ajuste previo a la ratificación (2026-10-10): se alinea el Principio III con el login
-  por usuario o correo; el Principio VII con Jest + supertest y base `motorix_v2_test`; el
-  formato de ramas a `NNN-<nombre-en-minusculas>`; y se depura "Decisiones Pendientes"
-  moviendo las resueltas a una subsección. La versión se mantiene en 1.0.0 porque la
-  constitución aún no ha sido ratificada.
-- Secciones eliminadas: ninguna
-- Pendientes: ratificación por el equipo; decisiones listadas en "Decisiones Pendientes"
+- Cambio de versión: 1.0.0 → 1.1.0 (MINOR: amplía el alcance oficial sin eliminar
+  ni redefinir principios; el MVP sigue siendo los sprints 1 a 4).
+- Fecha de la enmienda: 2026-11-13. Origen: acuerdo del equipo por WhatsApp el
+  2026-11-11 y solicitud del profesor. Registra: Carlos Castro Rafael.
+- Principios modificados:
+  - I. "Alcance, MVP y Fuente de Verdad": se agrega el alcance oficial posterior
+    al MVP (sprints 5, 6 y 7 en orden y uno a la vez, despliegue en hosting para
+    la demostración escolar y aviso de privacidad visible en la app); los sprints
+    8 a 10 quedan fuera del alcance oficial; el orden pasa de (1 → 4) a (1 → 7).
+  - III. "Stack Tecnológico y Base de Datos Local del MVP" → "Stack Tecnológico
+    y Base de Datos Local": la base local aplica a todo el desarrollo y las
+    pruebas; se agrega la excepción de una instancia en la nube solo para la
+    demostración.
+- Secciones modificadas:
+  - Introducción: el MVP fueron los sprints 1 a 4 y el alcance oficial llega
+    al Sprint 7.
+  - "Tecnologías y Dependencias": MySQL local; en la nube solo para la
+    demostración.
+  - "Decisiones Pendientes": el hosting ya está en el alcance; solo falta
+    elegir proveedor.
+  - "Gobernanza": se mantiene al director del proyecto (Jorge Francisco
+    Domínguez Ramírez, rol escolar designado por el equipo); cada integrante
+    mantiene su propia versión y el responsable de esta (Carlos Castro Rafael)
+    registra sus enmiendas; un cambio al alcance oficial requiere acuerdo del
+    equipo, coordinado por el director, con fecha y medio.
+- Secciones añadidas: ninguna. Secciones eliminadas: ninguna.
+- Sincronización: `docs/reglas.md` queda como copia idéntica de este archivo
+  (antes diferían en este reporte y en los acentos de la regla de seeds).
+- Documentos actualizados: `docs/project-context.md` (estado, secciones 10, 14,
+  14.1, 21, 26 y 28) y `CLAUDE.md` (descripción del proyecto y reglas 2 y 9).
+- Pendientes / TODO:
+  - TODO(RATIFICATION_DATE): la ratificación sigue pendiente del equipo.
+  - Decisiones técnicas abiertas listadas en "Decisiones Pendientes".
 -->
 
 # Constitución de Motorix
 
 Motorix es el Sistema de Gestión para Taller Mecánico: un proyecto académico cuyo MVP
-se construye en cuatro sprints. El detalle de requisitos, módulos, entidades, reglas de
+se construyó en los sprints 1 a 4; el alcance oficial llega hasta el Sprint 7 (ver
+principio I). El detalle de requisitos, módulos, entidades, reglas de
 negocio y sprints vive en `docs/project-context.md` (MOTORIX_PROJECT_CONTEXT.md), que es
 la fuente de verdad del alcance. Esta constitución define las reglas que NO se rompen al
 desarrollarlo, tanto por el equipo como por el agente de IA.
@@ -41,8 +51,16 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 - El agente DEBE leer `docs/project-context.md` antes de implementar cualquier sprint.
 - NO se permite agregar funcionalidades fuera del alcance sin indicarlo y obtener
   aprobación del equipo.
-- El desarrollo DEBE seguir los sprints en orden (1 → 4); NO se implementa todo el
-  sistema de una sola vez. No iniciar por Mercado Pago, dashboard o tickets.
+- El MVP son los sprints 1 a 4.
+- Alcance oficial posterior al MVP: los sprints 5, 6 y 7, en orden y uno a la vez,
+  más el despliegue en hosting para la demostración escolar y el aviso de privacidad
+  visible en la app. Origen: acuerdo del equipo por WhatsApp el 2026-11-11 y
+  solicitud del profesor.
+- Los sprints 8 a 10 quedan FUERA del alcance oficial. Cada integrante puede
+  hacerlos por su cuenta en su propia versión, registrando antes su propia enmienda.
+- El desarrollo DEBE seguir los sprints en orden (1 → 7); NO se implementa todo el
+  sistema de una sola vez. Regla del MVP: no iniciar por Mercado Pago, dashboard o
+  tickets.
 - El chatbot de WhatsApp está FUERA del MVP; solo puede tratarse como integración
   externa futura.
 - DEBE mantenerse la trazabilidad: requisito de alto nivel → historia de usuario →
@@ -66,22 +84,26 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 - Justificación: separar capas permite que cada módulo se pruebe, cambie y revise sin
   romper los demás.
 
-### III. Stack Tecnológico y Base de Datos Local del MVP
+### III. Stack Tecnológico y Base de Datos Local
 
-- Los seeds DEBEN incluir datos de ejemplo suficientes para que la aplicacion 
-  muestre informacion al arrancar. La base no puede quedar vacia tras la instalacion inicial.
+- Los seeds DEBEN incluir datos de ejemplo suficientes para que la aplicación
+  muestre información al arrancar. La base no puede quedar vacía tras la instalación
+  inicial.
 - Frontend: Flutter con Dart, interfaz responsiva y consumo de API REST.
 - Backend: Node.js (versión LTS) con Express y JavaScript.
 - **Sistema de módulos del backend (NO NEGOCIABLE):** todo el código JavaScript del
   backend DEBE usar ES Modules (`import`/`export`). NO se usa CommonJS
   (`require`/`module.exports`). `package.json` del backend DEBE declarar
   `"type": "module"`.
-- Base de datos: MySQL, ejecutada de forma LOCAL durante los cuatro sprints del MVP.
+- Base de datos: MySQL, ejecutada de forma LOCAL en todo el desarrollo y las pruebas
+  (salvo la excepción de la demostración descrita abajo).
 - Autenticación: JWT con contraseñas cifradas mediante bcrypt.
-- Login: acepta usuario (`username`) o correo electrónico (`email`) en el mismo campo, para todos los roles.
+- Login: acepta usuario (`username`) o correo electrónico (`email`) en el mismo campo,
+  para todos los roles.
 - NO se introducen tecnologías o dependencias grandes sin justificar su necesidad.
 - Cada integrante DEBE usar su propia instancia local de MySQL; NO se usa base de datos en
-  la nube ni hosting de base de datos dentro del MVP.
+  la nube ni hosting de base de datos para el desarrollo ni las pruebas (salvo la
+  excepción de la demostración descrita abajo).
 - El esquema y los datos iniciales DEBEN definirse con scripts SQL versionados en la carpeta
   `database/` (`migrations/`, `seeds/`, `scripts/` y un `README.md`), de modo que la base
   pueda recrearse desde cero. Los cambios de esquema se agregan como nuevos scripts
@@ -94,6 +116,12 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 - Se DEBE usar InnoDB, llaves foráneas para mantener la integridad referencial y
   codificación `utf8mb4`.
 - Solo el backend accede a la base de datos; el frontend NUNCA se conecta directamente.
+- El desarrollo y las pruebas DEBEN seguir usando MySQL local (`motorix_v2` para
+  desarrollo y `motorix_v2_test` para pruebas).
+- Excepción (demostración): se permite desplegar una instancia en la nube (backend,
+  frontend web y MySQL 8) solo para la demostración escolar. Sus credenciales DEBEN
+  vivir únicamente en las variables de entorno del proveedor de hosting, NUNCA en el
+  repositorio. Las pruebas NUNCA se ejecutan contra la base de datos en la nube.
 - Justificación: un conjunto de tecnologías acotado y conocido por el equipo reduce
   riesgos en un proyecto con tiempo limitado.
 
@@ -136,9 +164,9 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 
 ### VII. Pruebas
 
-- El backend DEBE probarse con Jest (unitarias) y con Jest + supertest (integración y 
+- El backend DEBE probarse con Jest (unitarias) y con Jest + supertest (integración y
   contrato); el frontend con las pruebas propias de Flutter.
-- Las pruebas de integración del backend DEBEN ejecutarse contra una base de datos 
+- Las pruebas de integración del backend DEBEN ejecutarse contra una base de datos
   de prueba (`motorix_v2_test`), nunca contra la base principal.
 - Toda lógica de negocio (transiciones de estado de órdenes, stock, mantenimientos,
   permisos) DEBE tener pruebas.
@@ -171,7 +199,8 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 
 ## Tecnologías y Dependencias
 
-- Núcleo permitido: Flutter/Dart, Node.js, Express, MySQL (local en el MVP), JWT, bcrypt, Jest.
+- Núcleo permitido: Flutter/Dart, Node.js, Express, MySQL (local; en la nube solo para la demostración), JWT, bcrypt,
+  Jest.
 - Sistema de módulos del backend (NO NEGOCIABLE): ES Modules (`import`/`export`), nunca
   CommonJS. `package.json` del backend DEBE declarar `"type": "module"`.
 - Frontend: Material Design 3 con tema propio (`docs/design-system.md`) y Provider para
@@ -206,7 +235,7 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 - La documentación, los comentarios y los mensajes de commit DEBEN escribirse en español,
   conservando en inglés solo términos técnicos e identificadores (entidades y campos
   como `ServiceOrder` o `currentMileage`).
-- Cada sprint DEBE terminar con seeds que permitan ver la funcionalidad del sprint 
+- Cada sprint DEBE terminar con seeds que permitan ver la funcionalidad del sprint
   con datos reales en la interfaz, sin capturarlos a mano.
 
 ## Decisiones Pendientes
@@ -214,7 +243,8 @@ desarrollarlo, tanto por el equipo como por el agente de IA.
 Estas decisiones aún no están tomadas; el agente puede proponer opciones, pero NO
 asumirlas como definitivas:
 
-- Servicio de hosting y proveedor de almacenamiento.
+- Servicio de hosting y proveedor de almacenamiento. El despliegue para la demostración
+  ya está dentro del alcance oficial (principio I); solo falta elegir el proveedor.
 - Implementación concreta de PDF/tickets.
 - Alcance exacto de Mercado Pago para la demostración.
 - Librería complementaria de componentes de UI en Flutter (`shadcn_ui` u otra, o ninguna).
@@ -244,12 +274,17 @@ asumirlas como definitivas:
 ## Gobernanza
 
 - Esta constitución tiene prioridad sobre cualquier otra práctica o convención del repo.
-- Las enmiendas DEBEN aprobarse por el equipo, coordinadas por el director del proyecto
-  (Jorge Francisco Domínguez Ramírez), y documentarse actualizando la versión (SemVer),
-  la fecha de última enmienda y el reporte de impacto del encabezado.
+- Director del proyecto: Jorge Francisco Domínguez Ramírez (rol escolar designado por
+  el equipo en la materia Gestión de Proyectos de Software).
+- Cada integrante del equipo de 6 mantiene su propia versión del proyecto; el
+  responsable de esta versión (Carlos Castro Rafael) registra sus enmiendas.
+- Toda enmienda DEBE documentarse actualizando la versión (SemVer), la fecha de última
+  enmienda y el reporte de impacto del encabezado.
+- Un cambio al alcance oficial DEBE contar con acuerdo del equipo, coordinado por el
+  director, indicando la fecha y el medio por el que se acordó.
 - Versionado: MAJOR para eliminar o redefinir principios; MINOR para añadir principios
   o secciones; PATCH para aclaraciones y correcciones de redacción.
 - El cumplimiento se revisa en cada contribución; cualquier desviación DEBE justificarse
   explícitamente o descartarse.
 
-**Versión**: 1.0.0 | **Redactada**: 2026-10-01 | **Ratificación**: pendiente del equipo | **Última enmienda**: 2026-10-10
+**Versión**: 1.1.0 | **Redactada**: 2026-10-01 | **Ratificación**: pendiente del equipo | **Última enmienda**: 2026-11-13
