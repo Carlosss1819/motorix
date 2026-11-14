@@ -1,0 +1,132 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit
+
+(node:30904) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46640) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:33856) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45012) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47568) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3564) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46948) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23528) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9440) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47356) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46572) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL tests/integration/auth.test.js (13.286 s)
+  ● cambio de contraseña (FR-008) › flujo completo: cambiar contraseña y entrar con la nueva
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a test.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 106 |[39m
+         [90m 107 |[39m describe([32m'cambio de contraseña (FR-008)'[39m[33m,[39m () [33m=>[39m {
+        [31m[1m>[22m[39m[90m 108 |[39m   test([32m'flujo completo: cambiar contraseña y entrar con la nueva'[39m[33m,[39m [36masync[39m ()    [33m=>[39m {
+         [90m     |[39m   [31m[1m^[22m[39m
+         [90m 109 |[39m     [36mconst[39m token [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m
+         [90m 110 |[39m     [36mawait[39m api
+         [90m 111 |[39m       [33m.[39mpost([32m'/api/users'[39m)[0m
+
+          at tests/integration/auth.test.js:108:3
+          at tests/integration/auth.test.js:107:1
+
+FAIL tests/contract/auth.test.js (16.965 s)
+  ● contrato POST /api/auth/login › bloquea la cuenta con 423 tras 5 intentos fallidos (V3)
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a test.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 52 |[39m   })[33m;[39m
+         [90m 53 |[39m
+        [31m[1m>[22m[39m[90m 54 |[39m   test([32m'bloquea la cuenta con 423 tras 5 intentos fallidos (V3)'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+         [90m    |[39m   [31m[1m^[22m[39m
+         [90m 55 |[39m     [36mconst[39m suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 56 |[39m     [36mconst[39m token [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m
+         [90m 57 |[39m     [36mawait[39m api[0m
+
+          at tests/contract/auth.test.js:54:3
+          at tests/contract/auth.test.js:10:1
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Summary of all failing tests
+FAIL tests/integration/auth.test.js (13.286 s)
+  ● cambio de contraseña (FR-008) › flujo completo: cambiar contraseña y entrar con la nueva
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a test.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 106 |[39m
+         [90m 107 |[39m describe([32m'cambio de contraseña (FR-008)'[39m[33m,[39m () [33m=>[39m {
+        [31m[1m>[22m[39m[90m 108 |[39m   test([32m'flujo completo: cambiar contraseña y entrar con la nueva'[39m[33m,[39m [36masync[39m ()    [33m=>[39m {
+         [90m     |[39m   [31m[1m^[22m[39m
+         [90m 109 |[39m     [36mconst[39m token [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m
+         [90m 110 |[39m     [36mawait[39m api
+         [90m 111 |[39m       [33m.[39mpost([32m'/api/users'[39m)[0m
+
+          at tests/integration/auth.test.js:108:3
+          at tests/integration/auth.test.js:107:1
+
+FAIL tests/contract/auth.test.js (16.965 s)
+  ● contrato POST /api/auth/login › bloquea la cuenta con 423 tras 5 intentos fallidos (V3)
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a test.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 52 |[39m   })[33m;[39m
+         [90m 53 |[39m
+        [31m[1m>[22m[39m[90m 54 |[39m   test([32m'bloquea la cuenta con 423 tras 5 intentos fallidos (V3)'[39m[33m,[39m [36masync[39m () [33m=>[39m {
+         [90m    |[39m   [31m[1m^[22m[39m
+         [90m 55 |[39m     [36mconst[39m suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 56 |[39m     [36mconst[39m token [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m
+         [90m 57 |[39m     [36mawait[39m api[0m
+
+          at tests/contract/auth.test.js:54:3
+          at tests/contract/auth.test.js:10:1
+
+
+Test Suites: 2 failed, 47 passed, 49 total
+Tests:       2 failed, 409 passed, 411 total
+Snapshots:   0 total
+Time:        32.517 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

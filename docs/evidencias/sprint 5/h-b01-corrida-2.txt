@@ -1,0 +1,668 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit
+
+(node:42308) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:41288) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31160) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45780) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4996) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23480) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:44456) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31276) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45232) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45092) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32784) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL tests/integration/dashboard.test.js (6.633 s)
+  ● cuenta las citas de hoy y lista las próximas en orden ascendente (HU6)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Array [
+    +   35,
+    +   78,
+    +   79,
+        91,
+        92,
+    -   93,
+    -   94,
+    -   95,
+      ]
+
+    [0m [90m 315 |[39m   expect(citas[33m.[39mproximas)[33m.[39mtoHaveLength([35m5[39m)[33m;[39m
+     [90m 316 |[39m   [36mconst[39m ids [33m=[39m citas[33m.[39mproximas[33m.[39mmap((cita) [33m=>[39m cita[33m.[39mid)[33m;[39m
+    [31m[1m>[22m[39m[90m 317 |[39m   expect([[33m...[39mids][33m.[39msort((a[33m,[39m b) [33m=>[39m a [33m-[39m b))[33m.[39mtoEqual(
+     [90m     |[39m                                          [31m[1m^[22m[39m
+     [90m 318 |[39m     [[33m...[39mesperadas][33m.[39msort((a[33m,[39m b) [33m=>[39m a [33m-[39m b)[33m,[39m
+     [90m 319 |[39m   )[33m;[39m
+     [90m 320 |[39m[0m
+
+      at Object.<anonymous> (tests/integration/dashboard.test.js:317:42)
+
+FAIL tests/integration/service-orders-assignment.test.js (10.328 s)
+  ● asignación de mecánico (US3 / FR-009) › asigna un mecánico y responde id, mecanicoId y usuario
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › la asignación queda registrada en el historial de la orden
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › reasigna a otro mecánico activo
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › desasigna con mecanicoId null y la orden queda sin mecánico
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 409 si la orden está TERMINADO (FR-009)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 409 si la orden está ENTREGADO (FR-009)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 404 si el mecánico no existe o no tiene ese rol
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 400 si el cuerpo no trae mecanicoId
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 404 si la orden no existe
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › un mecánico no puede asignar (403, FR-022)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › devuelve solo los mecánicos activos con id y usuario
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › un mecánico desactivado deja de aparecer en la lista
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › un mecánico no puede consultar la lista (403)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Summary of all failing tests
+FAIL tests/integration/dashboard.test.js (6.633 s)
+  ● cuenta las citas de hoy y lista las próximas en orden ascendente (HU6)
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 3
+    + Received  + 3
+
+      Array [
+    +   35,
+    +   78,
+    +   79,
+        91,
+        92,
+    -   93,
+    -   94,
+    -   95,
+      ]
+
+    [0m [90m 315 |[39m   expect(citas[33m.[39mproximas)[33m.[39mtoHaveLength([35m5[39m)[33m;[39m
+     [90m 316 |[39m   [36mconst[39m ids [33m=[39m citas[33m.[39mproximas[33m.[39mmap((cita) [33m=>[39m cita[33m.[39mid)[33m;[39m
+    [31m[1m>[22m[39m[90m 317 |[39m   expect([[33m...[39mids][33m.[39msort((a[33m,[39m b) [33m=>[39m a [33m-[39m b))[33m.[39mtoEqual(
+     [90m     |[39m                                          [31m[1m^[22m[39m
+     [90m 318 |[39m     [[33m...[39mesperadas][33m.[39msort((a[33m,[39m b) [33m=>[39m a [33m-[39m b)[33m,[39m
+     [90m 319 |[39m   )[33m;[39m
+     [90m 320 |[39m[0m
+
+      at Object.<anonymous> (tests/integration/dashboard.test.js:317:42)
+
+FAIL tests/integration/service-orders-assignment.test.js (10.328 s)
+  ● asignación de mecánico (US3 / FR-009) › asigna un mecánico y responde id, mecanicoId y usuario
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › la asignación queda registrada en el historial de la orden
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › reasigna a otro mecánico activo
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › desasigna con mecanicoId null y la orden queda sin mecánico
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 409 si la orden está TERMINADO (FR-009)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 409 si la orden está ENTREGADO (FR-009)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 404 si el mecánico no existe o no tiene ese rol
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 400 si el cuerpo no trae mecanicoId
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › responde 404 si la orden no existe
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● asignación de mecánico (US3 / FR-009) › un mecánico no puede asignar (403, FR-022)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › devuelve solo los mecánicos activos con id y usuario
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › un mecánico desactivado deja de aparecer en la lista
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+  ● selector de mecánicos para la asignación (FR-009) › un mecánico no puede consultar la lista (403)
+
+    thrown: "Exceeded timeout of 5000 ms for a hook.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      at _getError (node_modules/jest-circus/build/jestAdapterInit.js:1985:12)
+          at Array.map (<anonymous>)
+
+    Cause:
+        thrown: "Exceeded timeout of 5000 ms for a hook.
+        Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+        [0m [90m 53 |[39m }
+         [90m 54 |[39m
+        [31m[1m>[22m[39m[90m 55 |[39m beforeAll([36masync[39m () [33m=>[39m {
+         [90m    |[39m [31m[1m^[22m[39m
+         [90m 56 |[39m   [36mawait[39m prepareTestDatabase()[33m;[39m
+         [90m 57 |[39m   suffix [33m=[39m uniqueSuffix()[33m;[39m
+         [90m 58 |[39m   adminToken [33m=[39m [36mawait[39m loginAs([32m'admin'[39m[33m,[39m [32m'Admin2026!'[39m)[33m;[39m[0m
+
+          at tests/integration/service-orders-assignment.test.js:55:1
+
+
+Test Suites: 2 failed, 47 passed, 49 total
+Tests:       14 failed, 397 passed, 411 total
+Snapshots:   0 total
+Time:        31.279 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

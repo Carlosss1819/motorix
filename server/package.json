@@ -29,8 +29,12 @@
   "jest": {
     "testEnvironment": "node",
     "transform": {},
+    "globalSetup": "<rootDir>/tests/helpers/global-setup.js",
     "setupFiles": [
       "<rootDir>/tests/helpers/env.js"
+    ],
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/helpers/teardown.js"
     ],
     "testMatch": [
       "<rootDir>/tests/**/*.test.js"

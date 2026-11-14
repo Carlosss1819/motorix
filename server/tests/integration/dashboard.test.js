@@ -103,19 +103,41 @@ async function snapshotStockBajo() {
   };
 }
 
-// Fecha futura única por corrida: evita que las citas acumuladas de corridas
-// anteriores contaminen `citas.hoy` ni `citas.proximas`.
-function fechaLejana() {
-  const inicio = Date.UTC(2031, 0, 1);
-  const dias = Math.floor(Math.random() * 3000);
-  return new Date(inicio + dias * 86400000).toISOString().substring(0, 10);
-}
-
 // Suma días a una fecha ISO (misma aritmética UTC que el backend).
 function sumarDias(fecha, dias) {
   const date = new Date(`${fecha}T00:00:00Z`);
   date.setUTCDate(date.getUTCDate() + dias);
   return date.toISOString().substring(0, 10);
+}
+
+// Ventana de fechas reservada para esta prueba: ninguna otra suite agenda
+// citas en ella, y su tope queda antes de la fecha vacía de HU6-4 (2100-01-05).
+const INICIO_VENTANA_CITAS = '2040-01-01';
+const FIN_VENTANA_CITAS = '2100-01-01';
+
+// Fecha única por corrida (H-B02): el día siguiente a la última cita
+// registrada en la ventana. `citas.proximas` toma las 5 siguientes sin tope
+// superior, así que ninguna cita de corridas anteriores puede quedar después
+// de la referencia ni colarse en el resultado.
+async function fechaUnicaPorCorrida() {
+  const filas = await consultaDirecta(
+    `SELECT DATE_FORMAT(MAX(appointment_date), '%Y-%m-%d') AS ultima
+     FROM appointments
+     WHERE appointment_date < ?`,
+    [FIN_VENTANA_CITAS],
+  );
+  const ultima = filas[0].ultima;
+  const fecha =
+    ultima && ultima >= INICIO_VENTANA_CITAS
+      ? sumarDias(ultima, 1)
+      : INICIO_VENTANA_CITAS;
+  // La prueba ocupa hasta 11 días después de la referencia.
+  if (sumarDias(fecha, 11) >= FIN_VENTANA_CITAS) {
+    throw new Error(
+      'Se agotó la ventana de fechas de citas del panel: recrea motorix_v2_test',
+    );
+  }
+  return fecha;
 }
 
 // Cita propia en el día y la hora indicados, en estado PROGRAMADA.
@@ -266,10 +288,10 @@ test('los conteos del panel coinciden con la base y el listado, sin duplicados (
 });
 
 test('cuenta las citas de hoy y lista las próximas en orden ascendente (HU6)', async () => {
-  const fechaRef = fechaLejana();
+  const fechaRef = await fechaUnicaPorCorrida();
 
-  // Línea de base: una colisión con una corrida anterior (muy improbable) no
-  // debe alterar el conteo del día.
+  // Línea de base del día: con la fecha única debe ser 0, pero se conserva
+  // como control por si la ventana tuviera datos ajenos.
   const lineaBase = await consultaDirecta(
     `SELECT COUNT(*) AS total FROM appointments
      WHERE appointment_date = ? AND status IN ('PROGRAMADA', 'RECIBIDA')`,

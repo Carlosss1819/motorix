@@ -16,7 +16,14 @@ function sqlFilesIn(relativeDir) {
     .map((file) => path.join(dir, file));
 }
 
+// Marca que deja tests/helpers/global-setup.js cuando la base ya se preparó en
+// esta corrida (H-B01).
+export const TEST_DB_READY_FLAG = 'MOTORIX_TEST_DB_READY';
+
 export async function prepareTestDatabase() {
+  // Si el globalSetup ya preparó la base en esta corrida, no se repite.
+  if (process.env[TEST_DB_READY_FLAG] === '1') return;
+
   const { host, port, user, password, database } = config.db;
 
   const admin = await mysql.createConnection({

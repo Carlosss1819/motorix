@@ -1,0 +1,18 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit tests/integration/auth.test.js tests/contract/auth.test.js tests/unit/auth.validators.test.js
+
+(node:36716) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:2796) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46024) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 3 passed, 3 total
+Tests:       27 passed, 27 total
+Snapshots:   0 total
+Time:        4.79 s, estimated 17 s
+Ran all test suites matching tests/integration/auth.test.js|tests/contract/auth.test.js|tests/unit/auth.validators.test.js.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?
