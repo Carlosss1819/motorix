@@ -65,17 +65,40 @@ class OrderPart {
     required this.id,
     required this.descripcion,
     required this.cantidad,
+    this.precioUnitario,
+    this.importe,
+    this.aviso,
+    this.conPrecios = false,
   });
 
   factory OrderPart.fromJson(Map<String, dynamic> json) => OrderPart(
         id: asInt(json['id']),
         descripcion: asString(json['descripcion']),
         cantidad: asInt(json['cantidad'], 1),
+        precioUnitario: asNumOrNull(json['precioUnitario']),
+        importe: asNumOrNull(json['importe']),
+        aviso: asStringOrNull(json['aviso']),
+        // Sprint 5 (FR-025, FR-034): el servidor solo envía las claves de
+        // precio a ADMIN y RECEPTIONIST; al mecánico se las omite.
+        conPrecios: json.containsKey('importe'),
       );
 
   final int id;
   final String descripcion;
   final int cantidad;
+
+  /// Precio de venta congelado al agregar la línea (FR-006); `null` = sin
+  /// precio registrado o rol sin permiso.
+  final num? precioUnitario;
+
+  /// Cantidad × precio unitario, en dos decimales.
+  final num? importe;
+
+  /// «sin precio registrado» cuando la línea no tiene precio (FR-018).
+  final String? aviso;
+
+  /// `true` si la respuesta trajo los campos de precio (doble condición).
+  final bool conPrecios;
 }
 
 /// Entrada del historial de estados (FR-015).

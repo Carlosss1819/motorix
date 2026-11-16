@@ -45,3 +45,41 @@ database/
 | 2 | `appointments`, `service_orders` y tablas relacionadas |
 | 3 | `parts`, `inventory_movements`, `maintenance` |
 | 4 | `payments`, `tickets` |
+| 5 | Sin tablas nuevas. `order_parts.unit_price`, `tickets.content`, `tickets.format_version`, `payments.cancellation_reason`; la unicidad de `tickets` pasa de la orden al pago |
+
+## Sprint 5: migraciones 005 y 006
+
+- `005_precios_congelados_tickets_por_pago.sql` (**solo esquema**):
+  - `order_parts.unit_price DECIMAL(10,2) NULL`: precio de venta congelado al
+    agregar la refacción a la orden (`NULL` = sin precio registrado).
+  - `tickets.content JSON NULL` y `tickets.format_version SMALLINT NULL`: copia
+    del comprobante y su versión (`1` = formato anterior, `2` = Sprint 5).
+  - `payments.cancellation_reason VARCHAR(30) NULL`: `IMPORTE_DESFASADO` o `MANUAL`.
+  - Índices de `tickets`: se agrega `idx_tickets_service_order`, se quita
+    `uq_tickets_service_order` y se agrega `uq_tickets_payment` (un ticket por pago).
+- `006_datos_precio_congelado_copia_tickets.sql` (**solo datos**, en una
+  transacción y repetible): congela el precio de las líneas existentes con el
+  precio de venta del momento y genera la copia versión 1 de los tickets
+  existentes (`total` = lo cobrado; nota si el desglose no coincide).
+- `seeds/005_ejemplos_precios_congelados.sql`: completa las filas del seed 004
+  (por id) y agrega ejemplos con ids desde 9001 y folios `D009001-2026` a
+  `D009003-2026`.
+
+**El 005 es la primera migración que reemplaza una restricción** (la unicidad
+de `tickets`). No borra ni modifica datos: no elimina filas ni columnas, solo
+cambia qué combinación debe ser única.
+
+**Antes de aplicarla en una base con datos, el respaldo es obligatorio**:
+
+```powershell
+mysqldump -u motorix_app -p --single-transaction --routines --no-tablespaces motorix_v2 > respaldo-motorix_v2-antes-005.sql
+```
+
+Guarda el respaldo fuera del repositorio y comprueba que esta consulta
+devuelva 0 filas (si devuelve filas, no apliques el 005):
+
+```sql
+SELECT payment_id, COUNT(*) AS n FROM tickets GROUP BY payment_id HAVING n > 1;
+```
+
+Pasos de verificación y recuperación: `specs/005-precios-refacciones-cobro/quickstart.md`.

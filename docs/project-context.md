@@ -340,6 +340,87 @@ implementarse conforme avance el MVP.
 
 ------------------------------------------------------------------------
 
+## 6.10.1 Precios, total, cobro y tickets: reglas vigentes desde el Sprint 5
+
+Fuente de verdad: `specs/005-precios-refacciones-cobro/` (spec, plan,
+data-model y contracts). Estas reglas **sustituyen** a la aclaración 2 del
+Sprint 4 («precios vigentes al cobrar») y al contrato de tickets del
+Sprint 4 (un ticket por orden reconstruido al consultarlo).
+
+**Precios del catálogo (FR-001 a FR-005, FR-032)**
+
+-   Precio de compra y de venta: opcionales; si vienen, numéricos, ≥ 0,
+    con máximo dos decimales y hasta 999,999.99. La misma regla aplica al
+    precio de la mano de obra.
+-   Si el precio de venta es menor que el de compra, se guarda igual y la
+    respuesta trae la advertencia `PRECIO_VENTA_MENOR_A_COMPRA` (aviso
+    `warning` en Flutter, D-07).
+-   Una refacción sin precio de venta no se puede agregar a una orden
+    (`409 REFACCION_SIN_PRECIO`).
+
+**Precio congelado y total (FR-006 a FR-012, D-08)**
+
+-   Al agregar una refacción a una orden, la línea guarda el precio de venta
+    vigente (`order_parts.unit_price`). Ese precio **no cambia** aunque el
+    catálogo cambie o la refacción se desactive. Para corregirlo se quita la
+    línea y se vuelve a agregar (mientras la orden no esté `TERMINADO`).
+-   Total de la orden = mano de obra + Σ (cantidad × precio congelado). No hay
+    un precio de servicio aparte. Una línea o mano de obra sin precio vale 0 y
+    lleva el aviso «sin precio registrado».
+-   El cálculo se hace en centavos enteros (`server/utils/money.js` y
+    `server/utils/order-total.js`), sin flotantes; tope del total:
+    99,999,999.99 (`409 TOTAL_EXCEDE_LIMITE`).
+
+**Precios por rol (D-10, FR-024 a FR-026, FR-034 a FR-036)**
+
+| Dato | ADMIN | RECEPTIONIST | MECHANIC |
+|---|:-:|:-:|:-:|
+| Precio de compra del catálogo | ✔ | — | — |
+| Precio de venta del catálogo | ✔ | ✔ | — |
+| Precio unitario e importe de las refacciones de una orden | ✔ | ✔ | — |
+| Precio de la mano de obra | ✔ | ✔ | ✔ |
+| Pagos, tickets y panel | ✔ | ✔ (sin panel) | — (403) |
+
+El servidor **omite** las claves que el rol no puede ver; Flutter aplica la
+doble condición (rol y campo presente). Los errores que recibe el mecánico no
+llevan cifras de precio.
+
+**Cobro (FR-013 a FR-016)**
+
+-   Todas las operaciones que cambian el cobro o el contenido cobrable de una
+    orden toman un candado por orden (`SELECT … FOR UPDATE`): de dos cobros
+    simultáneos solo se registra uno.
+-   D-04: si al confirmar un cobro de Mercado Pago su importe ya no coincide
+    con el total, el pago pasa a `CANCELADO` con
+    `cancellation_reason = IMPORTE_DESFASADO` y se responde
+    `409 IMPORTE_DESFASADO` con el importe, el total y la diferencia. Una
+    cancelación manual guarda `MANUAL`.
+-   Las preferencias nuevas de Mercado Pago vencen a las 24 horas
+    (`MP_PREFERENCIA_VIGENCIA_HORAS`, FR-037).
+-   Una orden `TERMINADO` con un pago `PAGADO` no admite altas ni bajas de
+    servicios (`409 ORDEN_PAGADA`) hasta que el administrador anule el pago.
+
+**Tickets (FR-017 a FR-020, FR-022, FR-033)**
+
+-   Un ticket por cada pago `PAGADO` (`uq_tickets_payment`); si el pago se
+    anula y se cobra de nuevo, el pago nuevo genera un ticket nuevo con otro
+    folio. La generación es idempotente por pago.
+-   El ticket se guarda como **copia** (`tickets.content`) con versión de
+    formato (`format_version`): `1` = «formato anterior» (generado al
+    migrar, con `total` = lo cobrado y la nota «El desglose no coincide con
+    lo cobrado» cuando aplica); `2` = formato del Sprint 5. Se lee de la
+    copia, así que un cambio en el catálogo no lo altera.
+-   «Vigente» y «pago anulado» se calculan al consultar. El ticket de un pago
+    anulado se sigue consultando con la marca «Pago anulado».
+
+**Limitación conocida**: si un administrador cambia el rol de un usuario con
+la sesión abierta, el servidor aplica el rol nuevo desde la siguiente
+petición, pero Flutter sigue mostrando la interfaz del rol anterior hasta
+volver a iniciar sesión. Los precios siguen protegidos porque el servidor
+decide los campos según el rol actual.
+
+------------------------------------------------------------------------
+
 ## 6.11 Dashboard
 
 Debe ofrecer una vista resumida de la operación.

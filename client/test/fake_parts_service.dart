@@ -13,6 +13,80 @@ class FakePartsService extends PartsService {
   /// Veces que se pidió el catálogo: permite comprobar sus recargas (US7).
   int llamadasList = 0;
 
+  /// Advertencias que devuelve el alta o la edición (Sprint 5, FR-004).
+  List<String> advertenciasAlGuardar = const <String>[];
+
+  /// Altas recibidas (precios incluidos) para las aserciones.
+  final List<({num? precioCompra, num? precioVenta})> guardados =
+      <({num? precioCompra, num? precioVenta})>[];
+
+  Part _guardada({
+    required int id,
+    required String codigo,
+    required String nombre,
+    required String categoria,
+    String? marca,
+    num? precioCompra,
+    num? precioVenta,
+  }) {
+    guardados.add((precioCompra: precioCompra, precioVenta: precioVenta));
+    return Part(
+      id: id,
+      codigo: codigo,
+      nombre: nombre,
+      categoria: categoria,
+      marca: marca,
+      stockActual: 0,
+      stockMinimo: 0,
+      stockBajo: false,
+      precioCompra: precioCompra,
+      precioVenta: precioVenta,
+      activa: true,
+      advertencias: advertenciasAlGuardar,
+    );
+  }
+
+  @override
+  Future<Part> create({
+    required String codigo,
+    required String nombre,
+    required String categoria,
+    String? marca,
+    int stockInicial = 0,
+    int stockMinimo = 0,
+    num? precioCompra,
+    num? precioVenta,
+  }) async =>
+      _guardada(
+        id: 990,
+        codigo: codigo,
+        nombre: nombre,
+        categoria: categoria,
+        marca: marca,
+        precioCompra: precioCompra,
+        precioVenta: precioVenta,
+      );
+
+  @override
+  Future<Part> update({
+    required int id,
+    required String nombre,
+    required String categoria,
+    String? marca,
+    required int stockMinimo,
+    num? precioCompra,
+    num? precioVenta,
+  }) async =>
+      _guardada(
+        id: id,
+        codigo: 'EDIT-$id',
+        nombre: nombre,
+        categoria: categoria,
+        marca: marca,
+        precioCompra: precioCompra,
+        precioVenta: precioVenta,
+      );
+
   @override
   Future<PartPage> list({
     String buscar = '',
@@ -39,6 +113,8 @@ Part parteDePrueba({
   int stockActual = 6,
   int stockMinimo = 1,
   bool activa = true,
+  num? precioCompra,
+  num? precioVenta,
 }) =>
     Part(
       id: id,
@@ -50,7 +126,7 @@ Part parteDePrueba({
       stockMinimo: stockMinimo,
       // Mismo cálculo que hace el backend (FR-020).
       stockBajo: stockActual <= stockMinimo && stockMinimo > 0,
-      precioCompra: null,
-      precioVenta: null,
+      precioCompra: precioCompra,
+      precioVenta: precioVenta,
       activa: activa,
     );

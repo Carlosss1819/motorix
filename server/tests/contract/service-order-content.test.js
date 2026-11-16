@@ -57,6 +57,8 @@ async function crearRefaccion(stock = 5) {
       codigo: `CTT-${suffix}-${contadorRefacciones}`,
       nombre: `Repuesto de contrato ${suffix} ${contadorRefacciones}`,
       categoria: 'Frenos',
+      // Sprint 5 (FR-005): una refacción sin precio de venta ya no se agrega a una orden.
+      precioVenta: 100,
       stockInicial: stock,
       stockMinimo: 1,
     });

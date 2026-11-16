@@ -25,6 +25,8 @@ async function crearRefaccion(stock) {
       codigo: `STK-${suffix}-${contador}`,
       nombre: `Refacción de stock ${suffix} ${contador}`,
       categoria: 'Frenos',
+      // Sprint 5 (FR-005): una refacción sin precio de venta ya no se agrega a una orden.
+      precioVenta: 100,
       stockInicial: stock,
       stockMinimo: 1,
     });

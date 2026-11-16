@@ -36,6 +36,8 @@ class TicketsService {
     return TicketLookup(
       existe: asBool(json['existe']),
       ticket: ticketJson is Map ? Ticket.fromJson(asMap(ticketJson)) : null,
+      // Sprint 5 (FR-033): todos los tickets de la orden.
+      tickets: asList(json['tickets']).map(TicketSummary.fromJson).toList(),
     );
   }
 }

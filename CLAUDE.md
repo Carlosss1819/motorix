@@ -25,10 +25,10 @@ Motorix: sistema para un taller mecánico. Flutter (cliente, Material 3) + Node 
 1. No hagas commit ni push salvo que el usuario lo pida expresamente.
 2. Nunca trabajes en `main`. La rama `NNN-nombre` la crea `/speckit-specify` (Claude Code) o `/speckit.specify` (OpenCode).
 3. No leas, imprimas ni subas secretos (`.env`, claves, tokens).
-4. Migraciones: aditivas y numeradas (`005_...`); nunca edites una migración ya aplicada. Seeds: idempotentes.
+4. Migraciones: aditivas y numeradas (`005_...`). «Aditiva» significa no editar migraciones ya aplicadas y no borrar tablas, columnas ni datos. Se permite reemplazar una restricción (por ejemplo, un índice único) si se conservan los datos y se documenta en el plan del sprint. Seeds: idempotentes.
 5. Backend: ES Modules; la lógica de negocio va en servicios; los permisos se validan en el backend, no solo en la interfaz.
 6. Pruebas primero: planea las pruebas antes del código. Corre la suite completa antes de empezar y al terminar. No borres ni debilites pruebas existentes sin registrarlo y avisar.
-7. Línea base del backend: 49 suites y 411 pruebas, sin timeouts. Si una prueba vuelve a fallar de forma intermitente, no la "arregles" en silencio: repórtalo como hallazgo.
+7. Línea base (desde el Sprint 5, 2026-11-16): backend 64 suites y 545 pruebas, sin timeouts; `flutter test` 155 pruebas. Si una prueba vuelve a fallar de forma intermitente, no la "arregles" en silencio: repórtalo como hallazgo.
    - H-B01, resuelto el 2026-11-14: las dos pruebas de bloqueo de cuenta (auth) fallaban por timeout de 5000 ms con la suite completa. Causa: cada suite repetía `prepareTestDatabase` y hacía fila en el lock de MySQL, y el pool de MySQL quedaba sin cerrar. Corrección: `globalSetup` (`server/tests/helpers/global-setup.js`) que prepara la base una sola vez y `teardown.js` que cierra el pool. Evidencia: `docs/evidencias/sprint 5/h-b01-*.txt`.
    - H-B02, resuelto el 2026-11-14: `server/tests/integration/dashboard.test.js` dependía de citas de corridas anteriores. Corrección: fecha de referencia única por corrida (el día siguiente a la última cita registrada). Evidencia: `docs/evidencias/sprint 5/h-b02-*.txt` (3 corridas, 49/49 suites y 411/411 pruebas).
 8. Seguridad: nunca guardes datos de tarjeta; no devuelvas trazas de error (stack traces) al cliente.

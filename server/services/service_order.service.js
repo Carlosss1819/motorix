@@ -12,6 +12,7 @@ import {
   addStatusHistory,
   listStatusHistory,
 } from '../models/service_order.js';
+import { withOrderLock } from './order-lock.js';
 import {
   createServiceWithLabor,
   deleteServiceById,
@@ -24,8 +25,16 @@ import {
 import {
   findById as findPartById,
   lockStockForUpdate,
+  lockPartForUpdate,
   setStock,
 } from '../models/parts.js';
+import { findChargeContent } from '../models/payment.js';
+import {
+  calcularTotalCentavos,
+  excedeLimite,
+  AVISO_SIN_PRECIO,
+} from '../utils/order-total.js';
+import { toCents, fromCents } from '../utils/money.js';
 import { insertMovement } from '../models/inventory_movement.js';
 import { findById as findClientById } from '../models/client.js';
 import { findById as findVehicleById, refreshCurrentMileage } from '../models/vehicle.js';
@@ -35,7 +44,6 @@ import {
   hasApprovedPayment,
   pagoPendienteError,
 } from './payment.service.js';
-import { getConnection } from '../config/db.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
 import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
 import { evaluateTransition } from '../utils/order-transitions.js';
@@ -76,7 +84,57 @@ function toApiList(order) {
   };
 }
 
-async function toApiDetail(order) {
+// Roles que ven los precios de las refacciones de la orden (FR-025, FR-034,
+// D-10). Denegar por defecto: sin rol, o con cualquier otro rol, no se envía
+// ninguna clave de precio.
+const ROLES_CON_PRECIO_DE_REFACCION = new Set(['ADMIN', 'RECEPTIONIST']);
+
+function toApiOrderPart(part, role) {
+  const linea = {
+    id: part.id,
+    descripcion: part.description,
+    cantidad: part.quantity,
+  };
+  if (!ROLES_CON_PRECIO_DE_REFACCION.has(role)) return linea;
+
+  const valorada = part.partId != null && part.unitPrice != null;
+  const precio = valorada ? toCents(part.unitPrice) : null;
+  return {
+    ...linea,
+    precioUnitario: fromCents(precio),
+    importe: fromCents(valorada ? part.quantity * precio : 0),
+    aviso: valorada ? null : AVISO_SIN_PRECIO,
+  };
+}
+
+// FR-008: el total de la orden no puede pasar de 99,999,999.99. Para el
+// mecánico, el mensaje no lleva cifras (FR-036).
+async function assertTotalWithinLimit(connection, orderId, extraCentavos, user) {
+  const contenido = await findChargeContent(orderId, connection);
+  const { totalCentavos } = calcularTotalCentavos(contenido);
+  if (excedeLimite(totalCentavos + extraCentavos)) {
+    throw conflict(
+      user.role === 'MECHANIC'
+        ? 'El total de la orden pasaría del máximo permitido'
+        : 'El total de la orden pasaría del máximo permitido (99,999,999.99)',
+      'TOTAL_EXCEDE_LIMITE',
+    );
+  }
+}
+
+// Revalida, ya con el candado, que la orden siga abierta para su contenido.
+function assertLockedOrderOpen(locked, { parts = false } = {}) {
+  if (locked.status === ORDER_STATUSES.ENTREGADO) {
+    throw conflict('Una orden entregada no admite cambios en su contenido', 'ORDEN_ENTREGADA');
+  }
+  if (parts && locked.status === ORDER_STATUSES.TERMINADO) {
+    throw conflict('Una orden cerrada no admite cambios en sus refacciones', 'ORDEN_CERRADA');
+  }
+}
+
+// `role` decide qué campos de precio viajan (FR-025, FR-034): TODAS las
+// llamadas deben pasarlo.
+async function toApiDetail(order, role) {
   const [history, services, parts] = await Promise.all([
     listStatusHistory(order.id),
     listServicesByOrder(order.id),
@@ -101,11 +159,7 @@ async function toApiDetail(order) {
           }
         : null,
     })),
-    repuestos: parts.map((part) => ({
-      id: part.id,
-      descripcion: part.description,
-      cantidad: part.quantity,
-    })),
+    repuestos: parts.map((part) => toApiOrderPart(part, role)),
     historial: history.map((entry) => ({
       de: entry.fromStatus,
       a: entry.toStatus,
@@ -177,7 +231,7 @@ export async function getById(id, user) {
   const order = await findServiceOrderById(id);
   if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
   assertOwnership(order, user);
-  return toApiDetail(order);
+  return toApiDetail(order, user.role);
 }
 
 export async function create(data, user) {
@@ -246,7 +300,7 @@ export async function create(data, user) {
 
   await refreshCurrentMileage(vehicle.id, data.kilometraje);
 
-  return toApiDetail(await findServiceOrderById(created.id));
+  return toApiDetail(await findServiceOrderById(created.id), user.role);
 }
 
 // Asignación o reasignación de mecánico desde recepción (FR-009, FR-022): la
@@ -314,7 +368,7 @@ export async function update(id, data, user) {
 
   await refreshCurrentMileage(order.vehicleId, data.kilometraje);
 
-  return toApiDetail(updated);
+  return toApiDetail(updated, user.role);
 }
 
 // Guard común de la US4: la orden existe, el mecánico solo opera las suyas
@@ -351,15 +405,22 @@ export async function saveDiagnosis(id, data, user) {
 }
 
 // FR-012 / R-13: el servicio y su mano de obra se crean en la misma
-// transacción; si falla una, no se guarda ninguna de las dos.
+// transacción; si falla una, no se guarda ninguna de las dos. Sprint 5: la
+// transacción toma el candado de la orden (R-07), revisa la inmovilización
+// por pago (FR-021) y el tope del total (FR-008).
 export async function addService(id, data, user) {
   const order = await assertOrderOpenForContent(id, user);
 
-  const created = await createServiceWithLabor({
-    serviceOrderId: order.id,
-    description: data.descripcion,
-    durationMinutes: data.duracionMinutos,
-    price: data.precio,
+  const created = await withOrderLock(order.id, async (connection, locked) => {
+    assertLockedOrderOpen(locked);
+    await assertServicesEditable(connection, locked);
+    await assertTotalWithinLimit(connection, order.id, toCents(data.precio) ?? 0, user);
+    return createServiceWithLabor(connection, {
+      serviceOrderId: order.id,
+      description: data.descripcion,
+      durationMinutes: data.duracionMinutos,
+      price: data.precio,
+    });
   });
 
   return {
@@ -373,15 +434,38 @@ export async function addService(id, data, user) {
 }
 
 // Baja de un servicio; la mano de obra cae en cascada (FK del data-model).
+// Sprint 5: con el candado de la orden y la inmovilización por pago (FR-021).
 export async function removeService(id, serviceId, user) {
   const order = await assertOrderOpenForContent(id, user);
 
-  const deleted = await deleteServiceById(order.id, serviceId);
+  const deleted = await withOrderLock(order.id, async (connection, locked) => {
+    assertLockedOrderOpen(locked);
+    await assertServicesEditable(connection, locked);
+    return deleteServiceById(connection, order.id, serviceId);
+  });
   if (!deleted) {
     throw notFound('El servicio no existe en esta orden', 'SERVICIO_NO_ENCONTRADO');
   }
 
   return { mensaje: 'Servicio eliminado' };
+}
+
+// FR-021 (Sprint 5, US4): una orden TERMINADO con un pago PAGADO (no anulado)
+// no admite altas ni bajas de servicios hasta que el pago se anule (FR-022).
+// Se evalúa con el candado de la orden tomado, así que una confirmación de
+// pago simultánea ya terminó o todavía no empieza (R-07).
+async function assertServicesEditable(connection, locked) {
+  if (locked.status !== ORDER_STATUSES.TERMINADO) return;
+  const [rows] = await connection.execute(
+    "SELECT COUNT(*) AS total FROM payments WHERE service_order_id = ? AND status = 'PAGADO'",
+    [locked.id],
+  );
+  if (Number(rows[0].total) > 0) {
+    throw conflict(
+      'La orden ya está pagada: no admite cambios en sus servicios',
+      'ORDEN_PAGADA',
+    );
+  }
 }
 
 // Guard de las refacciones de la orden (US7): además del guard heredado de
@@ -411,6 +495,10 @@ function assertPartUsable(part) {
 // FR-024 / RN-7 / R-08: la baja de stock, la fila de la orden y el movimiento
 // SALIDA ocurren en UNA transacción con la fila de la refacción bloqueada; si
 // no alcanza el stock se hace ROLLBACK completo (RN-8: nunca negativo).
+// Sprint 5: primero el candado de la orden y después el de la refacción
+// (R-07); el precio de venta se lee con el candado de su fila y se congela en
+// la línea (FR-006). Sin precio no se agrega (FR-005) y el total tiene tope
+// (FR-008). La salida de inventario no cambia (FR-028).
 export async function addPart(id, data, user) {
   const order = await assertOrderOpenForParts(id, user);
   const refaccion = await findPartById(data.partId);
@@ -421,16 +509,27 @@ export async function addPart(id, data, user) {
     throw badRequest(cantidad.mensaje, cantidad.codigo);
   }
 
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
+  const resultado = await withOrderLock(order.id, async (connection, locked) => {
+    assertLockedOrderOpen(locked, { parts: true });
 
-    const stockActual = await lockStockForUpdate(connection, refaccion.id);
-    if (stockActual === null) {
+    const bloqueada = await lockPartForUpdate(connection, refaccion.id);
+    if (bloqueada === null) {
       throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
     }
+    if (bloqueada.salePrice === null) {
+      throw conflict(
+        'La refacción no tiene precio de venta registrado: regístralo en el catálogo antes de usarla',
+        'REFACCION_SIN_PRECIO',
+      );
+    }
+    await assertTotalWithinLimit(
+      connection,
+      order.id,
+      data.cantidad * toCents(bloqueada.salePrice),
+      user,
+    );
 
-    const evaluacion = evaluateStock(stockActual, data.cantidad);
+    const evaluacion = evaluateStock(bloqueada.stockCurrent, data.cantidad);
     if (!evaluacion.suficiente) {
       throw conflict(evaluacion.mensaje, evaluacion.codigo);
     }
@@ -443,6 +542,7 @@ export async function addPart(id, data, user) {
       description: refaccion.name,
       quantity: data.cantidad,
       partId: refaccion.id,
+      unitPrice: bloqueada.salePrice,
     });
     await insertMovement(connection, {
       partId: refaccion.id,
@@ -452,33 +552,28 @@ export async function addPart(id, data, user) {
       stockAfter: evaluacion.stockAfter,
       createdBy: user.id,
     });
+    return { fila, stockAfter: evaluacion.stockAfter };
+  });
 
-    await connection.commit();
-    return {
-      id: fila.id,
-      partId: refaccion.id,
-      codigo: refaccion.code,
-      nombre: refaccion.name,
-      cantidad: data.cantidad,
-      stockActual: evaluacion.stockAfter,
-    };
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+  // Sin precios para ningún rol (contracts/service-orders.md).
+  return {
+    id: resultado.fila.id,
+    partId: refaccion.id,
+    codigo: refaccion.code,
+    nombre: refaccion.name,
+    cantidad: data.cantidad,
+    stockActual: resultado.stockAfter,
+  };
 }
 
 // FR-026 / R-09: el retiro repone el stock con una ENTRADA de reposición en
 // la misma transacción; una fila heredada sin `part_id` solo se elimina, porque
-// nunca descontó inventario.
+// nunca descontó inventario. Sprint 5: con el candado de la orden primero.
 export async function removePart(id, refaccionId, user) {
   const order = await assertOrderOpenForParts(id, user);
 
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
+  return withOrderLock(order.id, async (connection, locked) => {
+    assertLockedOrderOpen(locked, { parts: true });
 
     const fila = await findOrderPartRow(connection, order.id, refaccionId);
     if (!fila) {
@@ -509,17 +604,11 @@ export async function removePart(id, refaccionId, user) {
       throw notFound('La refacción no existe en esta orden', 'REPUESTO_NO_ENCONTRADO');
     }
 
-    await connection.commit();
     return {
       mensaje: 'Refacción retirada de la orden.',
       stockActual: stockRepuesto,
     };
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
+  });
 }
 
 // FR-013: recomendaciones para la entrega, guardadas en la misma orden.
@@ -549,40 +638,52 @@ export async function changeStatus(id, data, user) {
   const order = await findServiceOrderById(id);
   if (!order) throw notFound('La orden de servicio no existe', 'ORDEN_NO_ENCONTRADA');
 
-  const evaluacion = evaluateTransition({
-    fromStatus: order.status,
-    toStatus: data.estado,
-    role: user.role,
-    assignedMechanicId: order.mechanicId,
-    userId: user.id,
+  // Sprint 5 (R-07): el cambio de estado toma el candado de la orden y evalúa
+  // la transición con el estado ya bloqueado, para no cruzarse con un cobro o
+  // una anulación de la misma orden.
+  await withOrderLock(order.id, async (connection, locked) => {
+    const evaluacion = evaluateTransition({
+      fromStatus: locked.status,
+      toStatus: data.estado,
+      role: user.role,
+      assignedMechanicId: order.mechanicId,
+      userId: user.id,
+    });
+    if (!evaluacion.permitida) {
+      throw evaluacion.httpStatus === 403
+        ? forbidden(evaluacion.mensaje, evaluacion.codigo)
+        : conflict(evaluacion.mensaje, evaluacion.codigo);
+    }
+
+    // Sprint 4 / FR-014 (aclaración 1): el cobro es previo a la entrega; la
+    // orden solo pasa a ENTREGADO con un pago aprobado que la respalde. La
+    // regla vive en el servicio, no en la función pura (D5).
+    const entregar = data.estado === ORDER_STATUSES.ENTREGADO;
+    if (entregar && !(await hasApprovedPayment(order.id, connection))) {
+      throw pagoPendienteError();
+    }
+
+    await updateServiceOrder(
+      order.id,
+      {
+        status: data.estado,
+        // Solo la entrega llena la fecha; el resto de campos no cambian.
+        deliveryDate: entregar ? toDbDateTime() : undefined,
+      },
+      connection,
+    );
+
+    await addStatusHistory(
+      {
+        serviceOrderId: order.id,
+        fromStatus: locked.status,
+        toStatus: data.estado,
+        changedBy: user.id,
+        note: data.nota?.trim() || null,
+      },
+      connection,
+    );
   });
-  if (!evaluacion.permitida) {
-    throw evaluacion.httpStatus === 403
-      ? forbidden(evaluacion.mensaje, evaluacion.codigo)
-      : conflict(evaluacion.mensaje, evaluacion.codigo);
-  }
 
-  // Sprint 4 / FR-014 (aclaración 1): el cobro es previo a la entrega; la
-  // orden solo pasa a ENTREGADO con un pago aprobado que la respalde. La
-  // regla vive en el servicio, no en la función pura (D5).
-  const entregar = data.estado === ORDER_STATUSES.ENTREGADO;
-  if (entregar && !(await hasApprovedPayment(order.id))) {
-    throw pagoPendienteError();
-  }
-
-  const updated = await updateServiceOrder(order.id, {
-    status: data.estado,
-    // Solo la entrega llena la fecha; el resto de campos no cambian.
-    deliveryDate: entregar ? toDbDateTime() : undefined,
-  });
-
-  await addStatusHistory({
-    serviceOrderId: order.id,
-    fromStatus: order.status,
-    toStatus: data.estado,
-    changedBy: user.id,
-    note: data.nota?.trim() || null,
-  });
-
-  return toApiDetail(updated);
+  return toApiDetail(await findServiceOrderById(order.id), user.role);
 }

@@ -78,6 +78,7 @@ class TicketPartLine {
     required this.precioUnitario,
     required this.subtotal,
     this.codigo,
+    this.aviso,
   });
 
   factory TicketPartLine.fromJson(Map<String, dynamic> json) => TicketPartLine(
@@ -86,7 +87,11 @@ class TicketPartLine {
         cantidad: asInt(json['cantidad']),
         precioUnitario: asNum(json['precioUnitario']),
         subtotal: asNum(json['subtotal']),
+        aviso: asStringOrNull(json['aviso']),
       );
+
+  /// «sin precio registrado» cuando la línea no tiene precio (FR-018).
+  final String? aviso;
 
   final String? codigo;
   final String nombre;
@@ -101,12 +106,14 @@ class TicketServiceLine {
     required this.descripcion,
     required this.manoDeObra,
     this.refacciones = const <TicketPartLine>[],
+    this.avisoManoDeObra,
   });
 
   factory TicketServiceLine.fromJson(Map<String, dynamic> json) =>
       TicketServiceLine(
         descripcion: asString(json['descripcion']),
         manoDeObra: asNum(json['manoDeObra']),
+        avisoManoDeObra: asStringOrNull(json['avisoManoDeObra']),
         refacciones: asList(json['refacciones'])
             .map(TicketPartLine.fromJson)
             .toList(),
@@ -115,12 +122,15 @@ class TicketServiceLine {
   final String descripcion;
   final num manoDeObra;
   final List<TicketPartLine> refacciones;
+
+  /// «sin precio registrado» cuando la mano de obra no tiene precio (FR-018).
+  final String? avisoManoDeObra;
 }
 
 /// Ticket de servicio (HU4, FR-007; contrato: contracts/tickets.md).
 ///
-/// Se reconstruye desde la orden y su pago al consultarlo (FR-012): no hay
-/// archivos PDF ni datos de tarjeta (RN-14).
+/// Sprint 5 (FR-019): se lee de la copia guardada al emitirse, con su versión
+/// de formato; no hay archivos PDF ni datos de tarjeta (RN-14).
 class Ticket {
   const Ticket({
     required this.id,
@@ -139,6 +149,12 @@ class Ticket {
     required this.metodoPago,
     required this.estadoPago,
     required this.fecha,
+    this.formatoVersion,
+    this.formatoAnterior = false,
+    this.desgloseNoCoincide = false,
+    this.nota,
+    this.pagoAnulado = false,
+    this.vigente = true,
   });
 
   factory Ticket.fromJson(Map<String, dynamic> json) => Ticket(
@@ -160,6 +176,12 @@ class Ticket {
         metodoPago: asString(json['metodoPago']),
         estadoPago: asString(json['estadoPago']),
         fecha: asString(json['fecha']),
+        formatoVersion: asIntOrNull(json['formatoVersion']),
+        formatoAnterior: asBool(json['formatoAnterior']),
+        desgloseNoCoincide: asBool(json['desgloseNoCoincide']),
+        nota: asStringOrNull(json['nota']),
+        pagoAnulado: asBool(json['pagoAnulado']),
+        vigente: asBool(json['vigente'], true),
       );
 
   final int id;
@@ -178,13 +200,64 @@ class Ticket {
   final String metodoPago;
   final String estadoPago;
   final String fecha;
+
+  /// Sprint 5 (FR-019, FR-020, FR-022): versión de la copia (1 = formato
+  /// anterior, 2 = Sprint 5), nota cuando el desglose no coincide con lo
+  /// cobrado y marcas calculadas al consultar.
+  final int? formatoVersion;
+  final bool formatoAnterior;
+  final bool desgloseNoCoincide;
+  final String? nota;
+  final bool pagoAnulado;
+  final bool vigente;
 }
 
-/// Resultado de `GET /api/tickets/orden/:ordenId`: si la orden ya tiene
-/// ticket y, en ese caso, el comprobante mismo.
+/// Resumen de un ticket de la orden (Sprint 5, FR-033): folio, fecha y marcas.
+class TicketSummary {
+  const TicketSummary({
+    required this.id,
+    required this.folio,
+    required this.pagoId,
+    required this.emitidoEn,
+    this.vigente = false,
+    this.pagoAnulado = false,
+    this.formatoAnterior = false,
+  });
+
+  factory TicketSummary.fromJson(Map<String, dynamic> json) => TicketSummary(
+        id: asInt(json['id']),
+        folio: asString(json['folio']),
+        pagoId: asInt(json['pagoId']),
+        emitidoEn: asString(json['emitidoEn']),
+        vigente: asBool(json['vigente']),
+        pagoAnulado: asBool(json['pagoAnulado']),
+        formatoAnterior: asBool(json['formatoAnterior']),
+      );
+
+  final int id;
+  final String folio;
+  final int pagoId;
+  final String emitidoEn;
+  final bool vigente;
+  final bool pagoAnulado;
+  final bool formatoAnterior;
+}
+
+/// Resultado de `GET /api/tickets/orden/:ordenId`: si la orden tiene ticket
+/// vigente, el comprobante vigente y (Sprint 5) todos los tickets de la orden,
+/// del más reciente al más antiguo.
 class TicketLookup {
-  const TicketLookup({required this.existe, this.ticket});
+  const TicketLookup({
+    required this.existe,
+    this.ticket,
+    this.tickets = const <TicketSummary>[],
+  });
 
   final bool existe;
   final Ticket? ticket;
+  final List<TicketSummary> tickets;
+
+  /// Tickets que no son el vigente (por ejemplo, de pagos anulados).
+  List<TicketSummary> get anteriores =>
+      tickets.where((TicketSummary t) => !t.vigente).toList();
 }

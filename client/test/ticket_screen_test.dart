@@ -317,4 +317,187 @@ void main() {
       },
     );
   });
+
+  // -------------------------------------------------------------------------
+  // Sprint 5 (US4, FR-018, FR-020, FR-022, FR-033): marcas del ticket con los
+  // tokens `warning` y `danger` y la lista «Tickets anteriores».
+  // -------------------------------------------------------------------------
+  group('TicketScreen — marcas del Sprint 5', () {
+    MotorixColors colores() => AppTheme.light().extension<MotorixColors>()!;
+
+    Color colorDelChip(WidgetTester tester, String llave) {
+      final Text texto = tester.widget<Text>(
+        find.descendant(of: find.byKey(Key(llave)), matching: find.byType(Text)),
+      );
+      return texto.style!.color!;
+    }
+
+    testWidgets('chip_Formato_anterior_con_warning_y_texto_de_ayuda', (
+      WidgetTester tester,
+    ) async {
+      await pumpTicket(
+        tester,
+        service: FakeTicketsService(),
+        args: TicketScreenArgs(
+          ticket: ticketDePrueba(formatoAnterior: true),
+        ),
+      );
+
+      expect(find.text('Formato anterior'), findsOneWidget);
+      expect(colorDelChip(tester, 'chip-formato-anterior'), colores().warning);
+      expect(find.text(kAyudaFormatoAnterior), findsOneWidget);
+      expect(find.text('Pago anulado'), findsNothing);
+    });
+
+    testWidgets('chip_Pago_anulado_con_danger_y_su_aviso', (
+      WidgetTester tester,
+    ) async {
+      await pumpTicket(
+        tester,
+        service: FakeTicketsService(),
+        args: TicketScreenArgs(
+          ticket: ticketDePrueba(
+            pagoAnulado: true,
+            vigente: false,
+            estadoPago: 'ANULADO',
+          ),
+        ),
+      );
+
+      expect(find.text('Pago anulado'), findsOneWidget);
+      expect(colorDelChip(tester, 'chip-pago-anulado'), colores().danger);
+      expect(find.text(kAvisoPagoAnulado), findsOneWidget);
+    });
+
+    testWidgets('aviso_El_desglose_no_coincide_con_lo_cobrado', (
+      WidgetTester tester,
+    ) async {
+      await pumpTicket(
+        tester,
+        service: FakeTicketsService(),
+        args: TicketScreenArgs(
+          ticket: ticketDePrueba(
+            formatoAnterior: true,
+            desgloseNoCoincide: true,
+            nota: 'El desglose no coincide con lo cobrado',
+            subtotalManoDeObra: 1090,
+            subtotalRefacciones: 0,
+            total: 1390,
+          ),
+        ),
+      );
+
+      expect(find.text('El desglose no coincide con lo cobrado'), findsOneWidget);
+      expect(find.text('\$1,390.00'), findsOneWidget);
+    });
+
+    testWidgets('sin_precio_registrado_en_la_linea_con_warning', (
+      WidgetTester tester,
+    ) async {
+      await pumpTicket(
+        tester,
+        service: FakeTicketsService(),
+        args: TicketScreenArgs(
+          ticket: ticketDePrueba(
+            servicios: const <TicketServiceLine>[
+              TicketServiceLine(
+                descripcion: 'Revisión',
+                manoDeObra: 0,
+                avisoManoDeObra: 'sin precio registrado',
+                refacciones: <TicketPartLine>[
+                  TicketPartLine(
+                    nombre: 'Filtro heredado',
+                    cantidad: 1,
+                    precioUnitario: 0,
+                    subtotal: 0,
+                    aviso: 'sin precio registrado',
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      final Finder avisos = find.text('sin precio registrado');
+      expect(avisos, findsNWidgets(2));
+      expect(tester.widget<Text>(avisos.first).style!.color, colores().warning);
+    });
+
+    testWidgets('el_ticket_vigente_no_muestra_marcas', (
+      WidgetTester tester,
+    ) async {
+      await pumpTicket(
+        tester,
+        service: FakeTicketsService(),
+        args: TicketScreenArgs(ticket: ticketDePrueba()),
+      );
+
+      expect(find.text('Formato anterior'), findsNothing);
+      expect(find.text('Pago anulado'), findsNothing);
+      expect(find.text('El desglose no coincide con lo cobrado'), findsNothing);
+    });
+  });
+
+  group('ServiceOrderDetailScreen — tickets anteriores (Sprint 5)', () {
+    testWidgets(
+      'lista_Tickets_anteriores_con_folio_fecha_y_chip_Pago_anulado',
+      (WidgetTester tester) async {
+        final FakeTicketsService service = await pumpDetalle(
+          tester,
+          tickets: FakeTicketsService(
+            consulta: TicketLookup(
+              existe: true,
+              ticket: ticketDePrueba(id: 12, folio: 'T000012-2026'),
+              tickets: const <TicketSummary>[
+                TicketSummary(
+                  id: 12,
+                  folio: 'T000012-2026',
+                  pagoId: 8,
+                  emitidoEn: '2026-11-16 12:00:00',
+                  vigente: true,
+                ),
+                TicketSummary(
+                  id: 9,
+                  folio: 'T000009-2026',
+                  pagoId: 5,
+                  emitidoEn: '2026-11-15 09:30:00',
+                  pagoAnulado: true,
+                ),
+              ],
+            ),
+          ),
+        );
+
+        expect(find.text('Tickets anteriores'), findsOneWidget);
+        expect(find.text('T000009-2026 · 2026-11-15 09:30:00'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(const Key('ticket-anterior-9')),
+            matching: find.text('Pago anulado'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byKey(const Key('ticket-anterior-12')), findsNothing);
+
+        // «Ver ticket» abre el vigente.
+        await tester.tap(find.byKey(const Key('boton-ver-ticket')));
+        await tester.pumpAndSettle();
+        expect(find.text('T000012-2026'), findsOneWidget);
+        expect(service.llamadasGeneracion, 0);
+      },
+    );
+
+    testWidgets('sin_tickets_anteriores_no_se_dibuja_la_lista', (
+      WidgetTester tester,
+    ) async {
+      await pumpDetalle(
+        tester,
+        tickets: FakeTicketsService(
+          consulta: TicketLookup(existe: true, ticket: ticketDePrueba()),
+        ),
+      );
+      expect(find.text('Tickets anteriores'), findsNothing);
+    });
+  });
 }

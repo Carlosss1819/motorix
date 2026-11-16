@@ -145,7 +145,7 @@ test('un segundo pago sobre la misma orden se rechaza (FR-004)', async () => {
   expect(segundo.body.error.codigo).toBe('ORDEN_YA_LIQUIDADA');
 });
 
-test('el monto debe coincidir con el total calculado con precios vigentes (FR-015)', async () => {
+test('el monto debe coincidir con el total calculado con el precio congelado (FR-015; Sprint 5)', async () => {
   // Mano de obra 450 + refacción del catálogo 320.00 × 2 = 1090.00.
   // La refacción se agrega antes de cerrar la orden (una orden TERMINADO no
   // admite cambios de contenido, FR-026).
@@ -170,7 +170,7 @@ test('el monto debe coincidir con el total calculado con precios vigentes (FR-01
   await fijarEstado(ordenId, 'TERMINADO');
 
   // El total mostrado por el formulario es el mismo que valida el registro
-  // (T062): precios vigentes del catálogo y mismo módulo de cálculo.
+  // (T062): precio congelado de cada línea (Sprint 5) y mismo módulo de cálculo.
   const total = await api
     .get(`/api/payments/orden/${ordenId}/total`)
     .set(bearer(receptionistToken));

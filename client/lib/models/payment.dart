@@ -69,6 +69,7 @@ class Payment {
     this.enlacePago,
     this.modoPasarela,
     this.motivoAnulacion,
+    this.motivoCancelacion,
     this.registradoPor = '',
     this.fecha = '',
   });
@@ -84,6 +85,7 @@ class Payment {
         enlacePago: asStringOrNull(json['enlacePago']),
         modoPasarela: asStringOrNull(json['modoPasarela']),
         motivoAnulacion: asStringOrNull(json['motivoAnulacion']),
+        motivoCancelacion: asStringOrNull(json['motivoCancelacion']),
         registradoPor: asString(json['registradoPor']),
         fecha: asString(json['fecha']),
       );
@@ -97,6 +99,9 @@ class Payment {
   final String? enlacePago;
   final String? modoPasarela;
   final String? motivoAnulacion;
+
+  /// Sprint 5 (FR-016): `IMPORTE_DESFASADO` o `MANUAL` en un pago cancelado.
+  final String? motivoCancelacion;
   final String registradoPor;
 
   /// Fecha y hora del pago como `AAAA-MM-DD HH:MM:SS`.

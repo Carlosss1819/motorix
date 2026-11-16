@@ -16,10 +16,50 @@ import '../widgets/payment_status_chip.dart';
 /// Argumento de la ruta del ticket: el comprobante ya cargado o la orden de
 /// la que debe abrirse (generándolo si aún no existe, HU4).
 class TicketScreenArgs {
-  const TicketScreenArgs({this.ticket, this.ordenId = 0});
+  const TicketScreenArgs({this.ticket, this.ordenId = 0, this.ticketId});
 
   final Ticket? ticket;
   final int ordenId;
+
+  /// Sprint 5 (FR-033): abre un ticket concreto de la orden (por ejemplo, el
+  /// de un pago anulado de la lista «Tickets anteriores»).
+  final int? ticketId;
+}
+
+/// Textos de las marcas del ticket (Sprint 5, contracts/ui-flutter.md).
+const String kAyudaFormatoAnterior =
+    'Generado a partir de los datos registrados al migrar';
+const String kAvisoPagoAnulado =
+    'Este comprobante corresponde a un pago anulado; no es el ticket vigente '
+    'de la orden';
+const String kNotaDesglose = 'El desglose no coincide con lo cobrado';
+
+/// Chip de marca del ticket con un token del sistema de diseño (`warning` o
+/// `danger`), radio de 8 px.
+class TicketMarkChip extends StatelessWidget {
+  const TicketMarkChip({super.key, required this.texto, required this.color});
+
+  final String texto;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.panel),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Text(
+        texto,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color),
+      ),
+    );
+  }
 }
 
 /// Visualización del ticket de servicio con formato de comprobante (HU4,
@@ -48,6 +88,8 @@ class _TicketScreenState extends State<TicketScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (inicial != null) {
         _tickets.mostrar(inicial);
+      } else if (widget.args.ticketId != null) {
+        _tickets.abrirTicket(widget.args.ticketId!);
       } else {
         _tickets.abrir(widget.args.ordenId);
       }
@@ -100,6 +142,23 @@ class _TicketScreenState extends State<TicketScreen> {
             Expanded(
               child: Text('Ticket de servicio', style: textTheme.titleLarge),
             ),
+            // Sprint 5 (FR-020, FR-022): marcas con los tokens del diseño.
+            if (ticket.formatoAnterior) ...<Widget>[
+              TicketMarkChip(
+                key: const Key('chip-formato-anterior'),
+                texto: 'Formato anterior',
+                color: colors.warning,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            if (ticket.pagoAnulado) ...<Widget>[
+              TicketMarkChip(
+                key: const Key('chip-pago-anulado'),
+                texto: 'Pago anulado',
+                color: colors.danger,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+            ],
             PaymentStatusChip(estado: ticket.estadoPago),
           ],
         ),
@@ -109,6 +168,17 @@ class _TicketScreenState extends State<TicketScreen> {
           key: const Key('ticket-folio'),
           style: textTheme.titleMedium,
         ),
+        if (ticket.formatoAnterior) ...<Widget>[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            kAyudaFormatoAnterior,
+            style: textTheme.bodySmall?.copyWith(color: colors.warning),
+          ),
+        ],
+        if (ticket.pagoAnulado) ...<Widget>[
+          const SizedBox(height: AppSpacing.md),
+          _buildAviso(kAvisoPagoAnulado, colors.danger, LucideIcons.ban),
+        ],
         const SizedBox(height: AppSpacing.xl),
         AppPanel(
           child: Column(
@@ -146,6 +216,16 @@ class _TicketScreenState extends State<TicketScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
+        // FR-020: el desglose no suma lo cobrado; el total mostrado es el
+        // importe pagado.
+        if (ticket.desgloseNoCoincide) ...<Widget>[
+          _buildAviso(
+            ticket.nota ?? kNotaDesglose,
+            colors.warning,
+            LucideIcons.triangleAlert,
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
         AppPanel(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,6 +273,34 @@ class _TicketScreenState extends State<TicketScreen> {
     );
   }
 
+  /// Aviso con fondo suave y el color del token indicado (Sprint 5).
+  Widget _buildAviso(String texto, Color color, IconData icono) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.panel),
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Icon(icono, color: color, size: AppMetrics.iconSizeSmall),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              texto,
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(color: color),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Servicio con su mano de obra y sus refacciones anidadas (FR-007).
   Widget _buildServicio(TicketServiceLine servicio, int index) {
     final TextTheme textTheme = Theme.of(context).textTheme;
@@ -209,6 +317,11 @@ class _TicketScreenState extends State<TicketScreen> {
             'Mano de obra: ${Formatters.money(servicio.manoDeObra)}',
             style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
           ),
+          if (servicio.avisoManoDeObra != null)
+            Text(
+              servicio.avisoManoDeObra!,
+              style: textTheme.bodySmall?.copyWith(color: colors.warning),
+            ),
           for (int posicion = 0;
               posicion < servicio.refacciones.length;
               posicion++)
@@ -233,11 +346,22 @@ class _TicketScreenState extends State<TicketScreen> {
     return Padding(
       key: Key('ticket-refaccion-$servicio-$posicion'),
       padding: const EdgeInsets.only(top: AppSpacing.xs),
-      child: Text(
-        '${refaccion.cantidad} × $codigo${refaccion.nombre} — '
-        '${Formatters.money(refaccion.precioUnitario)} · '
-        'Subtotal ${Formatters.money(refaccion.subtotal)}',
-        style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            '${refaccion.cantidad} × $codigo${refaccion.nombre} — '
+            '${Formatters.money(refaccion.precioUnitario)} · '
+            'Subtotal ${Formatters.money(refaccion.subtotal)}',
+            style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
+          ),
+          // FR-018: «sin precio registrado» como texto secundario `warning`.
+          if (refaccion.aviso != null)
+            Text(
+              refaccion.aviso!,
+              style: textTheme.bodySmall?.copyWith(color: colors.warning),
+            ),
+        ],
       ),
     );
   }
@@ -263,18 +387,25 @@ class _TicketScreenState extends State<TicketScreen> {
 
     for (final TicketServiceLine servicio in ticket.servicios) {
       buffer.writeln(
-        '  ${servicio.descripcion} — ${Formatters.money(servicio.manoDeObra)}',
+        '  ${servicio.descripcion} — ${Formatters.money(servicio.manoDeObra)}'
+        '${servicio.avisoManoDeObra == null ? '' : ' (${servicio.avisoManoDeObra})'}',
       );
       for (final TicketPartLine refaccion in servicio.refacciones) {
         buffer.writeln(
           '    ${refaccion.cantidad} × ${refaccion.nombre} — '
-          '${Formatters.money(refaccion.subtotal)}',
+          '${Formatters.money(refaccion.precioUnitario)} c/u — '
+          '${Formatters.money(refaccion.subtotal)}'
+          '${refaccion.aviso == null ? '' : ' (${refaccion.aviso})'}',
         );
       }
     }
 
+    buffer.writeln('');
+    // Sprint 5: las marcas también salen en la versión imprimible.
+    if (ticket.desgloseNoCoincide) {
+      buffer.writeln('AVISO: ${ticket.nota ?? kNotaDesglose}');
+    }
     buffer
-      ..writeln('')
       ..writeln(
         'Subtotal mano de obra: ${Formatters.money(ticket.subtotalManoDeObra)}',
       )
@@ -288,6 +419,13 @@ class _TicketScreenState extends State<TicketScreen> {
       )
       ..writeln('Emitido por ${ticket.emitidoPor} el ${ticket.emitidoEn}');
 
-    return buffer.toString();
+    final StringBuffer encabezado = StringBuffer();
+    if (ticket.formatoAnterior) {
+      encabezado.writeln('[Formato anterior] $kAyudaFormatoAnterior');
+    }
+    if (ticket.pagoAnulado) {
+      encabezado.writeln('[Pago anulado] $kAvisoPagoAnulado');
+    }
+    return '$encabezado$buffer';
   }
 }

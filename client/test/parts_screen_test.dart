@@ -370,4 +370,40 @@ void main() {
       },
     );
   });
+
+  // -------------------------------------------------------------------------
+  // Sprint 5 (US5, FR-024, FR-025): «Compra» solo para ADMIN, «Venta» para
+  // ADMIN y RECEPTIONIST y ningún precio para el mecánico.
+  // -------------------------------------------------------------------------
+  group('PartsScreen — precios por rol (Sprint 5)', () {
+    _PartsServiceFake conRefaccion() => _PartsServiceFake(
+          page: const PartPage(
+            elementos: <Part>[_refaccion],
+            pagina: 1,
+            paginas: 1,
+            total: 1,
+          ),
+        );
+
+    testWidgets('ADMIN_ve_Compra_y_Venta', (WidgetTester tester) async {
+      await pumpScreen(tester, fake: conRefaccion(), rol: Rol.admin);
+      expect(find.text('Compra: \$180.00'), findsOneWidget);
+      expect(find.text('Venta: \$320.00'), findsOneWidget);
+    });
+
+    testWidgets('RECEPTIONIST_ve_solo_Venta', (WidgetTester tester) async {
+      await pumpScreen(tester, fake: conRefaccion(), rol: Rol.receptionist);
+      expect(find.textContaining('Compra:'), findsNothing);
+      expect(find.text('Venta: \$320.00'), findsOneWidget);
+    });
+
+    testWidgets('MECHANIC_no_ve_precios_aunque_vinieran', (
+      WidgetTester tester,
+    ) async {
+      await pumpScreen(tester, fake: conRefaccion(), rol: Rol.mechanic);
+      expect(find.textContaining('Compra:'), findsNothing);
+      expect(find.textContaining('Venta:'), findsNothing);
+      expect(find.text('PAD-001'), findsOneWidget);
+    });
+  });
 }

@@ -28,6 +28,8 @@ async function crearRefaccion({ stock = 6, activa = true } = {}) {
       codigo,
       nombre: `Refacción de orden ${suffix} ${contadorRefacciones}`,
       categoria: 'Frenos',
+      // Sprint 5 (FR-005): una refacción sin precio de venta ya no se agrega a una orden.
+      precioVenta: 100,
       stockInicial: stock,
       stockMinimo: 1,
     });
@@ -287,5 +289,110 @@ describe('DELETE /api/service-orders/:id/refacciones/:refaccionId (FR-026)', () 
 
     expect(response.status).toBe(403);
     expect(response.body.error.codigo).toBe('ORDEN_AJENA');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5 (US2, FR-006, FR-025, FR-034): precio congelado de la línea y
+// campos de precio por rol en el detalle de la orden.
+// Fuente de verdad: specs/005-precios-refacciones-cobro/contracts/service-orders.md.
+// ---------------------------------------------------------------------------
+describe('Sprint 5 — precios de las refacciones de la orden por rol', () => {
+  let ordenConPrecio;
+  let mecanicoId;
+
+  beforeAll(async () => {
+    const login = await api
+      .post('/api/auth/login')
+      .send({ identificador: 'mecanico', contrasena: 'Mecanico2026!' });
+    mecanicoId = login.body.usuario.id;
+
+    const orden = await api
+      .post('/api/service-orders')
+      .set(bearer(receptionistToken))
+      .send({
+        clienteId: clientId,
+        vehiculoId: vehicleId,
+        motivoVisita: 'Precios por rol',
+        fechaIngreso: '2026-11-16',
+        kilometraje: 900000,
+        mecanicoId,
+      });
+    expect(orden.status).toBe(201);
+    ordenConPrecio = orden.body.id;
+
+    contadorRefacciones += 1;
+    const refaccion = await api
+      .post('/api/parts')
+      .set(bearer(adminToken))
+      .send({
+        codigo: `ORD-${suffix}-${contadorRefacciones}`,
+        nombre: `Refacción con precio ${suffix}`,
+        categoria: 'Frenos',
+        stockInicial: 10,
+        precioVenta: 320,
+      });
+    expect(refaccion.status).toBe(201);
+    const agregada = await api
+      .post(`/api/service-orders/${ordenConPrecio}/refacciones`)
+      .set(bearer(adminToken))
+      .send({ partId: refaccion.body.id, cantidad: 2 });
+    expect(agregada.status).toBe(201);
+  });
+
+  test.each([
+    ['ADMIN', () => adminToken],
+    ['RECEPTIONIST', () => receptionistToken],
+  ])('%s_recibe_precioUnitario_importe_y_aviso', async (_rol, token) => {
+    const response = await api
+      .get(`/api/service-orders/${ordenConPrecio}`)
+      .set(bearer(token()));
+    expect(response.status).toBe(200);
+    expect(response.body.repuestos[0]).toEqual({
+      id: expect.any(Number),
+      descripcion: `Refacción con precio ${suffix}`,
+      cantidad: 2,
+      precioUnitario: 320,
+      importe: 640,
+      aviso: null,
+    });
+  });
+
+  test('MECHANIC_no_recibe_las_claves_de_precio', async () => {
+    const response = await api
+      .get(`/api/service-orders/${ordenConPrecio}`)
+      .set(bearer(mechanicToken));
+    expect(response.status).toBe(200);
+    const linea = response.body.repuestos[0];
+    expect(linea).not.toHaveProperty('precioUnitario');
+    expect(linea).not.toHaveProperty('importe');
+    expect(linea).not.toHaveProperty('aviso');
+    expect(linea).toMatchObject({ cantidad: 2 });
+  });
+
+  test.each([
+    ['ADMIN', () => adminToken],
+    ['RECEPTIONIST', () => receptionistToken],
+    ['MECHANIC', () => mechanicToken],
+  ])('POST_refacciones_responde_sin_precios_para_%s', async (_rol, token) => {
+    contadorRefacciones += 1;
+    const refaccion = await api
+      .post('/api/parts')
+      .set(bearer(adminToken))
+      .send({
+        codigo: `ORD-${suffix}-${contadorRefacciones}`,
+        nombre: `Refacción alta ${suffix} ${contadorRefacciones}`,
+        categoria: 'Frenos',
+        stockInicial: 5,
+        precioVenta: 99.5,
+      });
+    const response = await api
+      .post(`/api/service-orders/${ordenConPrecio}/refacciones`)
+      .set(bearer(token()))
+      .send({ partId: refaccion.body.id, cantidad: 1 });
+    expect(response.status).toBe(201);
+    expect(Object.keys(response.body).sort()).toEqual(
+      ['cantidad', 'codigo', 'id', 'nombre', 'partId', 'stockActual'],
+    );
   });
 });

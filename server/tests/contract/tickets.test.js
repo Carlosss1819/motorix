@@ -274,7 +274,8 @@ describe('GET /api/tickets/orden/:ordenId', () => {
       .set(bearer(receptionistToken));
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ existe: false, ticket: null });
+    // Sprint 5 (FR-033, R-14): la consulta agrega la lista `tickets`.
+    expect(response.body).toEqual({ existe: false, ticket: null, tickets: [] });
   });
 
   test('responde 404 ORDEN_NO_ENCONTRADA con una orden inexistente', async () => {
@@ -295,5 +296,184 @@ describe('GET /api/tickets/orden/:ordenId', () => {
       .set(bearer(mechanicToken));
     expect(response.status).toBe(403);
     expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5 (US3, FR-017, FR-018, SC-008): el ticket nuevo desglosa cada
+// refacción con su precio congelado, y las líneas y la mano de obra sin
+// precio llevan el aviso, igual que el desglose del pago.
+// Fuente de verdad: specs/005-precios-refacciones-cobro/contracts/tickets.md.
+// ---------------------------------------------------------------------------
+describe('Sprint 5 — desglose de refacciones en el ticket', () => {
+  test('el_ticket_nuevo_trae_cantidad_precio_congelado_y_subtotal_por_refaccion', async () => {
+    const ordenId = await crearOrden({ conManoDeObra: 750 });
+    // Mano de obra sin precio: vale 0 y lleva su aviso.
+    const sinPrecio = await api
+      .post(`/api/service-orders/${ordenId}/servicios`)
+      .set(bearer(adminToken))
+      .send({ descripcion: `Revisión sin costo ${suffix}`, duracionMinutos: 15 });
+    expect(sinPrecio.status).toBe(201);
+
+    contador += 1;
+    const refaccion = await api
+      .post('/api/parts')
+      .set(bearer(adminToken))
+      .send({
+        codigo: `TKT-${suffix}-${contador}`,
+        nombre: `Pastillas de ticket ${suffix}`,
+        categoria: 'Frenos',
+        stockInicial: 10,
+        precioVenta: 320,
+      });
+    const agregada = await api
+      .post(`/api/service-orders/${ordenId}/refacciones`)
+      .set(bearer(adminToken))
+      .send({ partId: refaccion.body.id, cantidad: 2 });
+    expect(agregada.status).toBe(201);
+    // Una línea heredada sin catálogo (Sprint 2): sin precio registrado.
+    const db = await mysql.createConnection(config.db);
+    await db.query(
+      `INSERT INTO order_parts (service_order_id, description, quantity, part_id, unit_price)
+       VALUES (?, 'Filtro heredado', 1, NULL, NULL)`,
+      [ordenId],
+    );
+    await db.end();
+    // El catálogo cambia antes de cobrar: el ticket usa el precio congelado.
+    await api
+      .put(`/api/parts/${refaccion.body.id}`)
+      .set(bearer(adminToken))
+      .send({ precioVenta: 999 });
+    await fijarEstado(ordenId, 'TERMINADO');
+
+    const pago = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 1390, metodo: 'TARJETA' });
+    expect(pago.status).toBe(201);
+
+    const response = await api
+      .post('/api/tickets')
+      .set(bearer(receptionistToken))
+      .send({ ordenId });
+    expect(response.status).toBe(201);
+
+    const refacciones = response.body.servicios.flatMap((s) => s.refacciones);
+    expect(refacciones).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          nombre: `Pastillas de ticket ${suffix}`,
+          cantidad: 2,
+          precioUnitario: 320,
+          subtotal: 640,
+          aviso: null,
+        }),
+        expect.objectContaining({
+          nombre: 'Filtro heredado',
+          cantidad: 1,
+          subtotal: 0,
+          aviso: 'sin precio registrado',
+        }),
+      ]),
+    );
+    const sumaRefacciones = refacciones.reduce((suma, r) => suma + r.subtotal, 0);
+    expect(response.body.subtotalRefacciones).toBe(sumaRefacciones);
+    expect(response.body.subtotalManoDeObra).toBe(750);
+    expect(response.body.total).toBe(
+      response.body.subtotalManoDeObra + response.body.subtotalRefacciones,
+    );
+    expect(response.body.total).toBe(1390);
+
+    const manoDeObra = response.body.servicios.map((s) => s.avisoManoDeObra);
+    expect(manoDeObra).toEqual([null, 'sin precio registrado']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5 (US4, FR-019, FR-020, FR-033): copia con versión, «formato
+// anterior», nota del desglose y la consulta por orden con varios tickets.
+// ---------------------------------------------------------------------------
+describe('Sprint 5 — copia con versión y tickets por orden', () => {
+  test.each([1, 2])('el_ticket_sembrado_%i_trae_formatoAnterior_true', async (id) => {
+    const response = await api.get(`/api/tickets/${id}`).set(bearer(receptionistToken));
+    expect(response.status).toBe(200);
+    expect(response.body.formatoVersion).toBe(1);
+    expect(response.body.formatoAnterior).toBe(true);
+    expect(response.body.folio).toBe(`T00000${id}-2026`);
+  });
+
+  test('un_ticket_con_el_desglose_desfasado_trae_desgloseNoCoincide_y_nota', async () => {
+    const ordenId = await crearOrden({ estado: 'TERMINADO', conManoDeObra: 1090 });
+    const db = await mysql.createConnection(config.db);
+    try {
+      const [pago] = await db.query(
+        `INSERT INTO payments (service_order_id, amount, method, status, created_by)
+         VALUES (?, 1390.00, 'TARJETA', 'PAGADO', 2)`,
+        [ordenId],
+      );
+      const copia = {
+        folio: `D${suffix}`.slice(0, 20),
+        ordenId,
+        pagoId: pago.insertId,
+        servicios: [],
+        subtotalManoDeObra: 1090,
+        subtotalRefacciones: 0,
+        total: 1390,
+        metodoPago: 'TARJETA',
+        formatoVersion: 1,
+        desgloseNoCoincide: true,
+        nota: 'El desglose no coincide con lo cobrado',
+      };
+      const [ticket] = await db.query(
+        `INSERT INTO tickets (service_order_id, payment_id, folio, issued_by, content, format_version)
+         VALUES (?, ?, ?, 2, ?, 1)`,
+        [ordenId, pago.insertId, copia.folio, JSON.stringify(copia)],
+      );
+
+      const response = await api
+        .get(`/api/tickets/${ticket.insertId}`)
+        .set(bearer(receptionistToken));
+      expect(response.status).toBe(200);
+      expect(response.body.total).toBe(1390);
+      expect(response.body.desgloseNoCoincide).toBe(true);
+      expect(response.body.nota).toBe('El desglose no coincide con lo cobrado');
+      expect(response.body.formatoAnterior).toBe(true);
+    } finally {
+      await db.end();
+    }
+  });
+
+  test('GET_orden_tiene_la_forma_existe_ticket_tickets', async () => {
+    const ordenId = await crearOrdenPagada(610);
+    const generado = await api
+      .post('/api/tickets')
+      .set(bearer(receptionistToken))
+      .send({ ordenId });
+    expect(generado.status).toBe(201);
+
+    const response = await api
+      .get(`/api/tickets/orden/${ordenId}`)
+      .set(bearer(receptionistToken));
+    expect(response.status).toBe(200);
+    expect(Object.keys(response.body).sort()).toEqual(['existe', 'ticket', 'tickets']);
+    expect(response.body.existe).toBe(true);
+    expect(response.body.ticket).toMatchObject({
+      id: generado.body.id,
+      vigente: true,
+      pagoAnulado: false,
+      formatoAnterior: false,
+      formatoVersion: 2,
+    });
+    expect(response.body.tickets).toEqual([
+      {
+        id: generado.body.id,
+        folio: generado.body.folio,
+        pagoId: generado.body.pagoId,
+        emitidoEn: generado.body.emitidoEn,
+        vigente: true,
+        pagoAnulado: false,
+        formatoAnterior: false,
+      },
+    ]);
   });
 });

@@ -3,6 +3,7 @@
 // Fuente de verdad: specs/002-citas-ordenes-servicio/contracts/service-orders.md
 import { z } from 'zod';
 import { ORDER_STATUS_VALUES } from '../utils/status-constants.js';
+import { priceSchema } from './price.js';
 
 const REGEX_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -99,10 +100,9 @@ export const serviceItemSchema = z.object({
     })
     .int('La duración de la mano de obra debe ser un número entero')
     .positive('La duración de la mano de obra debe ser mayor a 0 minutos'),
-  precio: z
-    .number('El precio de la mano de obra no es un número válido')
-    .min(0, 'El precio de la mano de obra no puede ser negativo')
-    .optional(),
+  // Sprint 5 (FR-032): misma regla que los precios del catálogo; sigue
+  // siendo opcional y solo acepta números (sin texto).
+  precio: priceSchema('El precio de la mano de obra', { coerce: false }).optional(),
 });
 
 // Refacción usada en la orden (US7, FR-023/FR-025): el alta sale del

@@ -77,11 +77,47 @@ class PaymentsService {
   /// un cobro Mercado Pago pendiente. `estado` es `PAGADO`, `RECHAZADO` o
   /// `CANCELADO`; el backend exige que el pago esté `PENDIENTE` y sea
   /// `MERCADO_PAGO` (`409 TRANSICION_INVALIDA` en otro caso).
+  ///
+  /// Sprint 5 (D-04): si el importe ya no coincide con el total, el backend
+  /// cancela el pago y responde `409 IMPORTE_DESFASADO`; aquí se convierte en
+  /// [ImporteDesfasadoException] con las cifras.
   Future<Payment> confirm({required int id, required String estado}) async {
-    final dynamic data = await _api.post(
-      '/payments/$id/confirmar',
-      body: <String, Object?>{'estado': estado},
-    );
-    return Payment.fromJson(asMap(data));
+    try {
+      final dynamic data = await _api.post(
+        '/payments/$id/confirmar',
+        body: <String, Object?>{'estado': estado},
+      );
+      return Payment.fromJson(asMap(data));
+    } on ApiException catch (e) {
+      if (e.codigo == ImporteDesfasadoException.codigoError) {
+        throw ImporteDesfasadoException.fromApi(e);
+      }
+      rethrow;
+    }
   }
+}
+
+/// `409 IMPORTE_DESFASADO` (Sprint 5, D-04): el pago pendiente se canceló
+/// porque su importe ya no coincide con el total de la orden.
+class ImporteDesfasadoException extends ApiException {
+  ImporteDesfasadoException(
+    super.mensaje, {
+    required this.importePago,
+    required this.totalActual,
+    required this.diferencia,
+  }) : super(codigo: codigoError, statusCode: 409);
+
+  factory ImporteDesfasadoException.fromApi(ApiException e) =>
+      ImporteDesfasadoException(
+        e.mensaje,
+        importePago: asNum(e.detalles['importePago']),
+        totalActual: asNum(e.detalles['totalActual']),
+        diferencia: asNum(e.detalles['diferencia']),
+      );
+
+  static const String codigoError = 'IMPORTE_DESFASADO';
+
+  final num importePago;
+  final num totalActual;
+  final num diferencia;
 }

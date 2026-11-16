@@ -7,6 +7,7 @@ import '../models/enums.dart';
 import '../models/part.dart';
 import '../models/payment.dart';
 import '../models/service_order.dart';
+import '../models/ticket.dart';
 import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
 import '../providers/parts_provider.dart';
@@ -14,10 +15,12 @@ import '../providers/payment_provider.dart';
 import '../providers/service_orders_provider.dart';
 import '../providers/ticket_provider.dart';
 import '../services/api_client.dart';
+import '../services/payments_service.dart';
 import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import '../utils/formatters.dart';
 import '../utils/messages.dart';
+import '../utils/validators.dart';
 import '../widgets/common_views.dart';
 import '../widgets/confirm_dialog.dart';
 import '../widgets/payment_status_chip.dart';
@@ -285,14 +288,19 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     final double? precio =
         precioTexto.isEmpty ? null : double.tryParse(precioTexto);
 
-    if (descripcion.isEmpty ||
-        duracion == null ||
-        duracion <= 0 ||
-        (precioTexto.isNotEmpty && (precio == null || precio < 0))) {
+    if (descripcion.isEmpty || duracion == null || duracion <= 0) {
       _mostrarAviso(
         'Revisa la descripción, la duración (minutos mayores a cero) y el '
         'precio del servicio.',
       );
+      return;
+    }
+    // Sprint 5 (FR-032): la misma regla que el servidor para el precio de la
+    // mano de obra: número ≥ 0, máximo 2 decimales y hasta 999,999.99.
+    final String? errorPrecio =
+        Validators.price(precioTexto, 'el precio de la mano de obra');
+    if (errorPrecio != null) {
+      _mostrarAviso(errorPrecio);
       return;
     }
 
@@ -851,6 +859,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                         style: textTheme.bodyMedium,
                       ),
                     ),
+                    // Sprint 5 (FR-025, FR-034): doble condición, el rol lo
+                    // permite y el campo vino en la respuesta.
+                    if (!_esMecanico && refaccion.conPrecios)
+                      _buildPrecioRefaccion(refaccion),
                     if (editable)
                       IconButton(
                         tooltip: 'Eliminar refacción',
@@ -906,6 +918,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
+            // Sprint 5 (FR-025, T074): datos de la refacción elegida. El
+            // mecánico ve todos los campos que no son importes; el precio de
+            // venta solo con la doble condición (rol y campo presente).
+            if (valorSelector != null)
+              _buildDatosRefaccionElegida(
+                catalogo.firstWhere((Part p) => p.id == valorSelector),
+              ),
             if (parts.cargandoCatalogo)
               Text('Cargando el catálogo de refacciones…', style: textTheme.bodySmall)
             else if (parts.errorCatalogo != null)
@@ -934,6 +953,52 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           ],
         ],
       ),
+    );
+  }
+
+  /// Datos de la refacción elegida en el selector (Sprint 5, FR-025):
+  /// categoría, marca, existencia, stock mínimo, stock bajo y activa para
+  /// todos; el precio de venta solo para ADMIN y RECEPTIONIST.
+  Widget _buildDatosRefaccionElegida(Part parte) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+    final List<String> datos = <String>[
+      parte.categoria,
+      parte.marca ?? 'Sin marca',
+      'existencia ${parte.stockActual}',
+      'mínimo ${parte.stockMinimo}',
+      if (parte.stockBajo) 'stock bajo',
+      parte.activa ? 'activa' : 'inactiva',
+      if (!_esMecanico && parte.conPrecioVenta && parte.precioVenta != null)
+        'venta ${Formatters.money(parte.precioVenta!)}',
+    ];
+    return Padding(
+      key: const Key('datos-refaccion-elegida'),
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Text(
+        datos.join(' · '),
+        style: textTheme.bodySmall?.copyWith(
+          color: parte.stockBajo ? colors.warning : colors.textSecondary,
+        ),
+      ),
+    );
+  }
+
+  /// Precio unitario congelado e importe de una línea de refacción, o el
+  /// aviso «sin precio registrado» con el token `warning` (FR-018).
+  Widget _buildPrecioRefaccion(OrderPart refaccion) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final MotorixColors colors = context.motorixColors;
+    if (refaccion.aviso != null || refaccion.precioUnitario == null) {
+      return Text(
+        refaccion.aviso ?? 'sin precio registrado',
+        style: textTheme.bodySmall?.copyWith(color: colors.warning),
+      );
+    }
+    return Text(
+      '${Formatters.money(refaccion.precioUnitario!)} c/u · '
+      'importe ${Formatters.money(refaccion.importe ?? 0)}',
+      style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
     );
   }
 
@@ -1125,6 +1190,14 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(avisos[estado]!)),
       );
+    } on ImporteDesfasadoException catch (e) {
+      // Sprint 5 (D-04): el pago ya quedó cancelado en el servidor; se
+      // refresca la lista y se explica qué pasó antes de cobrar de nuevo.
+      await _pagos.reload();
+      if (!mounted) {
+        return;
+      }
+      await _mostrarImporteDesfasado(e);
     } on ApiException catch (e) {
       if (!mounted) {
         return;
@@ -1140,6 +1213,44 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         const SnackBar(content: Text(AppMessages.unexpectedError)),
       );
     }
+  }
+
+  /// Diálogo de `409 IMPORTE_DESFASADO` (Sprint 5, D-04): importe del pago,
+  /// total actual, diferencia y el recordatorio de revisar el panel de
+  /// Mercado Pago antes de generar un pago nuevo.
+  Future<void> _mostrarImporteDesfasado(ImporteDesfasadoException e) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        final TextTheme textTheme = Theme.of(dialogContext).textTheme;
+        final MotorixColors colors = dialogContext.motorixColors;
+        return AlertDialog(
+          icon: Icon(LucideIcons.triangleAlert, color: colors.warning),
+          title: const Text('El importe del pago ya no coincide'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Importe del pago: ${Formatters.money(e.importePago)}'),
+              Text('Total actual de la orden: ${Formatters.money(e.totalActual)}'),
+              Text('Diferencia: ${Formatters.money(e.diferencia)}'),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'El cobro se canceló. Antes de generar uno nuevo, revisa en el '
+                'panel de Mercado Pago si el cliente ya pagó.',
+                style: textTheme.bodySmall?.copyWith(color: colors.warning),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Abre el comprobante de la orden (US4, FR-008): si aún no existe, la
@@ -1205,8 +1316,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Total calculado con los precios vigentes: mano de obra + '
-            'refacciones × cantidad.',
+            'Total: mano de obra + refacciones × cantidad, con el precio '
+            'registrado al agregar cada refacción.',
             style: textTheme.bodySmall?.copyWith(color: colors.textSecondary),
           ),
           if (pagos.totalStatus == LoadStatus.error &&
@@ -1285,9 +1396,51 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               ),
             ],
           ],
+          // Sprint 5 (FR-033, FR-022): tickets de pagos anulados, con folio,
+          // fecha y la marca «Pago anulado»; «Ver ticket» abre el vigente.
+          if (tickets.lookup == LoadStatus.ready &&
+              tickets.anteriores.isNotEmpty) ...<Widget>[
+            const SizedBox(height: AppSpacing.md),
+            Text('Tickets anteriores', style: textTheme.titleSmall),
+            const SizedBox(height: AppSpacing.xs),
+            for (final TicketSummary anterior in tickets.anteriores)
+              Padding(
+                key: Key('ticket-anterior-${anterior.id}'),
+                padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.zero,
+                        ),
+                        onPressed: () => _abrirTicketAnterior(order, anterior),
+                        child: Text('${anterior.folio} · ${anterior.emitidoEn}'),
+                      ),
+                    ),
+                    if (anterior.pagoAnulado)
+                      TicketMarkChip(texto: 'Pago anulado', color: colors.danger),
+                  ],
+                ),
+              ),
+          ],
         ],
       ),
     );
+  }
+
+  /// Abre un ticket anterior de la orden (Sprint 5, FR-033).
+  Future<void> _abrirTicketAnterior(ServiceOrder order, TicketSummary anterior) async {
+    await Navigator.pushNamed(
+      context,
+      Routes.ticket,
+      arguments: TicketScreenArgs(ordenId: order.id, ticketId: anterior.id),
+    );
+    if (!mounted) {
+      return;
+    }
+    await _tickets.consultarExistencia(order.id);
   }
 
   /// Fila del historial de pagos: monto y método, fecha y quien lo registró,

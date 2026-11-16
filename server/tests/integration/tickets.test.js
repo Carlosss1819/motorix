@@ -278,6 +278,8 @@ test('el ticket reconstruye el detalle con los subtotales de order-total.js (D2)
     cantidad: 2,
     precioUnitario: 320,
     subtotal: 640,
+    // Sprint 5 (FR-018): cada línea trae el aviso; con precio es null.
+    aviso: null,
   });
 
   // RN-14: el comprobante no arrastra datos de tarjeta ni credenciales.

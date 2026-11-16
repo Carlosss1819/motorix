@@ -25,12 +25,17 @@ class TicketProvider extends ChangeNotifier {
   Ticket? _ticket;
   bool _existe = false;
   String? _error;
+  List<TicketSummary> _anteriores = const <TicketSummary>[];
 
   LoadStatus get status => _status;
   LoadStatus get lookup => _lookup;
   Ticket? get ticket => _ticket;
   bool get existe => _existe;
   String? get error => _error;
+
+  /// Sprint 5 (FR-033): tickets de la orden que no son el vigente (por
+  /// ejemplo, de pagos anulados), para la lista «Tickets anteriores».
+  List<TicketSummary> get anteriores => _anteriores;
 
   /// GET /api/tickets/orden/:ordenId: ¿la orden ya tiene comprobante?
   /// No interrumpe la pantalla si falla: solo oculta el botón de ticket.
@@ -42,6 +47,7 @@ class TicketProvider extends ChangeNotifier {
           await _service.fetchTicketByOrder(ordenId: ordenId);
       _existe = resultado.existe;
       _ticket = resultado.ticket;
+      _anteriores = resultado.anteriores;
       _lookup = LoadStatus.ready;
     } on ApiException catch (e) {
       _error = e.mensaje;
@@ -67,6 +73,25 @@ class TicketProvider extends ChangeNotifier {
       _ticket = resultado.ticket ??
           await _service.generate(ordenId: ordenId);
       _lookup = LoadStatus.ready;
+      _status = LoadStatus.ready;
+    } on ApiException catch (e) {
+      _error = e.mensaje;
+      _status = LoadStatus.error;
+    } catch (_) {
+      _error = AppMessages.unexpectedError;
+      _status = LoadStatus.error;
+    }
+    notifyListeners();
+  }
+
+  /// Abre un ticket por su id (Sprint 5: un ticket anterior de la orden,
+  /// por ejemplo de un pago anulado).
+  Future<void> abrirTicket(int id) async {
+    _status = LoadStatus.loading;
+    _error = null;
+    notifyListeners();
+    try {
+      _ticket = await _service.fetchTicket(id: id);
       _status = LoadStatus.ready;
     } on ApiException catch (e) {
       _error = e.mensaje;

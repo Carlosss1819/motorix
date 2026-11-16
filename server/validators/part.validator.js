@@ -4,6 +4,7 @@
 // recibe nunca en el alta ni en la edición: solo cambia por movimientos
 // (FR-022). `stockMinimo` admite 0, que nunca genera alerta (FR-021).
 import { z } from 'zod';
+import { priceSchema } from './price.js';
 
 // Entero >= 0 con mensaje propio (los stocks y los precios nunca bajan de 0).
 const enteroNoNegativo = (mensaje) =>
@@ -12,10 +13,10 @@ const enteroNoNegativo = (mensaje) =>
     .int(mensaje)
     .min(0, mensaje);
 
-const precioNoNegativo = (mensaje) =>
-  z
-    .coerce.number({ invalid_type_error: mensaje })
-    .min(0, mensaje);
+// Sprint 5 (FR-003, R-13): los precios usan el esquema común de
+// `validators/price.js`: numérico, ≥ 0, máximo 2 decimales y ≤ 999,999.99.
+const precioCompra = () => priceSchema('El precio de compra').optional();
+const precioVenta = () => priceSchema('El precio de venta').optional();
 
 export const partSchema = z.object({
   codigo: z
@@ -42,8 +43,8 @@ export const partSchema = z.object({
   // ENTRADA inicial con motivo «Stock inicial» (SC-007).
   stockInicial: enteroNoNegativo('El stock inicial no puede ser negativo').default(0),
   stockMinimo: enteroNoNegativo('El stock mínimo no puede ser negativo').default(0),
-  precioCompra: precioNoNegativo('El precio de compra no puede ser negativo').optional(),
-  precioVenta: precioNoNegativo('El precio de venta no puede ser negativo').optional(),
+  precioCompra: precioCompra(),
+  precioVenta: precioVenta(),
 });
 
 // Edición parcial (PUT): el código es identificador y el stock actual solo
@@ -67,8 +68,8 @@ export const partUpdateSchema = z.object({
     .max(80, 'La marca no puede exceder 80 caracteres')
     .optional(),
   stockMinimo: enteroNoNegativo('El stock mínimo no puede ser negativo').optional(),
-  precioCompra: precioNoNegativo('El precio de compra no puede ser negativo').optional(),
-  precioVenta: precioNoNegativo('El precio de venta no puede ser negativo').optional(),
+  precioCompra: precioCompra(),
+  precioVenta: precioVenta(),
 });
 
 // Listado con los filtros de FR-018/FR-020 y la paginación estándar R-10.

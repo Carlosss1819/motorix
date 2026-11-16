@@ -138,7 +138,7 @@ describe('GET /api/payments/orden/:ordenId', () => {
 });
 
 describe('GET /api/payments/orden/:ordenId/total (T062, FR-015)', () => {
-  test('responde 200 con subtotales y desglose calculados con precios vigentes', async () => {
+  test('responde 200 con subtotales y desglose calculados con el precio congelado (Sprint 5)', async () => {
     const ordenId = await crearOrden({ estado: 'TERMINADO', conManoDeObra: 450 });
 
     const response = await api
@@ -395,5 +395,80 @@ describe('POST /api/payments/:id/confirmar (US3, FR-005, D7)', () => {
     const response = await confirmar(pago.id, 'PAGADO', mechanicToken);
     expect(response.status).toBe(403);
     expect(response.body.error.codigo).toBe('ROL_NO_AUTORIZADO');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5 (US2, FR-012, FR-015, D-02): el total para cobrar usa el precio
+// congelado de cada línea y una orden con solo refacciones se cobra.
+// Fuente de verdad: specs/005-precios-refacciones-cobro/contracts/payments.md.
+// ---------------------------------------------------------------------------
+describe('Sprint 5 — total con precio congelado', () => {
+  async function refaccionConPrecio(precioVenta) {
+    contador += 1;
+    const r = await api
+      .post('/api/parts')
+      .set(bearer(adminToken))
+      .send({
+        codigo: `PCG-${suffix}-${contador}`,
+        nombre: `Refacción de cobro ${suffix} ${contador}`,
+        categoria: 'Frenos',
+        stockInicial: 10,
+        precioVenta,
+      });
+    expect(r.status).toBe(201);
+    return r.body.id;
+  }
+
+  test('GET_total_usa_el_precio_congelado_aunque_cambie_el_catalogo', async () => {
+    const ordenId = await crearOrden({ conManoDeObra: 450 });
+    const partId = await refaccionConPrecio(320);
+    const agregada = await api
+      .post(`/api/service-orders/${ordenId}/refacciones`)
+      .set(bearer(adminToken))
+      .send({ partId, cantidad: 2 });
+    expect(agregada.status).toBe(201);
+    await api.put(`/api/parts/${partId}`).set(bearer(adminToken)).send({ precioVenta: 999 });
+    await fijarEstado(ordenId, 'TERMINADO');
+
+    const response = await api
+      .get(`/api/payments/orden/${ordenId}/total`)
+      .set(bearer(receptionistToken));
+    expect(response.status).toBe(200);
+    expect(response.body.total).toBe(1090);
+    expect(response.body.desglose.refacciones[0]).toMatchObject({
+      cantidad: 2,
+      precioUnitario: 320,
+      subtotal: 640,
+      aviso: null,
+    });
+  });
+
+  test('una_orden_TERMINADO_con_solo_refacciones_y_total_mayor_a_0_se_cobra', async () => {
+    const ordenId = await crearOrden();
+    const partId = await refaccionConPrecio(150.25);
+    await api
+      .post(`/api/service-orders/${ordenId}/refacciones`)
+      .set(bearer(adminToken))
+      .send({ partId, cantidad: 1 });
+    await fijarEstado(ordenId, 'TERMINADO');
+
+    const response = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 150.25, metodo: 'EFECTIVO', fecha: '2026-11-16' });
+    expect(response.status).toBe(201);
+    expect(response.body.monto).toBe(150.25);
+  });
+
+  test('una_orden_con_total_0_se_rechaza', async () => {
+    const ordenId = await crearOrden({ estado: 'TERMINADO' });
+    const response = await api
+      .post('/api/payments')
+      .set(bearer(receptionistToken))
+      .send({ ordenId, monto: 0, metodo: 'EFECTIVO', fecha: '2026-11-16' });
+    // Como hoy (FR-012): el monto debe ser mayor a 0.
+    expect(response.status).toBe(400);
+    expect(response.body.error.codigo).toBe('VALIDACION');
   });
 });

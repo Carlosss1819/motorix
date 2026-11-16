@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/part.dart';
 import '../models/part_movement.dart';
+import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
 import '../providers/part_detail_provider.dart';
 import '../utils/app_theme.dart';
@@ -116,6 +117,8 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
 
   Widget _buildDataPanel(Part part) {
     final TextTheme textTheme = Theme.of(context).textTheme;
+    // Denegar por defecto: sin sesión conocida no se dibujan precios.
+    final String? rol = context.read<AuthProvider>().user?.rol;
 
     return AppPanel(
       child: Column(
@@ -147,18 +150,22 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
             label: 'Stock mínimo',
             value: '${Formatters.number(part.stockMinimo)} unidades',
           ),
-          DetailRow(
-            label: 'Precio de compra',
-            value: part.precioCompra != null
-                ? Formatters.money(part.precioCompra!)
-                : 'Sin registro',
-          ),
-          DetailRow(
-            label: 'Precio de venta',
-            value: part.precioVenta != null
-                ? Formatters.money(part.precioVenta!)
-                : 'Sin registro',
-          ),
+          // Sprint 5 (FR-024, FR-025): doble condición, el rol lo permite y
+          // el campo vino en la respuesta; si no, el renglón no se dibuja.
+          if (PartPriceVisibility.compra(rol) && part.conPrecioCompra)
+            DetailRow(
+              label: 'Precio de compra',
+              value: part.precioCompra != null
+                  ? Formatters.money(part.precioCompra!)
+                  : 'Sin registro',
+            ),
+          if (PartPriceVisibility.venta(rol) && part.conPrecioVenta)
+            DetailRow(
+              label: 'Precio de venta',
+              value: part.precioVenta != null
+                  ? Formatters.money(part.precioVenta!)
+                  : 'Sin registro',
+            ),
         ],
       ),
     );

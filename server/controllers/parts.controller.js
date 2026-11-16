@@ -3,11 +3,12 @@ import * as service from '../services/part.service.js';
 import { sendOk, sendCreated } from '../utils/response.js';
 
 export async function listPartsHandler(req, res) {
-  sendOk(res, await service.list(req.query));
+  // Sprint 5 (FR-024, FR-025): los precios dependen del rol de la sesión.
+  sendOk(res, await service.list(req.query, req.user.role));
 }
 
 export async function getPartHandler(req, res) {
-  sendOk(res, await service.getById(Number(req.params.id)));
+  sendOk(res, await service.getById(Number(req.params.id), req.user.role));
 }
 
 export async function getPartMovementsHandler(req, res) {

@@ -1,0 +1,88 @@
+Verificación de la migración en motorix_v2 (T018) - 2026-11-16 13:24
+Respaldo previo: C:\Users\kastr\Documents\MotorixVer2\respaldos\respaldo-motorix_v2-antes-005-20261116.sql (fuera del repositorio)
+Consulta de payment_id repetidos en tickets (T016): 0 filas
+
+== schema_migrations
+[
+ {
+  "name": "001_esquema_inicial.sql",
+  "applied_at": "2026-10-12T23:25:59.000Z"
+ },
+ {
+  "name": "002_citas_ordenes_servicio.sql",
+  "applied_at": "2026-10-12T23:25:59.000Z"
+ },
+ {
+  "name": "003_historial_mantenimiento_inventario.sql",
+  "applied_at": "2026-10-13T17:54:08.000Z"
+ },
+ {
+  "name": "004_pagos_tickets_dashboard.sql",
+  "applied_at": "2026-10-14T14:47:20.000Z"
+ },
+ {
+  "name": "005_precios_congelados_tickets_por_pago.sql",
+  "applied_at": "2026-11-16T19:24:47.000Z"
+ },
+ {
+  "name": "006_datos_precio_congelado_copia_tickets.sql",
+  "applied_at": "2026-11-16T19:24:47.000Z"
+ }
+]
+== SC-011 (debe dar 0 y 0)
+[
+ {
+  "lineas_mal_congeladas": "0",
+  "sin_precio_con_valor": "0"
+ }
+]
+== SC-012 (debe dar 0)
+[
+ {
+  "tickets_mal_copiados": 0
+ }
+]
+== Ticket de la orden 5
+[
+ {
+  "id": 2,
+  "folio": "T000002-2026",
+  "format_version": 1,
+  "total": 1390,
+  "mano_de_obra": 450,
+  "refacciones": 640,
+  "desglose_no_coincide": true,
+  "nota": "El desglose no coincide con lo cobrado"
+ }
+]
+== Líneas de refacción con precio congelado
+[
+ {
+  "id": 1,
+  "service_order_id": 2,
+  "part_id": null,
+  "quantity": 2,
+  "unit_price": null
+ },
+ {
+  "id": 2,
+  "service_order_id": 3,
+  "part_id": null,
+  "quantity": 1,
+  "unit_price": null
+ },
+ {
+  "id": 3,
+  "service_order_id": 4,
+  "part_id": null,
+  "quantity": 1,
+  "unit_price": null
+ },
+ {
+  "id": 4,
+  "service_order_id": 5,
+  "part_id": 3,
+  "quantity": 2,
+  "unit_price": "320.00"
+ }
+]

@@ -3,8 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import 'package:motorix_client/models/app_user.dart';
+import 'package:motorix_client/models/enums.dart';
 import 'package:motorix_client/models/part.dart';
 import 'package:motorix_client/models/part_movement.dart';
+import 'package:motorix_client/providers/auth_provider.dart';
 import 'package:motorix_client/providers/part_detail_provider.dart';
 import 'package:motorix_client/screens/part_detail_screen.dart';
 import 'package:motorix_client/services/api_client.dart';
@@ -26,9 +29,31 @@ Part _refaccionDePrueba() => const Part(
       activa: true,
     );
 
+/// Sesión simulada con el rol indicado (Sprint 5: el detalle decide los
+/// precios con el rol y el campo presente, FR-024 y FR-025).
+class _AuthFake extends AuthProvider {
+  _AuthFake(this._rol) : super(api: ApiClient());
+
+  final String _rol;
+
+  @override
+  bool get isAuthenticated => true;
+
+  @override
+  AppUser? get user => AppUser(
+        id: 1,
+        username: 'prueba',
+        email: 'prueba@motorix.local',
+        rol: _rol,
+      );
+}
+
 /// Servicio falso con datos en memoria: no se abre ninguna conexión.
 class _PartsServiceFake extends PartsService {
-  _PartsServiceFake({this.page, this.failure}) : super(ApiClient());
+  _PartsServiceFake({this.page, this.failure, this.refaccion}) : super(ApiClient());
+
+  /// Refacción que devuelve `detail` (por defecto, la de prueba con precios).
+  Part? refaccion;
 
   /// Página que devuelve `movements`.
   PartMovementPage? page;
@@ -44,7 +69,7 @@ class _PartsServiceFake extends PartsService {
     if (failure != null) {
       throw failure!;
     }
-    return _refaccionDePrueba();
+    return refaccion ?? _refaccionDePrueba();
   }
 
   @override
@@ -76,14 +101,22 @@ void main() {
   Future<void> pumpScreen(
     WidgetTester tester, {
     required _PartsServiceFake fake,
+    // Sprint 5 (T089): la pantalla necesita la sesión para decidir los
+    // precios; ADMIN conserva lo que estas pruebas ya verificaban.
+    String rol = Rol.admin,
   }) async {
     tester.view.physicalSize = const Size(1280, 3000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.reset);
 
     await tester.pumpWidget(
-      ChangeNotifierProvider<PartDetailProvider>(
-        create: (_) => PartDetailProvider(api: ApiClient(), service: fake),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AuthProvider>.value(value: _AuthFake(rol)),
+          ChangeNotifierProvider<PartDetailProvider>(
+            create: (_) => PartDetailProvider(api: ApiClient(), service: fake),
+          ),
+        ],
         child: MaterialApp(
           theme: AppTheme.light(),
           home: const Scaffold(
@@ -226,5 +259,58 @@ void main() {
         expect(find.text('Reintentar'), findsOneWidget);
       },
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // Sprint 5 (US5, FR-024, FR-025): «Precio de compra» solo para ADMIN,
+  // «Precio de venta» para ADMIN y RECEPTIONIST y ningún precio para el
+  // mecánico; el renglón no se dibuja cuando el campo no viene.
+  // -------------------------------------------------------------------------
+  group('PartDetailScreen — precios por rol (Sprint 5)', () {
+    testWidgets('ADMIN_ve_compra_y_venta', (WidgetTester tester) async {
+      await pumpScreen(tester, fake: _PartsServiceFake(), rol: Rol.admin);
+      expect(find.text('Precio de compra'), findsOneWidget);
+      expect(find.text('Precio de venta'), findsOneWidget);
+    });
+
+    testWidgets('RECEPTIONIST_ve_solo_venta', (WidgetTester tester) async {
+      await pumpScreen(tester, fake: _PartsServiceFake(), rol: Rol.receptionist);
+      expect(find.text('Precio de compra'), findsNothing);
+      expect(find.text('Precio de venta'), findsOneWidget);
+      expect(find.text('\$320.00'), findsOneWidget);
+    });
+
+    testWidgets('MECHANIC_no_ve_ningun_precio', (WidgetTester tester) async {
+      await pumpScreen(tester, fake: _PartsServiceFake(), rol: Rol.mechanic);
+      expect(find.text('Precio de compra'), findsNothing);
+      expect(find.text('Precio de venta'), findsNothing);
+      expect(find.text('Juego de pastillas delanteras'), findsOneWidget);
+      expect(find.text('Frenos'), findsOneWidget);
+    });
+
+    testWidgets('sin_el_campo_en_la_respuesta_no_se_dibuja_el_renglon', (
+      WidgetTester tester,
+    ) async {
+      // Respuesta para RECEPTIONIST: el servidor omite `precioCompra`.
+      final Part sinCompra = Part.fromJson(<String, dynamic>{
+        'id': 7,
+        'codigo': 'PAS-DEL01',
+        'nombre': 'Juego de pastillas delanteras',
+        'categoria': 'Frenos',
+        'marca': 'Brembo',
+        'stockActual': 3,
+        'stockMinimo': 2,
+        'stockBajo': false,
+        'precioVenta': 320,
+        'activa': true,
+      });
+      await pumpScreen(
+        tester,
+        fake: _PartsServiceFake(refaccion: sinCompra),
+        rol: Rol.admin,
+      );
+      expect(find.text('Precio de compra'), findsNothing);
+      expect(find.text('Precio de venta'), findsOneWidget);
+    });
   });
 }

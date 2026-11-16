@@ -1,0 +1,144 @@
+98370ff | 2026-10-11 | chore(repo): inicializar repositorio con estructura base y documentación
+c8525a0 | 2026-10-11 | feat(database): agregar esquema inicial, seeds y scripts de entorno local
+36647cd | 2026-10-11 | feat(server): implementar api rest del sprint 1 con autenticación jwt
+6847739 | 2026-10-11 | test(server): cubrir contratos, integración y unidades con jest contra motorix_test
+2f3416a | 2026-10-11 | docs(specs): añadir la cadena de especificación del sprint 1
+0d3300c | 2026-10-12 | docs(specs): añadir la cadena de especificación de citas, órdenes e inventario
+73b9c22 | 2026-10-12 | feat(database): agregar migración y seeds de citas y órdenes de servicio
+9979457 | 2026-10-12 | feat(server): implementar el alta y la consulta de órdenes de servicio
+319607b | 2026-10-12 | chore(db): aislar el entorno en las bases motorix_v2 y motorix_v2_test
+db51a9e | 2026-10-12 | feat(client): incorporar la aplicación flutter del sprint 1
+c65cd7e | 2026-10-12 | feat(client): agregar chip de estado de citas y órdenes
+6f7f1eb | 2026-10-12 | chore(commands): incorporar los comandos de spec kit para opencode
+bd8e8d3 | 2026-10-12 | feat(client): agregar el modulo de ordenes de servicio del sprint 2
+9464ff8 | 2026-10-12 | feat(client): integrar ordenes de servicio en el shell, rutas y tema
+1279d16 | 2026-10-12 | test(client): cubrir el provider de ordenes de servicio
+e53534e | 2026-10-12 | docs(specs): marcar las tareas T017 a T024 del sprint 2
+f479dfb | 2026-10-12 | feat(server): permitir campos extra en el cuerpo de error de la api
+eea7931 | 2026-10-12 | feat(server): implementar el api de citas de recepcion
+00489af | 2026-10-12 | feat(server): validar la cita de origen al crear una orden
+c1774f9 | 2026-10-12 | test(server): cubrir el contrato y la integracion de citas
+1e5e524 | 2026-10-12 | docs(specs): marcar las tareas T025 a T032 del sprint 2
+6bbdd93 | 2026-10-12 | feat(client): agregar el modelo y el servicio de citas
+f060ed7 | 2026-10-12 | feat(client): agregar el provider de citas con filtros y conflicto de horario
+f4d07ba | 2026-10-12 | feat(client): agregar las pantallas de listado y formulario de citas
+7f17ba6 | 2026-10-12 | feat(client): precargar el formulario de orden desde una cita recibida
+f368ee5 | 2026-10-12 | feat(client): integrar citas en rutas, shell y permisos de rol
+3e29930 | 2026-10-12 | test(client): cubrir el provider y la pantalla de citas
+ec99021 | 2026-10-12 | docs(specs): marcar las tareas T033 a T040 del sprint 2
+bd7fce6 | 2026-10-12 | test(server): cubrir el aislamiento del mecánico y la asignación de órdenes
+b11f114 | 2026-10-12 | feat(server): habilitar la lectura al mecánico y la asignación de mecánico
+43aefc0 | 2026-10-12 | docs(specs): marcar las tareas T041 a T045 del sprint 2
+9ff4d75 | 2026-10-12 | feat(server): exponer los mecanicos activos para la asignacion de ordenes
+c3029a5 | 2026-10-12 | test(server): cubrir el listado de mecanicos activos
+85f55a6 | 2026-10-12 | feat(client): agregar el alcance de Mis ordenes para el rol mecanico
+9281b9c | 2026-10-12 | feat(client): agregar la asignacion de mecanico en la ficha de la orden
+3add4f8 | 2026-10-12 | test(client): cubrir el alcance por rol y la asignacion de mecanico
+e922e8c | 2026-10-12 | docs(specs): marcar las tareas T046 a T049 del sprint 2
+2c2f640 | 2026-10-12 | test(service-orders): cubrir el contenido de la orden en contrato e integracion
+5d92245 | 2026-10-12 | feat(service-orders): registrar diagnostico, servicios, repuestos y recomendaciones
+8e724d5 | 2026-10-12 | feat(client): registrar diagnostico, servicios, repuestos y recomendaciones en la ficha
+f52a1e9 | 2026-10-12 | test(client): cubrir el contenido de la orden y el borrador en la ficha de detalle
+6ebd826 | 2026-10-12 | docs(specs): marcar las tareas T050 a T060 del sprint 2
+762de9b | 2026-10-12 | test(service-orders): cubrir la maquina de estados y la transicion de estado
+8b770f4 | 2026-10-12 | feat(service-orders): agregar la transicion de estados con historial y fecha de entrega
+6a26970 | 2026-10-12 | feat(client): agregar las acciones de estado y el historial en la ficha de la orden
+f12e8c8 | 2026-10-12 | test(client): cubrir las acciones de estado por rol y el historial de cambios
+d688dcb | 2026-10-12 | docs(specs): marcar las tareas T061 a T068 del sprint 2
+29fdde1 | 2026-10-12 | feat(client): agregar el panel de recepcion con citas del dia y ordenes abiertas
+532c98e | 2026-10-12 | test(client): cubrir el panel de recepcion con citas, ordenes y estados vacios
+8a43998 | 2026-10-12 | docs(specs): marcar las tareas T069 a T071 del sprint 2
+af3a9d4 | 2026-10-12 | docs(specs): agregar el reporte final de implementacion del sprint 2
+5ad74a6 | 2026-10-12 | docs(project): marcar el checklist del sprint 2 en la guia de spec kit
+f5776ba | 2026-10-12 | docs(specs): marcar las tareas T072 a T079 del sprint 2
+81e9df4 | 2026-10-13 | docs(specs): registrar las aclaraciones del clarify del sprint 3
+d98328a | 2026-10-13 | feat(database): agregar migracion y datos de ejemplo del sprint 3
+15c92a0 | 2026-10-13 | feat(server): agregar modelos del sprint 3
+4d8d7c4 | 2026-10-13 | feat(server): agregar el endpoint del historial del vehículo
+de38e27 | 2026-10-13 | feat(client): agregar la pantalla del historial del vehículo
+5b8be64 | 2026-10-13 | test(client): cubrir la pantalla del historial del vehículo
+8c0ebeb | 2026-10-13 | test(server): cubrir el kilometraje del servicio con el historial
+bb84d20 | 2026-10-13 | test(client): cubrir el kilometraje en el historial y el formulario
+3d29430 | 2026-10-13 | test(server): cubrir los mantenimientos preventivos
+39c85f2 | 2026-10-13 | feat(server): agregar el api de mantenimientos preventivos
+6550e50 | 2026-10-13 | feat(client): agregar el formulario de mantenimientos preventivos
+3c04f5c | 2026-10-13 | test(client): cubrir el formulario de mantenimientos preventivos
+f26b0c3 | 2026-10-13 | test(server): cubrir el listado de mantenimientos con sus filtros
+366532c | 2026-10-13 | docs(specs): agregar los documentos de diseño del sprint 3
+7601271 | 2026-10-13 | feat(client): agregar la lista de mantenimientos preventivos
+6def511 | 2026-10-13 | style(client): limpiar avisos de análisis del historial y del servicio de mantenimientos
+3bbe062 | 2026-10-13 | test(client): cubrir la lista de mantenimientos con estados, filtros y vacío
+9df4658 | 2026-10-13 | docs(specs): marcar las tareas T038 a T040 del sprint 3
+a18df4d | 2026-10-13 | test(server): cubrir el catálogo de refacciones con sus permisos
+1af9842 | 2026-10-13 | feat(server): agregar el api del catalogo de refacciones
+c0262d5 | 2026-10-13 | feat(client): agregar el inventario de refacciones
+bcdfb05 | 2026-10-13 | test(client): cubrir el inventario de refacciones y su formulario
+3f3c292 | 2026-10-13 | docs(specs): marcar las tareas T041 a T054 del sprint 3
+b37cb60 | 2026-10-13 | test(server): cubrir la búsqueda de refacciones y su historial de movimientos
+86d39b1 | 2026-10-13 | feat(server): agregar la consulta de stock y el historial de movimientos de inventario
+6f1dce8 | 2026-10-13 | feat(client): agregar el detalle de la refacción con su historial de movimientos
+1d5d198 | 2026-10-13 | test(client): cubrir el detalle de la refacción y su lista de movimientos
+26cc23c | 2026-10-13 | docs(specs): marcar las tareas T055 a T058 del sprint 3
+17c028b | 2026-10-13 | test(server): cubrir el alta y el retiro de refacciones con control de stock
+1a7317f | 2026-10-13 | feat(server): agregar las refacciones de catálogo a las órdenes con su movimiento de stock
+133a92e | 2026-10-13 | docs(specs): marcar las tareas T059 a T063 del sprint 3
+ff3869b | 2026-10-13 | feat(client): agregar el selector de refacciones del catálogo en el detalle de la orden
+1eb973c | 2026-10-13 | test(client): cubrir el alta y el retiro de refacciones desde el detalle de la orden
+5d234d3 | 2026-10-13 | docs(specs): marcar las tareas T064 y T065 del sprint 3
+b403b86 | 2026-10-13 | test(server): cubrir el campo y el filtro de stock bajo en el inventario
+41984ac | 2026-10-13 | feat(server): agregar el filtro de alertas de stock bajo al listado de refacciones
+071ce4e | 2026-10-13 | docs(specs): marcar las tareas T066 y T067 del sprint 3
+5a20593 | 2026-10-13 | feat(client): agregar el semáforo y el filtro de alertas de stock bajo en el inventario
+07a9a72 | 2026-10-13 | test(client): cubrir las alertas y el filtro de stock bajo del inventario
+4459516 | 2026-10-13 | docs(specs): marcar las tareas T068 y T069 del sprint 3
+3060329 | 2026-10-13 | refactor(client): unificar la terminología visible de repuesto a refacción
+7b519a2 | 2026-10-13 | refactor(server): aclarar los comentarios heredados sobre las refacciones
+c15a4d6 | 2026-10-13 | docs(specs): marcar la tarea T070 del sprint 3
+bd8e102 | 2026-10-13 | docs(specs): marcar la tarea T071 del sprint 3
+a2b5158 | 2026-10-13 | docs(specs): marcar la tarea T072 del sprint 3
+f7658d3 | 2026-10-13 | docs(specs): marcar la tarea T073 del sprint 3
+a4ed22d | 2026-10-13 | docs(specs): marcar la tarea T074 del sprint 3
+194a98e | 2026-10-13 | docs(specs): agregar el reporte de implementacion del sprint 3
+bbd810f | 2026-10-13 | docs(specs): revalidar el checklist y marcar la tarea T075 del sprint 3
+6de51fc | 2026-10-13 | docs(project): marcar el checklist del sprint 3 en la guia de spec kit
+fcb2206 | 2026-10-13 | docs(specs): agregar la especificacion del sprint 4 de pagos, tickets y dashboard
+c6ccede | 2026-10-13 | docs(specs): registrar las aclaraciones del clarify del sprint 4
+9632c7a | 2026-10-13 | docs(specs): agregar el plan de implementacion del sprint 4
+33137b1 | 2026-10-14 | docs(specs): agregar las tareas del sprint 4
+7bbb9e1 | 2026-10-14 | feat(server): registrar pagos de ordenes con anulacion y entrega condicionada
+a7679ba | 2026-10-14 | test(server): cubrir el cobro de ordenes, la anulacion y la entrega con pago
+70269a4 | 2026-10-14 | docs(specs): documentar el endpoint de total de la orden para el cobro
+8f6828d | 2026-10-14 | feat(server): exponer el total y el desglose de la orden para el cobro
+025c912 | 2026-10-14 | test(server): cubrir el total y el desglose de la orden
+3097a2b | 2026-10-14 | feat(client): agregar el cobro de ordenes con desglose y bloque de pagos
+34b9faa | 2026-10-14 | test(client): cubrir el formulario de pago y el bloque de cobro
+a665277 | 2026-10-14 | docs(specs): marcar las tareas de la us1 como completadas
+43dee3c | 2026-10-14 | feat(server): validar el metodo de pago requerido con mensaje propio
+b96c314 | 2026-10-14 | test(server): cubrir el registro con cada metodo de pago
+5debac2 | 2026-10-14 | test(client): cubrir las etiquetas de los metodos de pago
+9a71ef0 | 2026-10-14 | docs(specs): marcar las tareas de la us2 como completadas
+62f727c | 2026-10-14 | feat(server): integrar el cobro mercadopago con confirmacion manual
+0efeb11 | 2026-10-14 | test(server): cubrir el flujo de mercadopago y su confirmacion
+39c5b7d | 2026-10-14 | feat(client): mostrar el cobro mercadopago pendiente con sus acciones
+038378c | 2026-10-14 | test(client): cubrir el flujo de mercadopago en flutter
+352db81 | 2026-10-14 | docs(specs): marcar las tareas de la us3 como completadas
+099223f | 2026-10-14 | feat(server): generar tickets de servicio con folio consecutivo
+a0edd17 | 2026-10-14 | test(server): cubrir la generacion y consulta de tickets
+ea0dc54 | 2026-10-14 | feat(client): mostrar el ticket de servicio imprimible
+3773d75 | 2026-10-14 | test(client): cubrir el ticket de servicio y sus botones
+1bcf2e7 | 2026-10-14 | docs(specs): marcar las tareas de la us4 como completadas
+9fe0c13 | 2026-10-14 | feat(server): agregar el panel de control solo para administracion
+a58a2b0 | 2026-10-14 | test(server): cubrir los contadores del panel de control
+e342a55 | 2026-10-14 | feat(client): agregar el panel de control solo para administradores
+8d524ad | 2026-10-14 | test(client): cubrir el panel de control y su seccion de navegacion
+bd8d8b7 | 2026-10-14 | docs(specs): marcar las tareas de la us5 como completadas
+8d85d29 | 2026-10-14 | feat(server): agregar los bloques operativos al panel de control
+315167f | 2026-10-14 | test(server): cubrir citas, mantenimientos y alertas del panel
+35cbbf8 | 2026-10-14 | feat(client): ampliar el panel con citas, mantenimientos y alertas
+020d44b | 2026-10-14 | test(client): cubrir los bloques operativos del panel
+0f565a5 | 2026-10-14 | docs(specs): marcar las tareas de la us6 como completadas
+51dc6eb | 2026-10-14 | docs(server): documentar las variables de Mercado Pago en el ejemplo de entorno
+86f158c | 2026-10-14 | docs(specs): cerrar las tareas del polish y agregar el reporte del sprint
+c6e3475 | 2026-10-14 | fix(client): expandir las tablas de listado al ancho completo con columnas fluidas
+e005f3e | 2026-10-14 | fix(client): abrir los formularios de edicion al tocar el lapiz
+4724863 | 2026-10-18 | docs(specs): reescribir los requisitos funcionales del sprint 1 en formato EARS

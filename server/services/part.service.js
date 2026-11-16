@@ -30,9 +30,15 @@ function isLowStock(part) {
   return part.stockMin > 0 && part.stockCurrent <= part.stockMin;
 }
 
+// Sprint 5 (FR-024, FR-025, R-10): precios por rol. La clave que un rol no
+// puede ver se OMITE (no se manda null). Denegar por defecto: sin rol, sin
+// precios.
+const ROLES_PRECIO_COMPRA = new Set(['ADMIN']);
+const ROLES_PRECIO_VENTA = new Set(['ADMIN', 'RECEPTIONIST']);
+
 // Mapeo al formato del contrato (claves en español) con stockBajo calculado.
-function toApi(part) {
-  return {
+function toApi(part, role) {
+  const respuesta = {
     id: part.id,
     codigo: part.code,
     nombre: part.name,
@@ -41,10 +47,32 @@ function toApi(part) {
     stockActual: part.stockCurrent,
     stockMinimo: part.stockMin,
     stockBajo: isLowStock(part),
-    precioCompra: part.purchasePrice,
-    precioVenta: part.salePrice,
-    activa: part.isActive,
   };
+  if (ROLES_PRECIO_COMPRA.has(role)) respuesta.precioCompra = part.purchasePrice;
+  if (ROLES_PRECIO_VENTA.has(role)) respuesta.precioVenta = part.salePrice;
+  respuesta.activa = part.isActive;
+  return respuesta;
+}
+
+// El alta y la edición son solo de ADMIN (FR-002): responden con sus precios.
+const ROL_ESCRITURA = 'ADMIN';
+
+// FR-004, D-07: si el precio de venta es menor que el de compra, la
+// operación se guarda igual y la respuesta agrega la advertencia.
+function conAdvertencias(respuesta, part) {
+  const { purchasePrice, salePrice } = part;
+  if (purchasePrice != null && salePrice != null && salePrice < purchasePrice) {
+    return {
+      ...respuesta,
+      advertencias: [
+        {
+          codigo: 'PRECIO_VENTA_MENOR_A_COMPRA',
+          mensaje: 'El precio de venta es menor que el precio de compra',
+        },
+      ],
+    };
+  }
+  return respuesta;
 }
 
 function normalizarPaginacion(filters) {
@@ -56,7 +84,7 @@ function normalizarPaginacion(filters) {
   return { page, perPage };
 }
 
-export async function list(filters) {
+export async function list(filters, role) {
   const { page, perPage } = normalizarPaginacion(filters);
   const { rows, total } = await listParts({
     search: filters.buscar,
@@ -69,19 +97,19 @@ export async function list(filters) {
   });
   const paginas = Math.max(1, Math.ceil(total / perPage));
   return {
-    elementos: rows.map(toApi),
+    elementos: rows.map((part) => toApi(part, role)),
     pagina: page,
     paginas,
     total,
   };
 }
 
-export async function getById(id) {
+export async function getById(id, role) {
   const part = await findById(id);
   if (!part) {
     throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
   }
-  return toApi(part);
+  return toApi(part, role);
 }
 
 // mysql2 devuelve DATETIME como objeto Date; el contrato history/parts pide
@@ -223,7 +251,7 @@ export async function create(data, user) {
 
     await connection.commit();
     const part = await findById(created.id);
-    return toApi(part);
+    return conAdvertencias(toApi(part, ROL_ESCRITURA), part);
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -249,7 +277,7 @@ export async function update(id, data) {
       data.precioCompra !== undefined ? data.precioCompra : current.purchasePrice,
     salePrice: data.precioVenta !== undefined ? data.precioVenta : current.salePrice,
   });
-  return toApi(updated);
+  return conAdvertencias(toApi(updated, ROL_ESCRITURA), updated);
 }
 
 // Baja sin borrado (FR-019): su historial de uso y sus movimientos se

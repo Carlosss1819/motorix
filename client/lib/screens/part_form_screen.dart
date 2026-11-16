@@ -10,6 +10,10 @@ import '../utils/messages.dart';
 import '../utils/validators.dart';
 import '../widgets/common_views.dart';
 
+/// Aviso D-07 (FR-004): la refacción se guardó con venta menor que compra.
+const String kAvisoVentaMenorACompra =
+    'Se guardó. El precio de venta es menor que el precio de compra';
+
 /// Argumentos de la ruta del formulario de refacción.
 class PartFormArgs {
   const PartFormArgs({this.refaccion});
@@ -105,8 +109,9 @@ class _PartFormScreenState extends State<PartFormScreen> {
     final PartsProvider provider = context.read<PartsProvider>();
     try {
       final Part? actual = widget.args.refaccion;
+      final Part guardada;
       if (actual == null) {
-        await provider.create(
+        guardada = await provider.create(
           codigo: _codigoController.text.trim(),
           nombre: _nombreController.text.trim(),
           categoria: _categoriaController.text.trim(),
@@ -119,7 +124,7 @@ class _PartFormScreenState extends State<PartFormScreen> {
           precioVenta: _decimal(_precioVentaController),
         );
       } else {
-        await provider.update(
+        guardada = await provider.update(
           id: actual.id,
           nombre: _nombreController.text.trim(),
           categoria: _categoriaController.text.trim(),
@@ -136,14 +141,22 @@ class _PartFormScreenState extends State<PartFormScreen> {
         return;
       }
       setState(() => _saving = false);
+      final MotorixColors colors = context.motorixColors;
+      // D-07 (FR-004): el guardado no se bloquea; si el precio de venta quedó
+      // menor que el de compra, se avisa con el token `warning`.
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            actual == null
-                ? 'Refacción registrada en el inventario.'
-                : 'Refacción actualizada correctamente.',
-          ),
-        ),
+        guardada.ventaMenorACompra
+            ? SnackBar(
+                backgroundColor: colors.warning,
+                content: const Text(kAvisoVentaMenorACompra),
+              )
+            : SnackBar(
+                content: Text(
+                  actual == null
+                      ? 'Refacción registrada en el inventario.'
+                      : 'Refacción actualizada correctamente.',
+                ),
+              ),
       );
       Navigator.pop(context, true);
     } on ApiException catch (e) {
@@ -340,10 +353,7 @@ class _PartFormScreenState extends State<PartFormScreen> {
                               ),
                             ),
                             validator: (String? value) =>
-                                Validators.optionalNonNegativeNumber(
-                              value,
-                              'el precio de compra',
-                            ),
+                                Validators.price(value, 'el precio de compra'),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.lg),
@@ -363,10 +373,7 @@ class _PartFormScreenState extends State<PartFormScreen> {
                               ),
                             ),
                             validator: (String? value) =>
-                                Validators.optionalNonNegativeNumber(
-                              value,
-                              'el precio de venta',
-                            ),
+                                Validators.price(value, 'el precio de venta'),
                           ),
                         ),
                       ],

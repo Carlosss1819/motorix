@@ -32,6 +32,12 @@ const toNumber = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+// Entero mayor que 0; cualquier otro valor usa el de defecto.
+const toPositiveInt = (value, fallback) => {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 export const config = {
   env: process.env.NODE_ENV ?? 'development',
   port: toNumber(process.env.PORT, 3000),
@@ -58,5 +64,8 @@ export const config = {
   payments: {
     mpAccessToken: process.env.MP_ACCESS_TOKEN ?? '',
     mpPublicUrl: process.env.MP_PUBLIC_URL ?? 'http://localhost:3000',
+    // Sprint 5 (FR-037, R-09): horas de vigencia de las preferencias nuevas
+    // de Mercado Pago. Entero > 0; 24 por defecto.
+    mpPreferenciaVigenciaHoras: toPositiveInt(process.env.MP_PREFERENCIA_VIGENCIA_HORAS, 24),
   },
 };

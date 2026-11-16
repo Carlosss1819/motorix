@@ -126,3 +126,16 @@ export async function lockStockForUpdate(connection, id) {
   );
   return rows[0] ? rows[0].stock_current : null;
 }
+
+// Sprint 5 (FR-006, R-07): bloquea la fila de la refacción y devuelve su stock
+// y su precio de venta vigentes (lectura con candado, así que es el valor más
+// reciente). Se llama DESPUÉS de `lockServiceOrderForUpdate`: primero la orden
+// y después las refacciones.
+export async function lockPartForUpdate(connection, id) {
+  const [rows] = await connection.execute(
+    'SELECT stock_current, sale_price FROM parts WHERE id = ? FOR UPDATE',
+    [id],
+  );
+  if (!rows[0]) return null;
+  return { stockCurrent: rows[0].stock_current, salePrice: rows[0].sale_price };
+}

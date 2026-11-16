@@ -90,6 +90,11 @@ Ticket ticketDePrueba({
     kilometraje: 84500,
   ),
   List<TicketServiceLine>? servicios,
+  bool formatoAnterior = false,
+  bool desgloseNoCoincide = false,
+  String? nota,
+  bool pagoAnulado = false,
+  bool vigente = true,
 }) =>
     Ticket(
       id: id,
@@ -123,4 +128,10 @@ Ticket ticketDePrueba({
       metodoPago: metodoPago,
       estadoPago: estadoPago,
       fecha: fecha,
+      formatoVersion: formatoAnterior ? 1 : 2,
+      formatoAnterior: formatoAnterior,
+      desgloseNoCoincide: desgloseNoCoincide,
+      nota: nota,
+      pagoAnulado: pagoAnulado,
+      vigente: vigente,
     );

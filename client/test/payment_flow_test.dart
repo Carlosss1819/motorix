@@ -22,6 +22,7 @@ import 'package:motorix_client/providers/service_orders_provider.dart';
 import 'package:motorix_client/screens/payment_form_screen.dart';
 import 'package:motorix_client/screens/service_order_detail_screen.dart';
 import 'package:motorix_client/services/api_client.dart';
+import 'package:motorix_client/services/payments_service.dart';
 import 'package:motorix_client/services/service_orders_service.dart';
 import 'package:motorix_client/utils/app_theme.dart';
 
@@ -365,6 +366,58 @@ void main() {
 
         expect(find.text('Cobro y pago'), findsNothing);
         expect(find.byKey(const Key('boton-registrar-pago')), findsNothing);
+      },
+    );
+  });
+
+  // -------------------------------------------------------------------------
+  // Sprint 5 (D-04, FR-016): al confirmar un cobro Mercado Pago cuyo importe
+  // ya no coincide, el servidor responde 409 IMPORTE_DESFASADO y la pantalla
+  // muestra un diálogo con las cifras y el recordatorio del panel.
+  // -------------------------------------------------------------------------
+  group('Confirmación con importe desfasado (Sprint 5)', () {
+    testWidgets(
+      'muestra_el_dialogo_con_importe_total_diferencia_y_recordatorio',
+      (WidgetTester tester) async {
+        final FakePaymentsService fake = FakePaymentsService(
+          total: _totalDePrueba(),
+          pagos: <Payment>[
+            pagoDePrueba(
+              id: 21,
+              monto: 1390,
+              metodo: 'MERCADO_PAGO',
+              estado: 'PENDIENTE',
+              referenciaExterna: 'SIM-MOT-7-21',
+              modoPasarela: 'simulado',
+            ),
+          ],
+          errorConfirmacion: ImporteDesfasadoException(
+            'El importe del pago (1390.00) ya no coincide con el total de la '
+            'orden (1090.00); el pago se canceló.',
+            importePago: 1390,
+            totalActual: 1090,
+            diferencia: 300,
+          ),
+        );
+        await pumpDetalle(tester, service: fake);
+
+        await tester.tap(find.byKey(const Key('aprobar-21')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Confirmar'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('El importe del pago ya no coincide'), findsOneWidget);
+        expect(find.text('Importe del pago: \$1,390.00'), findsOneWidget);
+        expect(find.text('Total actual de la orden: \$1,090.00'), findsOneWidget);
+        expect(find.text('Diferencia: \$300.00'), findsOneWidget);
+        expect(
+          find.textContaining('revisa en el panel de Mercado Pago'),
+          findsOneWidget,
+        );
+
+        await tester.tap(find.widgetWithText(FilledButton, 'Entendido'));
+        await tester.pumpAndSettle();
+        expect(find.text('El importe del pago ya no coincide'), findsNothing);
       },
     );
   });

@@ -5,7 +5,12 @@ import 'package:http/http.dart' as http;
 /// Error de la API con un mensaje claro en español, listo para mostrar al
 /// usuario. Nunca contiene trazas internas.
 class ApiException implements Exception {
-  ApiException(this.mensaje, {this.codigo, this.statusCode});
+  ApiException(
+    this.mensaje, {
+    this.codigo,
+    this.statusCode,
+    this.detalles = const <String, dynamic>{},
+  });
 
   /// Mensaje en español, apto para la interfaz.
   final String mensaje;
@@ -15,6 +20,10 @@ class ApiException implements Exception {
 
   /// Código HTTP de la respuesta (si lo hay).
   final int? statusCode;
+
+  /// Campos de negocio adicionales del error (por ejemplo, las cifras de
+  /// `IMPORTE_DESFASADO` del Sprint 5).
+  final Map<String, dynamic> detalles;
 
   bool get isUnauthorized => statusCode == 401;
 
@@ -158,9 +167,11 @@ class ApiClient {
 
     String mensaje = _defaultMessageFor(status);
     String? codigo;
+    Map<String, dynamic> detalles = const <String, dynamic>{};
     if (data is Map<String, dynamic>) {
       final Object? error = data['error'];
       if (error is Map<String, dynamic>) {
+        detalles = error;
         if (error['mensaje'] is String) {
           mensaje = error['mensaje'] as String;
         }
@@ -174,7 +185,12 @@ class ApiClient {
       onUnauthorized?.call();
     }
 
-    throw ApiException(mensaje, codigo: codigo, statusCode: status);
+    throw ApiException(
+      mensaje,
+      codigo: codigo,
+      statusCode: status,
+      detalles: detalles,
+    );
   }
 
   static String _defaultMessageFor(int status) {

@@ -22,6 +22,8 @@ async function crearRefaccion({ stockInicial, stockMinimo }) {
       codigo: `ALR-${suffix}-${contador}`,
       nombre: `Alerta de stock ${suffix} ${contador}`,
       categoria: 'Frenos',
+      // Sprint 5 (FR-005): una refacción sin precio de venta ya no se agrega a una orden.
+      precioVenta: 100,
       stockInicial,
       stockMinimo,
     });

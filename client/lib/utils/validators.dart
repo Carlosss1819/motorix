@@ -121,6 +121,33 @@ abstract final class Validators {
     return null;
   }
 
+  /// Precio máximo de una refacción o de la mano de obra (FR-003, FR-032).
+  static const double precioMaximo = 999999.99;
+
+  /// Precio opcional con la misma regla que el servidor (Sprint 5, R-13):
+  /// numérico, mayor o igual que cero, máximo dos decimales y hasta
+  /// 999,999.99. El vacío se acepta (el precio es opcional).
+  static String? price(String? value, String campo) {
+    final String text = value?.trim() ?? '';
+    if (text.isEmpty) {
+      return null;
+    }
+    final double? parsed = double.tryParse(text);
+    if (parsed == null || !parsed.isFinite) {
+      return 'El campo $campo debe ser un número.';
+    }
+    if (parsed < 0) {
+      return 'El campo $campo no puede ser negativo.';
+    }
+    if (!RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(text)) {
+      return 'El campo $campo debe tener máximo 2 decimales.';
+    }
+    if (parsed > precioMaximo) {
+      return 'El campo $campo no puede ser mayor a 999,999.99.';
+    }
+    return null;
+  }
+
   /// Fecha opcional con formato `AAAA-MM-DD`; el vacío se acepta.
   static String? optionalFecha(String? value) {
     final String text = value?.trim() ?? '';

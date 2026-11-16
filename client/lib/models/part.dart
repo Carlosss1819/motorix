@@ -15,7 +15,14 @@ class Part {
     required this.precioCompra,
     required this.precioVenta,
     required this.activa,
+    this.advertencias = const <String>[],
+    this.conPrecioCompra = true,
+    this.conPrecioVenta = true,
   });
+
+  /// Código de la advertencia de FR-004 (D-07): se guardó, pero el precio de
+  /// venta es menor que el de compra.
+  static const String precioVentaMenorACompra = 'PRECIO_VENTA_MENOR_A_COMPRA';
 
   factory Part.fromJson(Map<String, dynamic> json) => Part(
         id: asInt(json['id']),
@@ -31,6 +38,12 @@ class Part {
         precioCompra: asNumOrNull(json['precioCompra']),
         precioVenta: asNumOrNull(json['precioVenta']),
         activa: asBool(json['activa'], true),
+        advertencias: asList(json['advertencias'])
+            .map((dynamic item) => asString(asMap(item)['codigo']))
+            .toList(),
+        // Sprint 5 (R-10): el servidor omite la clave si el rol no la ve.
+        conPrecioCompra: json.containsKey('precioCompra'),
+        conPrecioVenta: json.containsKey('precioVenta'),
       );
 
   final int id;
@@ -45,11 +58,29 @@ class Part {
   final bool stockBajo;
 
   /// DECIMAL del backend: puede venir como texto (por ejemplo `"180.00"`).
+  /// Sprint 5 (FR-024, FR-025): el servidor omite el campo cuando el rol no
+  /// puede verlo, así que también es `null` en ese caso.
   final num? precioCompra;
   final num? precioVenta;
 
   /// La baja es solo de catálogo (FR-019): su historial persiste.
   final bool activa;
+
+  /// Códigos de advertencia de la respuesta de alta o edición (FR-004).
+  final List<String> advertencias;
+
+  bool get ventaMenorACompra => advertencias.contains(precioVentaMenorACompra);
+
+  /// `true` si la respuesta trajo la clave (aunque su valor sea null).
+  final bool conPrecioCompra;
+  final bool conPrecioVenta;
+}
+
+/// Precios de refacción visibles por rol (Sprint 5, FR-024, FR-025):
+/// compra solo ADMIN; venta ADMIN y RECEPTIONIST; ninguno al mecánico.
+abstract final class PartPriceVisibility {
+  static bool compra(String? rol) => rol == 'ADMIN';
+  static bool venta(String? rol) => rol == 'ADMIN' || rol == 'RECEPTIONIST';
 }
 
 /// Página paginada del listado de refacciones (R-10).

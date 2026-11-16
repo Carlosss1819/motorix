@@ -1,0 +1,19 @@
+Recorrido del quickstart (secciones 4 a 6) por API contra motorix_v2 - 2026-11-16
+Servidor local en el puerto 3001, pasarela de Mercado Pago simulada (sin MP_ACCESS_TOKEN).
+Los pasos de interfaz (pantallas de Flutter) y el cronometraje de SC-006 quedan pendientes de Carlos.
+
+OK    1 alta con venta < compra: 201 advertencia=PRECIO_VENTA_MENOR_A_COMPRA
+OK    1 rechazo 3 decimales y tope: 400 / 400
+OK    2 mecánico agrega refacción sin ver precios: alta=201 claves línea=id,descripcion,cantidad mano de obra=750.00
+OK    3 orden terminada: 200 TERMINADO
+OK    4 total exacto al centavo: total=1311 refacciones=561
+OK    5 pago: malo=MONTO_NO_COINCIDE bueno=201
+OK    6 ticket: 201 folio=T000003-2026 formato=2
+OK    7 cambio de precio en catálogo: 200 venta=400
+OK    8 nada cambia: total=1311 pago=1311 ticket=1311
+OK    9 ticket de ejemplo con «sin precio registrado»: folio=T000001-2026 avisos=1 formatoAnterior=true
+OK    extra mecánico 403: 403/403/403
+OK    extra inmovilización y ticket nuevo: bloqueo=ORDEN_PAGADA anulación=200 alta=201 pago2=201 ticket nuevo=T000004-2026 viejo pagoAnulado=true
+OK    extra D-04: cobro MP=201 (simulado) confirmación=IMPORTE_DESFASADO diferencia=100 pago nuevo=201
+
+0 fallas de 13 comprobaciones

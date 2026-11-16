@@ -1,76 +1,91 @@
-// Cálculo del total de una orden al momento de cobrar (Sprint 4, FR-015).
-// Módulo puro al estilo de maintenance-status.js y order-transitions.js:
-// recibe los datos armados por el modelo y devuelve el total y su desglose,
-// sin tocar la base de datos, para probarlo en unidad.
-// Fuente de verdad: specs/004-pagos-tickets-dashboard/research.md (D2, D2.1).
+// Cálculo del total de una orden (Sprint 4, FR-015; reescrito en el Sprint 5,
+// FR-008, FR-009, R-06). Módulo puro: recibe los datos armados por el modelo
+// y devuelve el total y su desglose, sin tocar la base de datos.
 //
-// Reglas (aclaración 2 del 2026-10-13):
-// - Mano de obra: suma `order_labor.price`, con NULL tratado como 0 (el precio
-//   es opcional desde el Sprint 2).
-// - Refacciones: suma `parts.sale_price × order_parts.quantity` de las filas
-//   con `part_id` (precio vigente del catálogo al cobrar).
-// - Filas heredadas sin `part_id` (Sprint 2) se valoran en 0 y llevan el aviso
-//   «sin precio registrado» en el desglose (D2.1); su cantidad sí se lista.
+// Reglas del Sprint 5:
+// - Todo se calcula en centavos enteros (`utils/money.js`), sin flotantes, y
+//   se convierte a dos decimales solo para responder.
+// - Mano de obra: suma `order_labor.price`, con NULL tratado como 0 y el aviso
+//   «sin precio registrado».
+// - Refacciones: `cantidad × precioUnitario`, donde `precioUnitario` es el
+//   precio CONGELADO de la línea (`order_parts.unit_price`), no el del
+//   catálogo. Una línea sin `partId` (heredada) o sin precio vale 0 y lleva el
+//   aviso «sin precio registrado».
+// - El total es mano de obra + refacciones; no hay un precio de servicio aparte
+//   (FR-009).
+// - Si algún día la cantidad no es entera, el importe se redondea al centavo
+//   hacia arriba desde 0.5.
+// La forma de la respuesta es la del Sprint 4.
+import { toCents, fromCents } from './money.js';
 
-const AVISO_SIN_PRECIO = 'sin precio registrado';
+export const AVISO_SIN_PRECIO = 'sin precio registrado';
 
-// Redondea a dos decimales para que la suma no acumre error de flotantes
-// (los montos se guardan como DECIMAL(10,2)).
-function redondear(valor) {
-  return Math.round((valor + Number.EPSILON) * 100) / 100;
+// Tope del total de una orden: 99,999,999.99 (FR-008).
+export const LIMITE_TOTAL_CENTAVOS = 9999999999;
+
+export function excedeLimite(totalCentavos) {
+  return totalCentavos > LIMITE_TOTAL_CENTAVOS;
 }
 
-// `manoDeObra`: [{ id, descripcion?, precio }] con precio posiblemente null.
-// `refacciones`: [{ id?, descripcion, cantidad, partId, precioUnitario }] con
-// `precioUnitario` = `sale_price` vigente del catálogo (null si no existe).
-export function calcularTotal({ manoDeObra = [], refacciones = [] } = {}) {
-  let subtotalManoDeObra = 0;
+function importeLinea(cantidad, precioCentavos) {
+  const importe = cantidad * precioCentavos;
+  return Number.isInteger(importe) ? importe : Math.round(importe);
+}
+
+// Igual que `calcularTotal`, pero también devuelve los centavos para que los
+// servicios comparen y apliquen el tope sin convertir de nuevo.
+export function calcularTotalCentavos({ manoDeObra = [], refacciones = [] } = {}) {
+  let manoDeObraCentavos = 0;
   const desgloseManoDeObra = [];
 
   for (const partida of manoDeObra) {
-    const precio = partida.precio ?? 0;
-    subtotalManoDeObra += precio;
+    const precio = toCents(partida.precio) ?? 0;
+    manoDeObraCentavos += precio;
     desgloseManoDeObra.push({
       id: partida.id ?? null,
       descripcion: partida.descripcion ?? null,
-      precio: redondear(precio),
+      precio: fromCents(precio),
       aviso: partida.precio == null ? AVISO_SIN_PRECIO : null,
     });
   }
 
-  let subtotalRefacciones = 0;
+  let refaccionesCentavos = 0;
   const desgloseRefacciones = [];
 
   for (const fila of refacciones) {
     const cantidad = fila.cantidad ?? 0;
-    // Fila heredada sin catálogo: valor 0 con aviso (D2.1); nunca usa un precio
-    // capturado en la fila, porque la tabla no guarda precio.
-    const valorada = fila.partId != null;
-    const precioUnitario = valorada ? (fila.precioUnitario ?? 0) : 0;
-    const subtotal = redondear(precioUnitario * cantidad);
-    subtotalRefacciones += subtotal;
+    const valorada = fila.partId != null && fila.precioUnitario != null;
+    const precio = valorada ? toCents(fila.precioUnitario) : 0;
+    const importe = importeLinea(cantidad, precio);
+    refaccionesCentavos += importe;
     desgloseRefacciones.push({
       id: fila.id ?? null,
       descripcion: fila.descripcion ?? null,
       cantidad,
-      precioUnitario: redondear(precioUnitario),
-      subtotal,
-      // Sin precio conocido (fila heredada sin catálogo o catálogo sin
-      // precio): el desglose avisa «sin precio registrado» (D2.1).
-      aviso: !valorada || fila.precioUnitario == null ? AVISO_SIN_PRECIO : null,
+      precioUnitario: fromCents(precio),
+      subtotal: fromCents(importe),
+      aviso: valorada ? null : AVISO_SIN_PRECIO,
     });
   }
 
-  subtotalManoDeObra = redondear(subtotalManoDeObra);
-  subtotalRefacciones = redondear(subtotalRefacciones);
-
+  const totalCentavos = manoDeObraCentavos + refaccionesCentavos;
   return {
-    subtotalManoDeObra,
-    subtotalRefacciones,
-    total: redondear(subtotalManoDeObra + subtotalRefacciones),
-    desglose: {
-      manoDeObra: desgloseManoDeObra,
-      refacciones: desgloseRefacciones,
+    totalCentavos,
+    resultado: {
+      subtotalManoDeObra: fromCents(manoDeObraCentavos),
+      subtotalRefacciones: fromCents(refaccionesCentavos),
+      total: fromCents(totalCentavos),
+      desglose: {
+        manoDeObra: desgloseManoDeObra,
+        refacciones: desgloseRefacciones,
+      },
     },
   };
+}
+
+// `manoDeObra`: [{ id, descripcion?, precio }] con precio posiblemente null.
+// `refacciones`: [{ id?, descripcion, cantidad, partId, precioUnitario }] con
+// `precioUnitario` = precio congelado de la línea (null si no tiene).
+export function calcularTotal(contenido = {}) {
+  return calcularTotalCentavos(contenido).resultado;
 }

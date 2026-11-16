@@ -45,6 +45,8 @@ async function crearRefaccion(stock = 5) {
       codigo: `INT-${suffix}-${contadorRefacciones}`,
       nombre: `Repuesto de integración ${suffix} ${contadorRefacciones}`,
       categoria: 'Frenos',
+      // Sprint 5 (FR-005): una refacción sin precio de venta ya no se agrega a una orden.
+      precioVenta: 100,
       stockInicial: stock,
       stockMinimo: 1,
     });

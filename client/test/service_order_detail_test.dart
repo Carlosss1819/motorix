@@ -750,4 +750,76 @@ void main() {
       },
     );
   });
+
+  // -------------------------------------------------------------------------
+  // Sprint 5 (US2, FR-025, FR-034): precio unitario congelado e importe de las
+  // refacciones solo para ADMIN y RECEPTIONIST, con doble condición (rol y
+  // campo presente), y «sin precio registrado» en las líneas sin precio.
+  // -------------------------------------------------------------------------
+  group('ServiceOrderDetailScreen — precios de las refacciones (Sprint 5)', () {
+    const List<Map<String, dynamic>> repuestosConPrecio = <Map<String, dynamic>>[
+      <String, dynamic>{
+        'id': 31,
+        'descripcion': 'Juego de pastillas',
+        'cantidad': 2,
+        'precioUnitario': 320,
+        'importe': 640,
+        'aviso': null,
+      },
+      <String, dynamic>{
+        'id': 32,
+        'descripcion': 'Filtro heredado',
+        'cantidad': 1,
+        'precioUnitario': null,
+        'importe': 0,
+        'aviso': 'sin precio registrado',
+      },
+    ];
+
+    for (final String rol in <String>[Rol.admin, Rol.receptionist]) {
+      testWidgets('$rol ve el precio unitario y el importe', (
+        WidgetTester tester,
+      ) async {
+        await pumpDetail(
+          tester,
+          rol: rol,
+          orden: _orden(repuestos: repuestosConPrecio),
+        );
+
+        expect(find.text('\$320.00 c/u · importe \$640.00'), findsOneWidget);
+        expect(find.text('sin precio registrado'), findsOneWidget);
+      });
+    }
+
+    testWidgets('el mecánico no ve precios aunque el campo viniera', (
+      WidgetTester tester,
+    ) async {
+      await pumpDetail(
+        tester,
+        rol: Rol.mechanic,
+        orden: _orden(repuestos: repuestosConPrecio),
+      );
+
+      expect(find.text('2 × Juego de pastillas'), findsOneWidget);
+      expect(find.textContaining('c/u'), findsNothing);
+      expect(find.text('sin precio registrado'), findsNothing);
+    });
+
+    testWidgets('sin los campos en la respuesta no se dibuja ningún precio', (
+      WidgetTester tester,
+    ) async {
+      await pumpDetail(
+        tester,
+        rol: Rol.admin,
+        orden: _orden(
+          repuestos: const <Map<String, dynamic>>[
+            <String, dynamic>{'id': 33, 'descripcion': 'Bujía', 'cantidad': 4},
+          ],
+        ),
+      );
+
+      expect(find.text('4 × Bujía'), findsOneWidget);
+      expect(find.textContaining('c/u'), findsNothing);
+    });
+  });
 }

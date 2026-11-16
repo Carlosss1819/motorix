@@ -102,6 +102,21 @@ export async function findServiceOrderById(id) {
   return mapOrder(rows[0]);
 }
 
+// Candado por orden (Sprint 5, R-07): bloquea la fila de la orden dentro de la
+// transacción de `connection`. Lo toman todas las operaciones que cambian el
+// cobro o el contenido cobrable (pagos, servicios, refacciones, estado y
+// tickets), así que sobre la MISMA orden se ejecutan una tras otra.
+// Orden de candados: PRIMERO la orden y DESPUÉS las refacciones
+// (`lockStockForUpdate`), para que dos operaciones nunca esperen en cruz.
+// Devuelve `{ id, status }` o `null` si la orden no existe.
+export async function lockServiceOrderForUpdate(connection, id) {
+  const [rows] = await connection.execute(
+    'SELECT id, status FROM service_orders WHERE id = ? FOR UPDATE',
+    [id],
+  );
+  return rows[0] ?? null;
+}
+
 // Orden derivada de una cita (FR-007): appointment_id es UNIQUE, así que como
 // mucho existe una fila. Se usa para impedir que una cita genere dos órdenes.
 export async function findOrderByAppointmentId(appointmentId) {
@@ -160,7 +175,10 @@ export async function createServiceOrder({
 
 // Actualiza los campos permitidos de la orden; se reutiliza en diagnóstico,
 // recomendaciones, asignación y transiciones de estado (historias 3 a 5).
-export async function updateServiceOrder(id, fields) {
+// Sprint 5: con `connection` actualiza dentro de la transacción que tiene el
+// candado de la orden (R-07) y NO relee la fila (devuelve null): el llamador
+// la lee después del commit.
+export async function updateServiceOrder(id, fields, connection = null) {
   const allowed = {
     visitReason: 'visit_reason',
     entryDate: 'entry_date',
@@ -181,19 +199,30 @@ export async function updateServiceOrder(id, fields) {
       values.push(fields[key]);
     }
   }
-  if (assignments.length === 0) return findServiceOrderById(id);
+  if (assignments.length === 0) return connection ? null : findServiceOrderById(id);
   values.push(id);
-  await query(`UPDATE service_orders SET ${assignments.join(', ')} WHERE id = ?`, values);
+  const sql = `UPDATE service_orders SET ${assignments.join(', ')} WHERE id = ?`;
+  if (connection) {
+    await connection.execute(sql, values);
+    return null;
+  }
+  await query(sql, values);
   return findServiceOrderById(id);
 }
 
 // Historial de cambios de estado (FR-015).
-export async function addStatusHistory({ serviceOrderId, fromStatus, toStatus, changedBy, note }) {
-  const result = await query(
-    `INSERT INTO order_status_history (service_order_id, from_status, to_status, changed_by, note)
-     VALUES (?, ?, ?, ?, ?)`,
-    [serviceOrderId, fromStatus ?? null, toStatus, changedBy, note ?? null],
-  );
+export async function addStatusHistory(
+  { serviceOrderId, fromStatus, toStatus, changedBy, note },
+  connection = null,
+) {
+  const sql = `INSERT INTO order_status_history (service_order_id, from_status, to_status, changed_by, note)
+     VALUES (?, ?, ?, ?, ?)`;
+  const params = [serviceOrderId, fromStatus ?? null, toStatus, changedBy, note ?? null];
+  if (connection) {
+    const [result] = await connection.execute(sql, params);
+    return result.insertId;
+  }
+  const result = await query(sql, params);
   return result.insertId;
 }
 

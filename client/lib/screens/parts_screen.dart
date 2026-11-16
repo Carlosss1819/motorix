@@ -38,6 +38,8 @@ class _PartsScreenState extends State<PartsScreen> {
   late final bool _puedeEscribir;
 
   String _lastQuery = '';
+  bool _veCompra = false;
+  bool _veVenta = false;
 
   @override
   void initState() {
@@ -46,6 +48,10 @@ class _PartsScreenState extends State<PartsScreen> {
     _parts = context.read<PartsProvider>();
     final String rol = context.read<AuthProvider>().user?.rol ?? '';
     _puedeEscribir = rol == Rol.admin;
+    // Sprint 5 (FR-024, FR-025): doble condición, el rol lo permite y el
+    // campo vino en la respuesta.
+    _veCompra = PartPriceVisibility.compra(rol);
+    _veVenta = PartPriceVisibility.venta(rol);
     _lastQuery = _shell.queryFor(SearchHints.parts);
     _shell.addListener(_onSearchChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -324,14 +330,14 @@ class _PartsScreenState extends State<PartsScreen> {
                         // Stock por debajo del mínimo en `danger` (DS).
                         color: part.stockBajo ? colors.danger : null,
                       ),
-                      if (part.precioCompra != null)
+                      if (_veCompra && part.precioCompra != null)
                         _buildMeta(
                           LucideIcons.arrowDownToLine,
                           'Compra: ${Formatters.money(part.precioCompra!)}',
                           colors,
                           textTheme,
                         ),
-                      if (part.precioVenta != null)
+                      if (_veVenta && part.precioVenta != null)
                         _buildMeta(
                           LucideIcons.arrowUpFromLine,
                           'Venta: ${Formatters.money(part.precioVenta!)}',
