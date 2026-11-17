@@ -1705,7 +1705,10 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                   if (order.fechaEntrega != null) ...<Widget>[
                     DetailRow(
                       label: 'Fecha de entrega',
-                      value: Formatters.date(order.fechaEntrega),
+                      // Fecha y hora local (Sprint 6, H-S6-07): el servidor la
+                      // manda como `AAAA-MM-DD HH:MM:SS`; antes llegaba en UTC
+                      // y `Formatters.date` la deformaba.
+                      value: _formatoFechaHora(order.fechaEntrega!),
                     ),
                   ],
                   if (order.notaCorreccionKilometraje.isNotEmpty) ...<Widget>[
@@ -1751,7 +1754,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                   DetailRow(
                     label: 'Nombre',
                     value: order.cliente,
-                    onTap: () => _goToClient(order.clienteId),
+                    // El mecánico no abre la ficha del cliente (H-S6-05).
+                    onTap: _esMecanico ? null : () => _goToClient(order.clienteId),
                   ),
                   DetailRow(
                     label: 'Teléfono',
@@ -1773,7 +1777,8 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                   DetailRow(
                     label: 'Vehículo',
                     value: order.vehiculo,
-                    onTap: () => _goToVehicle(order.vehiculoId),
+                    // Ni la del vehículo; sí su historial (botón de abajo).
+                    onTap: _esMecanico ? null : () => _goToVehicle(order.vehiculoId),
                   ),
                   DetailRow(label: 'Placas', value: order.placas),
                   const SizedBox(height: AppSpacing.sm),

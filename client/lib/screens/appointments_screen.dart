@@ -18,11 +18,23 @@ import '../widgets/status_chip.dart';
 import 'appointment_form_screen.dart';
 import 'service_order_form_screen.dart';
 
+/// Argumentos de la ruta de Citas: el día con el que se abre (Sprint 6).
+class AppointmentsArgs {
+  const AppointmentsArgs({this.fecha});
+
+  final String? fecha;
+}
+
 /// Lista de citas de recepción (US2/HU2): listado filtrado por día, con
 /// filtro de estado, búsqueda por placas o nombre del cliente y las acciones
 /// **Cancelar** y **Recibir** con confirmación (Principio VIII).
 class AppointmentsScreen extends StatefulWidget {
-  const AppointmentsScreen({super.key});
+  const AppointmentsScreen({super.key, this.fechaInicial});
+
+  /// Día con el que se abre la lista (`AAAA-MM-DD`), por ejemplo desde el
+  /// aviso «Cita de hoy» (Sprint 6, contrato de interfaz). Sin valor se
+  /// conserva el filtro actual.
+  final String? fechaInicial;
 
   @override
   State<AppointmentsScreen> createState() => _AppointmentsScreenState();
@@ -40,7 +52,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     super.initState();
     _shell = context.read<ShellProvider>();
     _citas = context.read<AppointmentsProvider>();
-    _fechaController = TextEditingController(text: _citas.fecha);
+    final String? fechaInicial = widget.fechaInicial;
+    final bool cambiarFecha = fechaInicial != null &&
+        fechaInicial.isNotEmpty &&
+        fechaInicial != _citas.fecha;
+    _fechaController = TextEditingController(
+      text: cambiarFecha ? fechaInicial : _citas.fecha,
+    );
     _lastQuery = _shell.queryFor(SearchHints.appointments);
     _estado = _citas.estado;
     _shell.addListener(_onSearchChanged);
@@ -48,7 +66,10 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       if (!mounted) {
         return;
       }
-      if (_lastQuery.isNotEmpty) {
+      if (cambiarFecha) {
+        // setFecha recarga la lista con el día del aviso.
+        _citas.setFecha(fechaInicial);
+      } else if (_lastQuery.isNotEmpty) {
         _citas.setBuscar(_lastQuery);
       } else if (_citas.status == LoadStatus.idle) {
         _citas.load();

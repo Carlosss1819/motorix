@@ -46,6 +46,44 @@ database/
 | 3 | `parts`, `inventory_movements`, `maintenance` |
 | 4 | `payments`, `tickets` |
 | 5 | Sin tablas nuevas. `order_parts.unit_price`, `tickets.content`, `tickets.format_version`, `payments.cancellation_reason`; la unicidad de `tickets` pasa de la orden al pago |
+| 6 | `notification_reads`, `client_notices` |
+
+## Sprint 6: migración 007 y seed 006
+
+- `007_notificaciones_internas.sql` (**solo tablas nuevas**, aditiva; no toca
+  tablas existentes). Los avisos **no se guardan**: se calculan al consultar.
+  - `notification_reads`: qué aviso leyó cada usuario. Clave tipo + objeto +
+    estado (`notice_key`, hasta 120 caracteres), única por usuario
+    (`uq_notification_reads_user_key`). Se borra en cascada con el usuario.
+  - `client_notices`: a qué cliente ya se le avisó, por hecho (`fact_key`
+    único, `uq_client_notices_fact`), con motivo (`VEHICULO_LISTO`,
+    `CITA_MANANA`, `MANT_PROXIMO`, `MANT_VENCIDO`), quién (`notified_by`) y
+    cuándo (`notified_at`).
+- `seeds/006_ejemplos_notificaciones.sql`: ids **60001 a 60099** en todas sus
+  tablas, con claves propias (cliente «[Sprint 6] Laura Méndez», placas
+  `NOT6-`, códigos `NOT-`, motivos que empiezan con «[Sprint 6]»). Genera un
+  aviso de cada tipo y los cuatro motivos de «Clientes por avisar».
+  - Las fechas son **relativas** (`CURDATE()`/`NOW()`) y se calculan al
+    cargar. **El día de la demostración vuelve a cargar el seed** (es
+    idempotente: `INSERT ... ON DUPLICATE KEY UPDATE` refresca fechas y
+    estados de sus filas sin duplicarlas):
+
+    ```powershell
+    ./database/scripts/aplicar-migraciones.ps1 -DbPassword '<contraseña>' -Seeds
+    ```
+
+  - La cita de hoy es a las 23:30 para que no pase a `NO_PRESENTADA` durante
+    la demostración.
+  - No borra nada: si marcas a la cliente como «avisada», ese registro se
+    queda; y si cambias el estado de una orden del seed, su historial nuevo
+    se conserva (la orden puede dejar de salir como detenida aunque recargues
+    el seed).
+
+Respaldo antes de aplicar la 007 en una base con datos (fuera del repositorio):
+
+```powershell
+mysqldump -u motorix_app -p --single-transaction --routines --no-tablespaces motorix_v2 > C:\Users\<usuario>\Documents\MotorixVer2\respaldos\respaldo-motorix_v2-antes-007.sql
+```
 
 ## Sprint 5: migraciones 005 y 006
 

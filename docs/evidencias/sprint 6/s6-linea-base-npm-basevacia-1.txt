@@ -1,0 +1,71 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit
+
+(node:32440) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30828) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13392) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30996) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31472) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13016) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7780) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:23212) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14080) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11580) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26872) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL tests/integration/tickets.test.js
+  ● los folios siguen el formato T000000-AAAA y son consecutivos (SC-003)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 9
+    Received: 10
+
+    [0m [90m 190 |[39m
+     [90m 191 |[39m   [36mconst[39m numero [33m=[39m (folio) [33m=>[39m [33mNumber[39m(folio[33m.[39mslice([35m1[39m[33m,[39m [35m7[39m))[33m;[39m
+    [31m[1m>[22m[39m[90m 192 |[39m   expect(numero(segundo[33m.[39mbody[33m.[39mfolio))[33m.[39mtoBe(numero(primero[33m.[39mbody[33m.[39mfolio) [33m+[39m [35m1[39m)[33m;[39m
+     [90m     |[39m                                      [31m[1m^[22m[39m
+     [90m 193 |[39m })[33m;[39m
+     [90m 194 |[39m
+     [90m 195 |[39m test([32m'regenerar el ticket devuelve el mismo registro y no lo duplica (HU4-2)'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (tests/integration/tickets.test.js:192:38)
+
+
+Summary of all failing tests
+FAIL tests/integration/tickets.test.js
+  ● los folios siguen el formato T000000-AAAA y son consecutivos (SC-003)
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 9
+    Received: 10
+
+    [0m [90m 190 |[39m
+     [90m 191 |[39m   [36mconst[39m numero [33m=[39m (folio) [33m=>[39m [33mNumber[39m(folio[33m.[39mslice([35m1[39m[33m,[39m [35m7[39m))[33m;[39m
+    [31m[1m>[22m[39m[90m 192 |[39m   expect(numero(segundo[33m.[39mbody[33m.[39mfolio))[33m.[39mtoBe(numero(primero[33m.[39mbody[33m.[39mfolio) [33m+[39m [35m1[39m)[33m;[39m
+     [90m     |[39m                                      [31m[1m^[22m[39m
+     [90m 193 |[39m })[33m;[39m
+     [90m 194 |[39m
+     [90m 195 |[39m test([32m'regenerar el ticket devuelve el mismo registro y no lo duplica (HU4-2)'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m
+
+      at Object.<anonymous> (tests/integration/tickets.test.js:192:38)
+
+
+Test Suites: 1 failed, 63 passed, 64 total
+Tests:       1 failed, 544 passed, 545 total
+Snapshots:   0 total
+Time:        14.268 s, estimated 45 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

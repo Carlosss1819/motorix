@@ -35,6 +35,7 @@ import {
   AVISO_SIN_PRECIO,
 } from '../utils/order-total.js';
 import { toCents, fromCents } from '../utils/money.js';
+import { toDbDateTimeLocal } from '../utils/dates.js';
 import { insertMovement } from '../models/inventory_movement.js';
 import { findById as findClientById } from '../models/client.js';
 import { findById as findVehicleById, refreshCurrentMileage } from '../models/vehicle.js';
@@ -61,9 +62,12 @@ function formatDate(value) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+// Fecha y hora LOCAL `AAAA-MM-DD HH:MM:SS`, como la guarda MySQL (Sprint 6,
+// H-S6-07). Antes era `toISOString()` (UTC): una entrega a las 21:00 en
+// UTC−6 salía con el día siguiente.
 function formatDateTime(value) {
   if (!value) return null;
-  return new Date(value).toISOString();
+  return toDbDateTimeLocal(value instanceof Date ? value : new Date(value));
 }
 
 function toApiList(order) {

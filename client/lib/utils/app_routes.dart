@@ -67,6 +67,9 @@ abstract final class Routes {
 
   /// Mi cuenta.
   static const String account = '/account';
+
+  /// Clientes por avisar (Sprint 6, US7): solo ADMIN y RECEPTIONIST.
+  static const String clientNotices = '/client-notices';
 }
 
 /// Ruta de Material que usa la duración de navegación del sistema de diseño

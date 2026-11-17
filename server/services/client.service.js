@@ -3,6 +3,7 @@
 import { listClients, findById, findByPhone, createClient, updateClient } from '../models/client.js';
 import { listByClient } from '../models/vehicle.js';
 import { notFound } from '../utils/errors.js';
+import { toIsoDate } from '../utils/dates.js';
 
 function toApi(client) {
   return {
@@ -11,7 +12,11 @@ function toApi(client) {
     telefono: client.phone,
     email: client.email ?? '',
     estado: client.status,
-    fechaRegistro: client.createdAt ? new Date(client.createdAt).toISOString().slice(0, 10) : null,
+    // Día LOCAL del alta (Sprint 6, H-S6-07); antes `toISOString()` daba el
+    // día UTC, que después de las 18:00 en UTC−6 ya es el siguiente.
+    fechaRegistro: client.createdAt
+      ? toIsoDate(client.createdAt instanceof Date ? client.createdAt : new Date(client.createdAt))
+      : null,
   };
 }
 

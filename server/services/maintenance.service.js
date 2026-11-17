@@ -20,12 +20,9 @@ import { getConnection } from '../config/db.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
 
 // Fecha local del servidor en `YYYY-MM-DD` (la misma convención que MySQL con
-// timezone 'local'; decisión abierta R-11).
-function todayIso() {
-  const now = new Date();
-  const pad = (number) => String(number).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-}
+// timezone 'local'; decisión abierta R-11). Desde el Sprint 6 viene del util
+// compartido con el reloj de utils/clock.js, el mismo que usan los avisos.
+import { todayIso } from '../utils/dates.js';
 
 // Mapeo al formato del contrato (claves en español) con el estado calculado.
 function toApi(row, hoy) {

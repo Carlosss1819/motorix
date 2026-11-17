@@ -28,6 +28,7 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "maxWorkers": "50%",
     "transform": {},
     "globalSetup": "<rootDir>/tests/helpers/global-setup.js",
     "setupFiles": [

@@ -114,6 +114,7 @@ ServiceOrder _orden({
   String estado = 'RECIBIDO',
   int? mecanicoId,
   String? mecanico,
+  String? fechaEntrega,
 }) {
   return ServiceOrder.fromJson(<String, dynamic>{
     'id': id,
@@ -128,6 +129,7 @@ ServiceOrder _orden({
     'kilometrajeEntrada': 45200,
     'mecanicoId': mecanicoId,
     'mecanico': mecanico,
+    'fechaEntrega': fechaEntrega,
   });
 }
 
@@ -411,6 +413,48 @@ void main() {
 
         expect(find.text('Asignación de mecánico'), findsNothing);
         expect(find.text('Mecánico'), findsOneWidget, reason: 'la ficha sigue mostrando el dato');
+      },
+    );
+
+    testWidgets(
+      'el mecánico no tiene enlaces a las fichas de cliente y vehículo (Sprint 6, H-S6-05)',
+      (WidgetTester tester) async {
+        Finder enlaceDe(String etiqueta) => find.ancestor(
+              of: find.text(etiqueta),
+              matching: find.byType(InkWell),
+            );
+        await pumpDetail(
+          tester,
+          rol: Rol.mechanic,
+          orden: _orden(id: 7, mecanicoId: 3, mecanico: 'mecanico'),
+        );
+        expect(enlaceDe('Cliente'), findsNothing);
+        expect(enlaceDe('Vehículo'), findsNothing);
+        // El historial del vehículo sí le queda (FR-004).
+        expect(find.text('Ver historial del vehículo'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'la fecha de entrega se muestra en hora local con día y hora (Sprint 6, H-S6-07)',
+      (WidgetTester tester) async {
+        await pumpDetail(
+          tester,
+          rol: Rol.receptionist,
+          orden: _orden(id: 7, estado: 'ENTREGADO', fechaEntrega: '2026-11-16 23:30:00'),
+        );
+        expect(find.text('16/11/2026 23:30'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'recepción conserva los enlaces a las fichas de cliente y vehículo',
+      (WidgetTester tester) async {
+        await pumpDetail(tester, rol: Rol.receptionist);
+        expect(
+          find.ancestor(of: find.text('Vehículo').last, matching: find.byType(InkWell)),
+          findsWidgets,
+        );
       },
     );
 

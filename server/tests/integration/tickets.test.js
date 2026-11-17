@@ -188,8 +188,28 @@ test('los folios siguen el formato T000000-AAAA y son consecutivos (SC-003)', as
   expect(primero.body.folio).toMatch(patron);
   expect(segundo.body.folio).toMatch(patron);
 
+  // Sprint 6 (H-S6-03): otras suites emiten tickets al mismo tiempo, así que
+  // entre A y B puede caer el folio de otra prueba. «Consecutivo» se verifica
+  // como secuencia sin huecos: B es mayor que A y cada número entre ambos
+  // existe en la tabla (ninguno se salta). Si nadie emitió en medio, B = A + 1.
   const numero = (folio) => Number(folio.slice(1, 7));
-  expect(numero(segundo.body.folio)).toBe(numero(primero.body.folio) + 1);
+  const a = numero(primero.body.folio);
+  const b = numero(segundo.body.folio);
+  expect(b).toBeGreaterThan(a);
+  const db = await mysql.createConnection(config.db);
+  try {
+    const [filas] = await db.query(
+      `SELECT DISTINCT CAST(SUBSTRING(folio, 2, 6) AS UNSIGNED) AS n
+       FROM tickets
+       WHERE folio LIKE ? AND CAST(SUBSTRING(folio, 2, 6) AS UNSIGNED) BETWEEN ? AND ?`,
+      [`T%-${anio}`, a, b],
+    );
+    expect(filas.map((f) => Number(f.n)).sort((x, y) => x - y)).toEqual(
+      Array.from({ length: b - a + 1 }, (_, i) => a + i),
+    );
+  } finally {
+    await db.end();
+  }
 });
 
 test('regenerar el ticket devuelve el mismo registro y no lo duplica (HU4-2)', async () => {

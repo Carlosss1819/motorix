@@ -103,7 +103,10 @@ if ($RebuildWeb) {
     $flutter = 'flutter'
     try {
         Push-Location (Join-Path $RAIZ 'client')
-        & $flutter build web
+        # La API se pide en el mismo origen (/api) y web-server.cjs la reenvia
+        # al backend; sin esto el build apunta a localhost:3000 y el navegador
+        # lo bloquea (el backend no tiene CORS) -> "No se pudo conectar".
+        & $flutter build web --dart-define=API_BASE_URL=/api
         if ($LASTEXITCODE -ne 0) { throw "flutter build web fallo" }
     }
     catch {

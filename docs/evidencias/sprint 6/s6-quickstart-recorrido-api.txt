@@ -1,0 +1,38 @@
+Recorrido por API del quickstart §3 (Sprint 6), Mon Nov 16 2026 21:06:45 GMT-0600 (hora estándar central)
+Base: motorix_v2_test (motorix_v2 aún sin la migración 007). Reloj real del servidor.
+
+Paso 1. Seed 006 cargado por la preparación de la base. Fecha MySQL: 2026-11-16 21:06
+  - mantenimiento vencido 60001: {"target_date":"2026-11-06T06:00:00.000Z"}
+  - cita de hoy 60001: {"appointment_date":"2026-11-16T06:00:00.000Z","appointment_time":"23:30:00","status":"PROGRAMADA"}
+  - refacción stock bajo 60001: {"code":"NOT-BAJ01","stock_current":2,"stock_min":5}
+  - orden detenida 60001: {"status":"EN_REPARACION","mechanic_id":3}
+Paso 2. admin inicia sesión; GET /api/notifications/count -> 200 {"noLeidos":295}
+Paso 3. GET /api/notifications (admin) -> 200; noLeidos=295, totalAvisos=307
+  Grupos en orden: MANT_VENCIDO(66), ORDEN_DETENIDA(2), STOCK_AGOTADO(48), STOCK_BAJO(162), CITA_HOY(2), MANT_PROXIMO(27)
+  Avisos del seed 006:
+  - MANT_VENCIDO:60001:2026-11-06|- | leido=false | [Sprint 6] Cambio de aceite · Chevrolet Aveo 2017 (NOT6-003) | destino {"pantalla":"VEHICULO","id":60003}
+  - ORDEN_DETENIDA:60001:EN_REPARACION | leido=false | Orden #60001 · Volkswagen Jetta 2019 (NOT6-001) · En reparación · 5 días sin cambio | destino {"pantalla":"ORDEN","id":60001}
+  - ORDEN_DETENIDA:60002:DIAGNOSTICO | leido=false | Orden #60002 · Kia Rio 2021 (NOT6-002) · En diagnóstico · 4 días sin cambio | destino {"pantalla":"ORDEN","id":60002}
+  - STOCK_AGOTADO:60002 | leido=false | NOT-AGO01 · Sensor de oxígeno (ejemplo Sprint 6) · Existencia 0 · mínimo 3 | destino {"pantalla":"REFACCION","id":60002}
+  - STOCK_BAJO:60001 | leido=false | NOT-BAJ01 · Bujía de iridio (ejemplo Sprint 6) · Existencia 2 · mínimo 5 | destino {"pantalla":"REFACCION","id":60001}
+  - CITA_HOY:60001:2026-11-16 | leido=false | 23:30 · [Sprint 6] Laura Méndez · Volkswagen Jetta 2019 | destino {"pantalla":"CITAS","id":60001,"fecha":"2026-11-16"}
+  - MANT_PROXIMO:60002:2026-11-26|- | leido=false | [Sprint 6] Afinación · Kia Rio 2021 (NOT6-002) | destino {"pantalla":"VEHICULO","id":60002}
+Paso 4. Aviso de stock -> destino REFACCION 60001; GET /api/parts/60001 -> 200 (NOT-BAJ01)
+Paso 5. POST /api/notifications/read {clave: STOCK_AGOTADO:60002} -> 204; contador 295 -> 294
+Paso 6. recepcion: GET /api/notifications -> 200; grupos: MANT_VENCIDO, ORDEN_DETENIDA, CITA_HOY, MANT_PROXIMO
+  ¿Trae stock? no
+  Mantenimiento vencido del seed para recepción: leido=false
+Paso 7. mecanico: GET /api/notifications -> 200; grupos: ORDEN_DETENIDA
+  ¿Trae la orden 60001 (asignada a él)? sí
+  ¿Trae la 60002 (sin mecánico)? no
+  ¿Claves de dinero en la respuesta? no
+  Mecánico: GET /api/client-notices -> 403 ROL_NO_AUTORIZADO
+Paso 8. recepcion: GET /api/client-notices -> 200; total=1194; motivos del seed: VEHICULO_LISTO, CITA_MANANA, MANT_VENCIDO, MANT_PROXIMO
+  Renglón ORDEN:60003: {"clave":"ORDEN:60003","motivo":"VEHICULO_LISTO","motivoTexto":"Vehículo listo","cliente":{"id":60001,"nombre":"[Sprint 6] Laura Méndez","telefono":"5550060001"},"vehiculo":{"id":60003,"descripcion":"Chevrolet Aveo 2017","placas":"NOT6-003"},"fecha":"2026-11-16","destino":{"pantalla":"ORDEN","id":60003}}
+  POST /api/client-notices {clave: ORDEN:60003} -> 201 {"id":73,"clave":"ORDEN:60003","motivo":"VEHICULO_LISTO","clienteId":60001,"avisadoPor":{"id":2,"nombre":"recepcion"},"avisadoEn":"2026-11-17T03:06:47"}
+  Repetir (admin) -> 409 YA_AVISADO
+Paso 9. Recargar: ¿ORDEN:60003 sigue en la lista? no; en client_notices: {"fact_key":"ORDEN:60003","reason":"VEHICULO_LISTO","username":"recepcion","notified_at":"2026-11-17T03:06:47.000Z"}
+
+Coherencia: avisos de stock=210; panel alertasInventario.stockBajo=210; GET /api/parts?stockBajo=true total=210
+Limpieza: se borró la fila ORDEN:60003 de client_notices creada por este recorrido (solo en motorix_v2_test).
+Pendiente para Carlos: repetir los pasos en la app con motorix_v2 migrada y cronometrar (SC-008).

@@ -17,6 +17,9 @@ import 'providers/parts_provider.dart';
 import 'providers/payment_provider.dart';
 import 'providers/dashboard_provider.dart';
 import 'providers/ticket_provider.dart';
+import 'providers/client_notices_provider.dart';
+import 'providers/notifications_provider.dart';
+import 'screens/client_notices_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -141,6 +144,13 @@ class _MotorixAppState extends State<MotorixApp> {
         ChangeNotifierProvider<DashboardProvider>(
           create: (_) => DashboardProvider(api: _api),
         ),
+        // Sprint 6: campana de avisos y «Clientes por avisar».
+        ChangeNotifierProvider<NotificationsProvider>(
+          create: (_) => NotificationsProvider(api: _api),
+        ),
+        ChangeNotifierProvider<ClientNoticesProvider>(
+          create: (_) => ClientNoticesProvider(api: _api),
+        ),
       ],
       child: Builder(
         builder: (BuildContext context) {
@@ -184,7 +194,7 @@ class _MotorixAppState extends State<MotorixApp> {
   }
 
   Widget _pageForRoute(String name, RouteSettings settings, String rol) {
-    if (!_puedeAcceder(name, rol)) {
+    if (!canAccessRoute(name, rol)) {
       return const AppShell(child: _SinPermisoScreen());
     }
 
@@ -236,7 +246,11 @@ class _MotorixAppState extends State<MotorixApp> {
           args: _arg<PartDetailArgs>(settings) ??
               const PartDetailArgs(refaccionId: 0),
         ),
-      Routes.appointments => const AppointmentsScreen(),
+      // Citas acepta el día inicial (destino del aviso «Cita de hoy», Sprint 6).
+      Routes.appointments =>
+        AppointmentsScreen(fechaInicial: _arg<AppointmentsArgs>(settings)?.fecha),
+      // Clientes por avisar (Sprint 6, US7): ADMIN y RECEPTIONIST.
+      Routes.clientNotices => const ClientNoticesScreen(),
       Routes.appointmentNew =>
         AppointmentFormScreen(cita: _arg<AppointmentFormArgs>(settings)?.cita),
       Routes.appointmentEdit =>
@@ -275,62 +289,6 @@ class _MotorixAppState extends State<MotorixApp> {
   static T? _arg<T>(RouteSettings settings) {
     return settings.arguments is T ? settings.arguments as T : null;
   }
-
-  /// Ocultar no es seguridad: el backend vuelve a validar cada operación
-  /// (FR-006 / RN-15).
-  static bool _puedeAcceder(String route, String rol) {
-    switch (route) {
-      case Routes.myOrders:
-        return rol == Rol.mechanic;
-      case Routes.reception:
-        return rol == Rol.admin || rol == Rol.receptionist;
-      // Historial del vehículo (FR-004): los TRES roles pueden consultarlo.
-      case Routes.vehicleHistory:
-        return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
-      // Mantenimientos (US4, R-12 §16): los TRES roles consultan; la escritura
-      // (alta, edición y «servicio realizado») es de ADMIN y MECHANIC (FR-008).
-      case Routes.maintenance:
-        return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
-      case Routes.maintenanceNew:
-      case Routes.maintenanceEdit:
-        return rol == Rol.admin || rol == Rol.mechanic;
-      // Inventario (US5, R-12 §16): la sección del panel es solo de ADMIN
-      // (FR-022); el backend también permite leer a los otros roles.
-      case Routes.parts:
-      case Routes.partNew:
-      case Routes.partEdit:
-      case Routes.partDetail:
-        return rol == Rol.admin;
-      case Routes.clients:
-      case Routes.clientNew:
-      case Routes.clientDetail:
-      case Routes.clientEdit:
-      case Routes.vehicles:
-      case Routes.vehicleNew:
-      case Routes.vehicleDetail:
-      case Routes.vehicleEdit:
-      case Routes.appointments:
-      case Routes.appointmentNew:
-      case Routes.appointmentEdit:
-      case Routes.serviceOrders:
-      case Routes.serviceOrderNew:
-      case Routes.serviceOrderDetail:
-      // Cobro (US1, FR-003): recepción y administración registran y anulan
-      // pagos; el mecánico no consulta ni registra cobros. El ticket sigue
-      // el mismo ciclo de cobro (US4, FR-009).
-      case Routes.paymentForm:
-      case Routes.ticket:
-        return rol == Rol.admin || rol == Rol.receptionist;
-      // Panel de control (US5, FR-010, RN-15): exclusivo de ADMIN; la
-      // sección «Panel» también está oculta en la navegación (HU5-2).
-      case Routes.dashboard:
-        return rol == Rol.admin;
-      case Routes.users:
-        return rol == Rol.admin;
-      default:
-        return true;
-    }
-  }
 }
 
 /// Aviso de sección no permitida para el rol actual.
@@ -364,5 +322,68 @@ class _SinPermisoScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Permiso de navegación por rol. Ocultar no es seguridad: el backend vuelve
+/// a validar cada operación (FR-006 / RN-15). Es pública para probarla.
+bool canAccessRoute(String route, String rol) {
+  switch (route) {
+    case Routes.myOrders:
+      return rol == Rol.mechanic;
+    case Routes.reception:
+      return rol == Rol.admin || rol == Rol.receptionist;
+    // Historial del vehículo (FR-004): los TRES roles pueden consultarlo.
+    case Routes.vehicleHistory:
+      return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
+    // Mantenimientos (US4, R-12 §16): los TRES roles consultan; la escritura
+    // (alta, edición y «servicio realizado») es de ADMIN y MECHANIC (FR-008).
+    case Routes.maintenance:
+      return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
+    case Routes.maintenanceNew:
+    case Routes.maintenanceEdit:
+      return rol == Rol.admin || rol == Rol.mechanic;
+    // Inventario (US5, R-12 §16): la sección del panel es solo de ADMIN
+    // (FR-022); el backend también permite leer a los otros roles.
+    case Routes.parts:
+    case Routes.partNew:
+    case Routes.partEdit:
+    case Routes.partDetail:
+      return rol == Rol.admin;
+    // Detalle de orden (Sprint 6, H-S6-05): el mecánico abre las suyas desde
+    // «Mis órdenes» y desde el aviso de orden detenida. El backend responde
+    // 403 ORDEN_AJENA si no es suya y nunca le envía precios (Sprint 5).
+    case Routes.serviceOrderDetail:
+      return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
+    case Routes.clients:
+    case Routes.clientNew:
+    case Routes.clientDetail:
+    case Routes.clientEdit:
+    case Routes.vehicles:
+    case Routes.vehicleNew:
+    case Routes.vehicleDetail:
+    case Routes.vehicleEdit:
+    case Routes.appointments:
+    case Routes.appointmentNew:
+    case Routes.appointmentEdit:
+    case Routes.serviceOrders:
+    case Routes.serviceOrderNew:
+    // Cobro (US1, FR-003): recepción y administración registran y anulan
+    // pagos; el mecánico no consulta ni registra cobros. El ticket sigue
+    // el mismo ciclo de cobro (US4, FR-009).
+    case Routes.paymentForm:
+    case Routes.ticket:
+    // Clientes por avisar (Sprint 6, FR-022): el backend responde 403 al
+    // mecánico.
+    case Routes.clientNotices:
+      return rol == Rol.admin || rol == Rol.receptionist;
+    // Panel de control (US5, FR-010, RN-15): exclusivo de ADMIN; la
+    // sección «Panel» también está oculta en la navegación (HU5-2).
+    case Routes.dashboard:
+      return rol == Rol.admin;
+    case Routes.users:
+      return rol == Rol.admin;
+    default:
+      return true;
   }
 }

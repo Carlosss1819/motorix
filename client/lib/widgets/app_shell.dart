@@ -8,6 +8,7 @@ import '../providers/shell_provider.dart';
 import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
 import 'confirm_dialog.dart';
+import 'notification_bell.dart';
 
 /// Una sección del sidebar.
 class ShellSection {
@@ -79,6 +80,11 @@ abstract final class ShellSections {
     icon: LucideIcons.layoutDashboard,
     label: 'Panel',
   );
+  static const ShellSection clientNotices = ShellSection(
+    route: Routes.clientNotices,
+    icon: LucideIcons.phone,
+    label: 'Clientes por avisar',
+  );
 
   /// Secciones visibles para cada rol. Ocultar no es seguridad: el backend
   /// valida cada operación protegida (RN-15).
@@ -88,6 +94,8 @@ abstract final class ShellSections {
   /// Inventario (US5, R-12 §16) es visible solo para ADMIN (FR-022).
   /// Panel (Sprint 4, US5) solo para ADMIN, en conjunto con el 403 del
   /// backend (HU5-2, RN-15).
+  /// Clientes por avisar (Sprint 6, US7) para ADMIN y RECEPTIONIST; el
+  /// backend responde 403 al mecánico (FR-022).
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
       Rol.admin =>
@@ -99,6 +107,7 @@ abstract final class ShellSections {
           appointments,
           orders,
           maintenance,
+          clientNotices,
           parts,
           users,
           account,
@@ -111,6 +120,7 @@ abstract final class ShellSections {
           appointments,
           orders,
           maintenance,
+          clientNotices,
           account,
         ],
       Rol.mechanic =>
@@ -150,6 +160,7 @@ abstract final class ShellSections {
       Routes.partEdit => 'Editar refacción',
       Routes.partDetail => 'Detalle de refacción',
       Routes.account => 'Mi cuenta',
+      Routes.clientNotices => 'Clientes por avisar',
       _ => 'Motorix',
     };
   }
@@ -472,35 +483,47 @@ class _Header extends StatelessWidget {
       ),
       child: Row(
         children: <Widget>[
-          Flexible(
-            child: Text(
-              title,
-              style: textTheme.titleMedium,
-              overflow: TextOverflow.ellipsis,
+          // Título y buscador ocupan el espacio libre a la izquierda; así la
+          // campana, el usuario y el rol quedan pegados a la derecha también
+          // en pantallas anchas (antes se amontonaban a la mitad del header).
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                Flexible(
+                  child: Text(
+                    title,
+                    style: textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xl),
+                if (hint.isNotEmpty)
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: AppMetrics.headerSearchWidth,
+                      ),
+                      child: TextField(
+                        controller: controller,
+                        onChanged: (String value) =>
+                            context.read<ShellProvider>().setQuery(hint, value),
+                        decoration: InputDecoration(
+                          hintText: hint,
+                          prefixIcon: const Icon(
+                            LucideIcons.search,
+                            size: AppMetrics.iconSizeSmall,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: AppSpacing.xl),
-          if (hint.isNotEmpty)
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: AppMetrics.headerSearchWidth,
-                ),
-                child: TextField(
-                  controller: controller,
-                  onChanged: (String value) =>
-                      context.read<ShellProvider>().setQuery(hint, value),
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    prefixIcon: const Icon(
-                      LucideIcons.search,
-                      size: AppMetrics.iconSizeSmall,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(width: AppSpacing.xl),
+          // Campana de avisos (Sprint 6, US1): para los tres roles.
+          const NotificationBell(),
+          const SizedBox(width: AppSpacing.md),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisSize: MainAxisSize.min,

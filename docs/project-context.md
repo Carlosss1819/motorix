@@ -441,6 +441,60 @@ Debe contemplar avisos relacionados con: - Mantenimientos próximos. -
 Mantenimientos vencidos. - Citas. - Stock bajo. - Órdenes que requieran
 atención.
 
+### Reglas vigentes desde el Sprint 6
+
+Fuente de verdad: `specs/006-notificaciones-internas/` (spec, contratos y
+research).
+
+**Centro de notificaciones.** Campana en el encabezado con el número de avisos
+sin leer («99+» si hay más de 99) y un panel con los avisos agrupados por tipo,
+en este orden: mantenimientos vencidos, órdenes detenidas, refacciones
+agotadas, refacciones con stock bajo, citas de hoy y mantenimientos próximos.
+Dentro de cada grupo van primero los no leídos y luego por fecha.
+
+**Los avisos no se guardan.** Se calculan en cada consulta con las mismas
+reglas de los módulos, así que el número coincide con el panel de control y
+con las listas:
+
+| Tipo | Criterio | Abre |
+|---|---|---|
+| `MANT_VENCIDO` / `MANT_PROXIMO` | Estado calculado del mantenimiento (fecha o km objetivo, antelación), igual que la lista de Mantenimientos. Si se cumplen fecha y km, un solo aviso. | Detalle del vehículo |
+| `STOCK_AGOTADO` / `STOCK_BAJO` | `existencia <= mínimo` con `mínimo > 0` (existencia 0 = agotado), la misma regla del panel y del filtro «solo stock bajo». | Detalle de la refacción |
+| `CITA_HOY` | Citas de hoy en `PROGRAMADA` o `RECIBIDA`. Antes de calcular, las `PROGRAMADA` cuya hora ya pasó pasan a `NO_PRESENTADA` (la misma regla de la agenda). | Citas, en ese día |
+| `ORDEN_DETENIDA` | Orden en `RECIBIDO`, `DIAGNOSTICO`, `EN_REPARACION` o `ESPERANDO_REFACCION` sin cambio de estado por más de N × 24 horas (último cambio del historial o, si no hay, la fecha de alta). | Detalle de la orden |
+
+**N es configurable**: variable `NOTIF_ORDEN_DETENIDA_DIAS` en `server/.env`
+(entero mayor que 0; 3 por defecto).
+
+**Permisos por rol** (los filtra el servidor, no solo la interfaz):
+
+| Rol | Avisos que recibe |
+|---|---|
+| ADMIN | Los seis tipos. |
+| RECEPTIONIST | Mantenimientos, citas de hoy y órdenes detenidas (sin stock). |
+| MECHANIC | Solo órdenes detenidas asignadas a él. |
+
+Ningún aviso incluye importes (ni precios, ni subtotales, ni totales).
+
+**Leído por usuario.** Tocar un aviso o su botón «Marcar como leído» lo marca
+solo para ese usuario (tabla `notification_reads`). La clave del aviso es
+tipo + objeto + estado (por ejemplo `MANT_VENCIDO:7:2026-12-01|-` u
+`ORDEN_DETENIDA:12:DIAGNOSTICO`): si el aviso empeora (de próximo a vencido),
+cambia de estado o se renueva el objetivo, es un aviso nuevo y vuelve a salir
+como no leído. Un aviso leído sigue en el panel mientras su condición se
+cumpla. El contador se actualiza al iniciar sesión y al cambiar de sección;
+no hay consultas por intervalo.
+
+**Clientes por avisar.** Sección del menú solo para ADMIN y RECEPTIONIST (el
+mecánico recibe 403). Lista a quién llamar, con el teléfono, por cuatro
+motivos: vehículo listo (orden `TERMINADO` sin entregar), cita de mañana
+(`PROGRAMADA` o `RECIBIDA`), mantenimiento vencido y mantenimiento próximo.
+«Marcar como avisado» pide confirmación y guarda quién y cuándo (tabla
+`client_notices`), una sola vez por hecho: si dos personas lo marcan a la vez,
+una recibe 409 `YA_AVISADO`. Un mantenimiento avisado como próximo no vuelve a
+salir al vencer; si se renueva (objetivo nuevo), sí. El sistema no envía
+mensajes: el aviso al cliente lo hace una persona por teléfono.
+
 ------------------------------------------------------------------------
 
 # 7. Funcionalidad fuera del MVP actual

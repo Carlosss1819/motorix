@@ -300,6 +300,24 @@ El diálogo debe ser breve, claro y en español. Texto sugerido:
 
 > "¿Seguro que quieres [acción]? Esta acción no se puede deshacer." *(cuando aplique)*
 
+### 8.5.1 Campana y panel de avisos (Sprint 6)
+
+- **Campana** en el header, a la izquierda del usuario y su rol, para los tres roles (ícono Lucide `bell`). Insignia en `danger` con el número de avisos sin leer; con más de 99 muestra **«99+»**; sin avisos no lleva insignia. Si el contador falla, la campana se queda sin insignia y no muestra error.
+- **Panel**: diálogo alineado arriba a la derecha (máximo 480 × 640 px) con título «Avisos» y botón de cerrar. Estados de la [sección 8.4](#84-estados-de-la-interfaz): carga, vacío («No tienes avisos pendientes») y error con «Reintentar».
+- **Grupos** en orden fijo (vencidos, órdenes detenidas, agotadas, stock bajo, citas de hoy, próximos), con título y cantidad en el color del tipo.
+- **Color por tipo**: `danger` para mantenimiento vencido, refacción agotada y orden detenida; `warning` para stock bajo y mantenimiento próximo; `primary` (informativo) para cita de hoy.
+- **Aviso**: punto de color, título, descripción y fecha. Los **no leídos** llevan punto lleno, título en negritas y el botón «Marcar como leído» (ícono `check`); los **leídos** se ven **atenuados** (opacidad 60 %) y sin botón.
+- Tocar un aviso lo marca como leído y abre su pantalla (orden, citas en ese día, vehículo o refacción).
+- Sin temporizadores: el contador se actualiza al entrar a cada sección.
+
+### 8.5.2 Clientes por avisar (Sprint 6)
+
+- Sección del menú lateral (ícono `phone`), solo para ADMIN y RECEPTIONIST.
+- Desde 1000 px de ancho de contenido: tabla con «Cliente y teléfono», «Vehículo», «Motivo», «Fecha» y «Acciones». Más angosto: lista de paneles con los mismos datos.
+- **Motivo** como chip suave: vencido en `danger`, próximo en `warning`, vehículo listo en `success` y cita de mañana en `primary`.
+- Botón «Marcar como avisado» (ícono `phoneCall`) → diálogo de confirmación de la [sección 8.5](#85-confirmaciones-obligatorias) con «¿Ya avisaste a <cliente>? Solo márcalo si de verdad le avisaste.», «Confirmar» y «Cancelar». Al confirmar, el renglón sale y aparece el snackbar «Aviso registrado».
+- Si otra persona ya lo marcó (409) o el hecho ya no aplica (404), snackbar con el mensaje del servidor y la lista se recarga.
+
 ### 8.6 Tarjetas
 
 Usar `Card` solo para agrupar contenido que lo necesite (indicadores del dashboard, resúmenes). **Por defecto, no usar tarjetas:** preferir tablas, listas y divisores.

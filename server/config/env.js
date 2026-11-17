@@ -68,4 +68,9 @@ export const config = {
     // de Mercado Pago. Entero > 0; 24 por defecto.
     mpPreferenciaVigenciaHoras: toPositiveInt(process.env.MP_PREFERENCIA_VIGENCIA_HORAS, 24),
   },
+  // Sprint 6 (FR-006, R-04): días sin cambio de estado para considerar una
+  // orden «detenida». Entero > 0; 3 por defecto.
+  notifications: {
+    stalledOrderDays: toPositiveInt(process.env.NOTIF_ORDEN_DETENIDA_DIAS, 3),
+  },
 };

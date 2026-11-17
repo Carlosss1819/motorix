@@ -1,0 +1,87 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit
+
+(node:29088) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:19336) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:18240) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28396) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:30244) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27580) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14104) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:25896) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:31300) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32244) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:13588) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+FAIL tests/integration/payments.test.js (5.038 s)
+  ● el cobro Mercado Pago nace PENDIENTE con referencia, enlace y modo (SC-004)
+
+    expect(received).toMatchObject(expected)
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "estado": "PENDIENTE",
+        "metodo": "MERCADO_PAGO",
+    -   "modoPasarela": "simulado",
+    +   "modoPasarela": "sandbox",
+        "ordenId": 10069,
+      }
+
+    [0m [90m 346 |[39m
+     [90m 347 |[39m   expect(response[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 348 |[39m   expect(response[33m.[39mbody)[33m.[39mtoMatchObject({
+     [90m     |[39m                         [31m[1m^[22m[39m
+     [90m 349 |[39m     ordenId[33m,[39m
+     [90m 350 |[39m     metodo[33m:[39m [32m'MERCADO_PAGO'[39m[33m,[39m
+     [90m 351 |[39m     estado[33m:[39m [32m'PENDIENTE'[39m[33m,[39m[0m
+
+      at Object.<anonymous> (tests/integration/payments.test.js:348:25)
+
+
+Summary of all failing tests
+FAIL tests/integration/payments.test.js (5.038 s)
+  ● el cobro Mercado Pago nace PENDIENTE con referencia, enlace y modo (SC-004)
+
+    expect(received).toMatchObject(expected)
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "estado": "PENDIENTE",
+        "metodo": "MERCADO_PAGO",
+    -   "modoPasarela": "simulado",
+    +   "modoPasarela": "sandbox",
+        "ordenId": 10069,
+      }
+
+    [0m [90m 346 |[39m
+     [90m 347 |[39m   expect(response[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m
+    [31m[1m>[22m[39m[90m 348 |[39m   expect(response[33m.[39mbody)[33m.[39mtoMatchObject({
+     [90m     |[39m                         [31m[1m^[22m[39m
+     [90m 349 |[39m     ordenId[33m,[39m
+     [90m 350 |[39m     metodo[33m:[39m [32m'MERCADO_PAGO'[39m[33m,[39m
+     [90m 351 |[39m     estado[33m:[39m [32m'PENDIENTE'[39m[33m,[39m[0m
+
+      at Object.<anonymous> (tests/integration/payments.test.js:348:25)
+
+
+Test Suites: 1 failed, 63 passed, 64 total
+Tests:       1 failed, 544 passed, 545 total
+Snapshots:   0 total
+Time:        10.847 s
+Ran all test suites.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

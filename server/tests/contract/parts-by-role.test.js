@@ -94,5 +94,11 @@ test('FR_036_buscar_sigue_siendo_por_nombre_o_codigo_y_no_expone_precios', async
     .query({ buscar: '320' })
     .set(bearer(ctx.tokens.mecanico));
   expect(porPrecio.body.elementos.map((p) => p.id)).not.toContain(partId);
-  expect(JSON.stringify(porPrecio.body)).not.toMatch(/precio/i);
+  // Sprint 6 (H-S6-04): se revisan las CLAVES de precio, no cualquier texto;
+  // el nombre de una refacción de otra suite («Refacción con precio …») y su
+  // código con «320» hacían fallar la prueba de forma intermitente.
+  expect(JSON.stringify(porPrecio.body)).not.toMatch(/"precio\w*"\s*:/i);
+  for (const elemento of porPrecio.body.elementos) {
+    expect(Object.keys(elemento).filter((k) => /precio/i.test(k))).toEqual([]);
+  }
 });

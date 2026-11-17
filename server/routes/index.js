@@ -11,6 +11,8 @@ import { partsRoutes } from './parts.routes.js';
 import { paymentsRoutes } from './payments.routes.js';
 import { ticketsRoutes } from './tickets.routes.js';
 import { dashboardRoutes } from './dashboard.routes.js';
+import { notificationsRoutes } from './notifications.routes.js';
+import { clientNoticesRoutes } from './client_notices.routes.js';
 
 export const apiRoutes = Router();
 
@@ -25,3 +27,5 @@ apiRoutes.use('/parts', partsRoutes);
 apiRoutes.use('/payments', paymentsRoutes);
 apiRoutes.use('/tickets', ticketsRoutes);
 apiRoutes.use('/dashboard', dashboardRoutes);
+apiRoutes.use('/notifications', notificationsRoutes);
+apiRoutes.use('/client-notices', clientNoticesRoutes);

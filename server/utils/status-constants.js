@@ -25,6 +25,13 @@ export const APPOINTMENT_STATUS_VALUES = Object.freeze(
   Object.values(APPOINTMENT_STATUSES),
 );
 
+// Citas «activas» (pendientes o confirmadas): las que cuenta el panel en
+// `citas.hoy` y las que generan avisos de cita (Sprint 6, FR-005, R-02).
+export const ACTIVE_APPOINTMENT_STATUSES = Object.freeze([
+  APPOINTMENT_STATUSES.PROGRAMADA,
+  APPOINTMENT_STATUSES.RECIBIDA,
+]);
+
 // Orden considerada "abierta" para el panel de recepción (todo lo no entregado).
 export const OPEN_ORDER_STATUSES = Object.freeze([
   ORDER_STATUSES.RECIBIDO,

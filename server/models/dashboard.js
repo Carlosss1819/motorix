@@ -5,11 +5,12 @@
 // y refacciones con la regla `stockBajo` del inventario (R-10).
 // Fuente de verdad: specs/004-pagos-tickets-dashboard/contracts/dashboard.md
 import { query } from '../config/db.js';
-import { APPOINTMENT_STATUSES } from '../utils/status-constants.js';
+import { ACTIVE_APPOINTMENT_STATUSES } from '../utils/status-constants.js';
 
 // Regla de stock bajo del inventario (FR-021, R-10): un stock mínimo de 0
-// nunca genera alerta.
-const WHERE_STOCK_BAJO = 'stock_current <= stock_min AND stock_min > 0';
+// nunca genera alerta. Se exporta para que los avisos del Sprint 6 usen la
+// misma condición (R-02) y los números coincidan con el panel.
+export const WHERE_STOCK_BAJO = 'stock_current <= stock_min AND stock_min > 0';
 
 // Formatea una fecha DATE como `AAAA-MM-DD` en la zona local (mismo criterio
 // que appointment.service, para que el día mostrado coincida con el real).
@@ -55,7 +56,7 @@ export async function countAppointmentsOn(fecha) {
      FROM appointments
      WHERE appointment_date = ?
        AND status IN (?, ?)`,
-    [fecha, APPOINTMENT_STATUSES.PROGRAMADA, APPOINTMENT_STATUSES.RECIBIDA],
+    [fecha, ...ACTIVE_APPOINTMENT_STATUSES],
   );
   return Number(rows[0].total);
 }
@@ -73,7 +74,7 @@ export async function listUpcomingAppointments(fecha, limit = 5) {
        AND a.status IN (?, ?)
      ORDER BY a.appointment_date ASC, a.appointment_time ASC, a.id ASC
      LIMIT ?`,
-    [fecha, APPOINTMENT_STATUSES.PROGRAMADA, APPOINTMENT_STATUSES.RECIBIDA, limit],
+    [fecha, ...ACTIVE_APPOINTMENT_STATUSES, limit],
   );
   return rows.map((row) => ({
     id: row.id,
