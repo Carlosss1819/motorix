@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>03. Esquema de la base de datos</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#555; --rule:#888; --head:#eceff1; --accent:#1f3a5f; }
+  @page {
+    size: letter;
+    margin: 2.2cm 2cm 2cm 2cm;
+    @top-center { content: "Motorix — Carlos Castro Rafael — ITS Huauchinango"; font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #555; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #555; }
+  }
+  html { background:#e9e9e9; }
+  body { margin:0; font-family: "Segoe UI", Arial, Helvetica, sans-serif; color:var(--ink); font-size:10.5pt; line-height:1.45; }
+  .sheet { background:#fff; max-width:21.59cm; margin:24px auto; padding:2cm; box-sizing:border-box; box-shadow:0 1px 6px rgba(0,0,0,.2); }
+  .doc-header { display:flex; justify-content:space-between; gap:12px; border-bottom:2px solid var(--accent); padding-bottom:6px; margin-bottom:18px; font-size:9pt; color:var(--muted); }
+  .doc-header strong { color:var(--accent); }
+  h1 { font-size:17pt; color:var(--accent); margin:0 0 10px; line-height:1.25; }
+  h2 { font-size:13.5pt; color:var(--accent); border-bottom:1px solid #c5ccd3; padding-bottom:3px; margin:22px 0 8px; break-after:avoid; }
+  h3 { font-size:11.5pt; margin:16px 0 6px; break-after:avoid; }
+  h4 { font-size:10.5pt; margin:12px 0 4px; break-after:avoid; }
+  p { margin:6px 0; }
+  ul { margin:6px 0 8px; padding-left:22px; }
+  li { margin:2px 0; }
+  code { font-family: Consolas, "Courier New", monospace; font-size:9pt; background:#f3f4f6; padding:0 3px; border-radius:2px; overflow-wrap:anywhere; }
+  pre { background:#f6f8fa; border:1px solid #d0d7de; padding:8px; font-size:8.5pt; white-space:pre-wrap; }
+  blockquote { margin:10px 0; padding:6px 12px; border-left:4px solid var(--accent); background:#f4f6f8; color:#333; }
+  table { width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:9pt; }
+  th, td { border:1px solid var(--rule); padding:4px 6px; vertical-align:top; text-align:left; }
+  th { background:var(--head); font-weight:600; }
+  tr { break-inside:avoid; }
+  thead { display:table-header-group; }
+  .diagram { margin:10px 0 14px; text-align:center; break-inside:avoid; }
+  .diagram pre.mermaid { background:#fff; border:1px solid #d0d7de; padding:10px; white-space:pre; }
+  .diagram svg { max-width:100% !important; height:auto; }
+  @media (max-width: 700px) { .sheet { margin:0; padding:16px; } .doc-header { flex-direction:column; } table { display:block; overflow-x:auto; } }
+  @media print {
+    html { background:#fff; }
+    .sheet { box-shadow:none; margin:0; padding:0; max-width:none; }
+    a { color:inherit; text-decoration:none; }
+    .diagram pre.mermaid { border:none; }
+  }
+</style>
+</head>
+<body>
+<main class="sheet">
+<header class="doc-header"><span><strong>Motorix</strong> — Carlos Castro Rafael — ITS Huauchinango</span><span>Gestión de Proyectos de Software</span></header>
+<h1>03. Esquema de la base de datos</h1>
+<p><strong>Proyecto:</strong> Motorix, sistema de gestión para un taller mecánico<br><strong>Elaboró:</strong> Carlos Castro Rafael<br><strong>Fecha de corte de los datos:</strong> 2026-11-19 (rama <code>006-notificaciones-internas</code>)</p>
+<blockquote><p>Este esquema se reconstruyó leyendo las <strong>siete migraciones</strong> de <code>database/migrations/</code> (001 a 007) y el script <code>database/scripts/aplicar-migraciones.ps1</code>. Motor: MySQL 8. Bases: <code>motorix_v2</code> (desarrollo) y <code>motorix_v2_test</code> (pruebas).</p></blockquote>
+<h2>1. Diagrama entidad-relación</h2>
+<p>El diagrama muestra las 16 tablas de negocio con su llave primaria (PK), sus llaves foráneas (FK), las llaves únicas (UK) y las columnas más importantes. Las columnas <code>created_at</code> y <code>updated_at</code> se omiten para que el diagrama sea legible.</p>
+<div class="diagram"><pre class="mermaid">
+erDiagram
+  users {
+    int id PK
+    varchar username UK
+    varchar email UK
+    varchar password_hash
+    enum role "ADMIN, RECEPTIONIST, MECHANIC"
+    enum status "ACTIVE, INACTIVE"
+    int failed_login_attempts
+    datetime locked_until
+  }
+  clients {
+    int id PK
+    varchar name
+    varchar phone
+    varchar email
+    varchar status
+  }
+  vehicles {
+    int id PK
+    int client_id FK
+    varchar brand
+    varchar model
+    smallint year
+    varchar plates UK
+    varchar vin UK
+    int current_mileage
+  }
+  appointments {
+    int id PK
+    int client_id FK
+    int vehicle_id FK
+    date appointment_date
+    varchar reason
+    enum status "PROGRAMADA, RECIBIDA, CANCELADA, NO_PRESENTADA"
+    int created_by FK
+  }
+  service_orders {
+    int id PK
+    int client_id FK
+    int vehicle_id FK
+    int appointment_id FK "UK"
+    enum status "RECIBIDO ... ENTREGADO"
+    date entry_date
+    int entry_mileage
+    int mechanic_id FK
+    text diagnosis
+    text recommendations
+    datetime delivery_date
+    int created_by FK
+  }
+  order_status_history {
+    int id PK
+    int service_order_id FK
+    enum from_status
+    enum to_status
+    int changed_by FK
+    datetime changed_at
+  }
+  order_services {
+    int id PK
+    int service_order_id FK
+    varchar description
+  }
+  order_labor {
+    int id PK
+    int service_order_id FK
+    int service_id FK
+    int duration_minutes
+    decimal price "10,2"
+  }
+  order_parts {
+    int id PK
+    int service_order_id FK
+    int part_id FK "003"
+    varchar description
+    int quantity
+    decimal unit_price "10,2 congelado, 005"
+  }
+  parts {
+    int id PK
+    varchar code UK
+    varchar name
+    varchar category
+    int stock_current
+    int stock_min
+    decimal purchase_price "10,2"
+    decimal sale_price "10,2"
+    tinyint is_active
+  }
+  inventory_movements {
+    int id PK
+    int part_id FK
+    enum movement_type "ENTRADA, SALIDA, AJUSTE"
+    int quantity
+    int service_order_id FK
+    int stock_after
+    int created_by FK
+  }
+  maintenance {
+    int id PK
+    int vehicle_id FK
+    varchar service_type
+    date target_date
+    int target_mileage
+    int interval_days
+    int interval_km
+    int created_by FK
+  }
+  payments {
+    int id PK
+    int service_order_id FK
+    decimal amount "10,2"
+    enum method "EFECTIVO, TARJETA, TRANSFERENCIA, MERCADO_PAGO"
+    enum status "PENDIENTE, PAGADO, RECHAZADO, CANCELADO, ANULADO"
+    varchar external_reference
+    varchar gateway_mode
+    varchar cancellation_reason "005"
+    int annulled_by FK
+    int created_by FK
+  }
+  tickets {
+    int id PK
+    int service_order_id FK
+    int payment_id FK "UK desde 005"
+    varchar folio UK
+    json content "005"
+    smallint format_version "005"
+    int issued_by FK
+  }
+  notification_reads {
+    int id PK
+    int user_id FK
+    varchar notice_key
+    datetime read_at
+  }
+  client_notices {
+    int id PK
+    int client_id FK
+    enum reason "VEHICULO_LISTO, CITA_MANANA, MANT_PROXIMO, MANT_VENCIDO"
+    varchar fact_key UK
+    int notified_by FK
+    datetime notified_at
+  }
+
+  clients ||--o{ vehicles : "es propietario de"
+  clients ||--o{ appointments : "agenda"
+  vehicles ||--o{ appointments : "se agenda en"
+  clients ||--o{ service_orders : "solicita"
+  vehicles ||--o{ service_orders : "recibe"
+  appointments |o--o| service_orders : "se convierte en"
+  users |o--o{ service_orders : "mecánico asignado"
+  service_orders ||--o{ order_status_history : "registra cambios"
+  service_orders ||--o{ order_services : "incluye"
+  order_services ||--o{ order_labor : "detalla mano de obra"
+  service_orders ||--o{ order_labor : "tiene"
+  service_orders ||--o{ order_parts : "usa"
+  parts |o--o{ order_parts : "se usa en"
+  parts ||--o{ inventory_movements : "se mueve en"
+  service_orders |o--o{ inventory_movements : "origina"
+  vehicles ||--o{ maintenance : "programa"
+  service_orders ||--o{ payments : "se cobra con"
+  payments ||--o| tickets : "genera"
+  service_orders ||--o{ tickets : "tiene"
+  users ||--o{ notification_reads : "marca como leído"
+  clients ||--o{ client_notices : "recibe aviso"
+  users ||--o{ client_notices : "avisó"
+</pre></div>
+<p>**Llaves foráneas hacia <code>users</code> omitidas en las líneas del diagrama** (para no saturarlo; todas existen en las migraciones): <code>appointments.created_by</code>, <code>service_orders.created_by</code>, <code>order_status_history.changed_by</code>, <code>inventory_movements.created_by</code>, <code>maintenance.created_by</code>, <code>payments.created_by</code>, <code>payments.annulled_by</code> y <code>tickets.issued_by</code>. Sirven de <strong>bitácora de quién hizo cada acción</strong>.</p>
+<h2>2. Tablas, migración que las creó y propósito</h2>
+<table><thead><tr><th>Tabla</th><th>Migración / sprint que la creó</th><th>Propósito</th></tr></thead><tbody><tr><td><code>users</code></td><td><code>001_esquema_inicial.sql</code> / Sprint 1</td><td>Cuentas del personal con rol (ADMIN, RECEPTIONIST, MECHANIC), estado y control de intentos fallidos y bloqueo.</td></tr><tr><td><code>clients</code></td><td><code>001_esquema_inicial.sql</code> / Sprint 1</td><td>Propietarios de los vehículos (nombre, teléfono, correo).</td></tr><tr><td><code>vehicles</code></td><td><code>001_esquema_inicial.sql</code> / Sprint 1</td><td>Vehículos con su propietario; placa única y número de serie (VIN) opcional pero único.</td></tr><tr><td><code>appointments</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2</td><td>Citas de llegada al taller y su estado (programada, recibida, cancelada, no presentada).</td></tr><tr><td><code>service_orders</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2</td><td>Orden de servicio: cliente, vehículo, cita de origen (una cita genera como máximo una orden), mecánico, diagnóstico, recomendaciones y estado.</td></tr><tr><td><code>order_status_history</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2</td><td>Bitácora de cada cambio de estado de la orden, con quién y cuándo.</td></tr><tr><td><code>order_services</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2</td><td>Servicios realizados en la orden.</td></tr><tr><td><code>order_labor</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2</td><td>Mano de obra de cada servicio: duración y precio.</td></tr><tr><td><code>order_parts</code></td><td><code>002_citas_ordenes_servicio.sql</code> / Sprint 2 (ampliada en 003 y 005)</td><td>Refacciones usadas en la orden. La 003 agrega <code>part_id</code> (liga con el catálogo); la 005 agrega <code>unit_price</code> (precio congelado).</td></tr><tr><td><code>parts</code></td><td><code>003_historial_mantenimiento_inventario.sql</code> / Sprint 3</td><td>Catálogo de refacciones: código único, categoría, marca, stock actual y mínimo, precios de compra y venta.</td></tr><tr><td><code>maintenance</code></td><td><code>003_historial_mantenimiento_inventario.sql</code> / Sprint 3</td><td>Próximo mantenimiento por vehículo y tipo de servicio (por fecha y/o kilometraje, con anticipación).</td></tr><tr><td><code>inventory_movements</code></td><td><code>003_historial_mantenimiento_inventario.sql</code> / Sprint 3</td><td>Entradas, salidas y ajustes de inventario con el stock resultante; puede ligarse a una orden.</td></tr><tr><td><code>payments</code></td><td><code>004_pagos_tickets_dashboard.sql</code> / Sprint 4 (ampliada en 005)</td><td>Pagos de una orden: importe, método, estado, referencia de Mercado Pago y anulación. La 005 agrega <code>cancellation_reason</code>.</td></tr><tr><td><code>tickets</code></td><td><code>004_pagos_tickets_dashboard.sql</code> / Sprint 4 (ampliada en 005)</td><td>Comprobante con folio único. La 005 cambia la regla «un ticket por orden» por «un ticket por pago» y guarda una copia inmutable del contenido (<code>content</code> JSON, <code>format_version</code>).</td></tr><tr><td><code>notification_reads</code></td><td><code>007_notificaciones_internas.sql</code> / Sprint 6</td><td>Qué avisos internos marcó como leídos cada usuario (un registro por usuario y aviso). Los avisos se calculan con datos reales; no se guardan.</td></tr><tr><td><code>client_notices</code></td><td><code>007_notificaciones_internas.sql</code> / Sprint 6</td><td>Registro de clientes ya avisados (vehículo listo, cita de mañana, mantenimiento próximo o vencido) para no repetir el aviso.</td></tr><tr><td><code>schema_migrations</code></td><td><code>database/scripts/aplicar-migraciones.ps1</code> (no es una migración)</td><td>Control técnico: nombre y fecha de cada migración aplicada, para no aplicarla dos veces.</td></tr></tbody></table>
+<h3>Migraciones sin tablas nuevas</h3>
+<table><thead><tr><th>Migración</th><th>Sprint</th><th>Qué hace</th></tr></thead><tbody><tr><td><code>003_...</code> (parte final)</td><td>Sprint 3</td><td><code>ALTER TABLE order_parts</code> agrega <code>part_id</code> con FK a <code>parts</code>; índice <code>idx_service_orders_vehicle_status</code> para el historial del vehículo.</td></tr><tr><td><code>005_precios_congelados_tickets_por_pago.sql</code></td><td>Sprint 5</td><td><strong>Solo esquema:</strong> agrega <code>order_parts.unit_price</code>, <code>tickets.content</code>, <code>tickets.format_version</code> y <code>payments.cancellation_reason</code>; reemplaza el índice único <code>uq_tickets_service_order</code> por <code>uq_tickets_payment</code> (cambio de restricción permitido y documentado en el plan del Sprint 5).</td></tr><tr><td><code>006_datos_precio_congelado_copia_tickets.sql</code></td><td>Sprint 5</td><td><strong>Solo datos</strong>, dentro de una transacción y repetible: congela el precio de las líneas existentes y copia los tickets anteriores en la versión 1 del formato.</td></tr><tr><td><code>007_notificaciones_internas.sql</code></td><td>Sprint 6</td><td>Crea <code>notification_reads</code> y <code>client_notices</code>.</td></tr></tbody></table>
+<h3>Datos de ejemplo (seeds)</h3>
+<p><code>database/seeds/</code> contiene seis scripts (<code>001_datos_iniciales.sql</code> a <code>006_ejemplos_notificaciones.sql</code>), uno por sprint con cambios de datos. Se aplican con <code>aplicar-migraciones.ps1 -Seeds</code>.</p>
+<h2>3. Reglas del diseño de la base</h2>
+<table><thead><tr><th>Regla</th><th>Cómo se cumple</th></tr></thead><tbody><tr><td><strong>Motor InnoDB</strong></td><td>Todas las tablas declaran <code>ENGINE=InnoDB</code>: transacciones y llaves foráneas reales.</td></tr><tr><td><strong>Juego de caracteres utf8mb4</strong></td><td>Todas usan <code>DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci</code>: acentos, eñes y cualquier carácter en español.</td></tr><tr><td>**Importes <code>DECIMAL(10,2)</code>**</td><td><code>order_labor.price</code>, <code>order_parts.unit_price</code>, <code>parts.purchase_price</code>, <code>parts.sale_price</code> y <code>payments.amount</code>. Nunca <code>FLOAT</code>, para no perder centavos por redondeo binario.</td></tr><tr><td><strong>Migraciones inmutables y numeradas</strong></td><td>Una migración aplicada no se edita; cada cambio va en un script nuevo (<code>008_...</code>). «Aditiva» significa no borrar tablas, columnas ni datos. Se permite reemplazar una restricción conservando los datos y documentándolo (caso de la 005).</td></tr><tr><td><strong>Seeds idempotentes</strong></td><td>Se pueden correr varias veces sin duplicar datos: usan ids fijos con <code>INSERT IGNORE</code>, <code>ON DUPLICATE KEY</code> o <code>WHERE NOT EXISTS</code>.</td></tr><tr><td><strong>Contraseñas</strong></td><td>Solo hash bcrypt en <code>users.password_hash</code>; nunca texto plano.</td></tr><tr><td><strong>Sin datos de tarjeta</strong></td><td><code>payments</code> guarda solo la referencia externa y el enlace de Mercado Pago; ningún número de tarjeta.</td></tr><tr><td><strong>Integridad del historial</strong></td><td>El precio de una refacción se <strong>congela</strong> en <code>order_parts.unit_price</code> al agregarla y cada ticket guarda una copia de su contenido; un cambio posterior del catálogo no altera órdenes, pagos ni tickets emitidos.</td></tr><tr><td><strong>Base local</strong></td><td>Desarrollo y pruebas en MySQL local; una instancia en la nube solo para la demostración (enmienda 1.1.0).</td></tr></tbody></table>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'strict', fontFamily: 'Segoe UI, Arial, sans-serif', flowchart: { htmlLabels: true }, er: { useMaxWidth: true } });
+  }
+</script>
+</body>
+</html>

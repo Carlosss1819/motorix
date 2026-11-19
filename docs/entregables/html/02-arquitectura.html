@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>02. Arquitectura del sistema</title>
+<style>
+  :root { --ink:#1a1a1a; --muted:#555; --rule:#888; --head:#eceff1; --accent:#1f3a5f; }
+  @page {
+    size: letter;
+    margin: 2.2cm 2cm 2cm 2cm;
+    @top-center { content: "Motorix — Carlos Castro Rafael — ITS Huauchinango"; font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #555; }
+    @bottom-right { content: "Página " counter(page) " de " counter(pages); font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; color: #555; }
+  }
+  html { background:#e9e9e9; }
+  body { margin:0; font-family: "Segoe UI", Arial, Helvetica, sans-serif; color:var(--ink); font-size:10.5pt; line-height:1.45; }
+  .sheet { background:#fff; max-width:21.59cm; margin:24px auto; padding:2cm; box-sizing:border-box; box-shadow:0 1px 6px rgba(0,0,0,.2); }
+  .doc-header { display:flex; justify-content:space-between; gap:12px; border-bottom:2px solid var(--accent); padding-bottom:6px; margin-bottom:18px; font-size:9pt; color:var(--muted); }
+  .doc-header strong { color:var(--accent); }
+  h1 { font-size:17pt; color:var(--accent); margin:0 0 10px; line-height:1.25; }
+  h2 { font-size:13.5pt; color:var(--accent); border-bottom:1px solid #c5ccd3; padding-bottom:3px; margin:22px 0 8px; break-after:avoid; }
+  h3 { font-size:11.5pt; margin:16px 0 6px; break-after:avoid; }
+  h4 { font-size:10.5pt; margin:12px 0 4px; break-after:avoid; }
+  p { margin:6px 0; }
+  ul { margin:6px 0 8px; padding-left:22px; }
+  li { margin:2px 0; }
+  code { font-family: Consolas, "Courier New", monospace; font-size:9pt; background:#f3f4f6; padding:0 3px; border-radius:2px; overflow-wrap:anywhere; }
+  pre { background:#f6f8fa; border:1px solid #d0d7de; padding:8px; font-size:8.5pt; white-space:pre-wrap; }
+  blockquote { margin:10px 0; padding:6px 12px; border-left:4px solid var(--accent); background:#f4f6f8; color:#333; }
+  table { width:100%; border-collapse:collapse; margin:8px 0 12px; font-size:9pt; }
+  th, td { border:1px solid var(--rule); padding:4px 6px; vertical-align:top; text-align:left; }
+  th { background:var(--head); font-weight:600; }
+  tr { break-inside:avoid; }
+  thead { display:table-header-group; }
+  .diagram { margin:10px 0 14px; text-align:center; break-inside:avoid; }
+  .diagram pre.mermaid { background:#fff; border:1px solid #d0d7de; padding:10px; white-space:pre; }
+  .diagram svg { max-width:100% !important; height:auto; }
+  @media (max-width: 700px) { .sheet { margin:0; padding:16px; } .doc-header { flex-direction:column; } table { display:block; overflow-x:auto; } }
+  @media print {
+    html { background:#fff; }
+    .sheet { box-shadow:none; margin:0; padding:0; max-width:none; }
+    a { color:inherit; text-decoration:none; }
+    .diagram pre.mermaid { border:none; }
+  }
+</style>
+</head>
+<body>
+<main class="sheet">
+<header class="doc-header"><span><strong>Motorix</strong> — Carlos Castro Rafael — ITS Huauchinango</span><span>Gestión de Proyectos de Software</span></header>
+<h1>02. Arquitectura del sistema</h1>
+<p><strong>Proyecto:</strong> Motorix, sistema de gestión para un taller mecánico<br><strong>Elaboró:</strong> Carlos Castro Rafael<br><strong>Fecha de corte de los datos:</strong> 2026-11-19 (rama <code>006-notificaciones-internas</code>)</p>
+<blockquote><p>Las carpetas, archivos y endpoints de este documento se tomaron del código real (<code>server/</code>, <code>client/lib/</code>, <code>server/routes/</code>). Lo que no está decidido aparece como <code>[COMPLETAR: ...]</code>.</p></blockquote>
+<h2>1. Diagrama de componentes</h2>
+<div class="diagram"><pre class="mermaid">
+flowchart LR
+  subgraph Usuarios["Usuarios del taller"]
+    ADM["Administrador"]
+    REC["Recepcionista"]
+    MEC["Mecánico"]
+  end
+
+  subgraph Cliente["Cliente Flutter (web y escritorio Windows)"]
+    UI["screens/ y widgets/"]
+    PROV["providers/ (estado con Provider)"]
+    SVC["services/ (api_client.dart + un servicio por módulo)"]
+    UI --&gt; PROV --&gt; SVC
+  end
+
+  subgraph Servidor["API REST - Node.js 24 + Express (ES Modules)"]
+    RT["routes/ (/api/...)"]
+    MW["middlewares/ (authenticate, authorize, validate, errorHandler)"]
+    CT["controllers/"]
+    SV["services/ (lógica de negocio)"]
+    MD["models/ (consultas SQL con mysql2)"]
+    PG["services/payment_gateway/ (mercadopago | simulado)"]
+    RT --&gt; MW --&gt; CT --&gt; SV --&gt; MD
+    SV --&gt; PG
+  end
+
+  DB[("MySQL 8 local&lt;br/&gt;motorix_v2 / motorix_v2_test")]
+  MP["Mercado Pago Checkout Pro&lt;br/&gt;(sandbox, servicio externo)"]
+
+  ADM --&gt; UI
+  REC --&gt; UI
+  MEC --&gt; UI
+  SVC -- "HTTP/JSON + JWT (Bearer)" --&gt; RT
+  MD -- "SQL parametrizado" --&gt; DB
+  PG -- "HTTPS REST (fetch nativo)" --&gt; MP
+  MP -. "El cliente paga en la página de Mercado Pago" .-&gt; REC
+</pre></div>
+<p><strong>Decisiones clave:</strong></p>
+<ul><li>El cliente nunca habla con la base de datos ni con Mercado Pago; todo pasa por la API.</li><li>La pasarela de cobro se elige al arrancar el servidor: con <code>MP_ACCESS_TOKEN</code> se usa Mercado Pago en sandbox; sin él, una pasarela simulada (<code>server/services/payment_gateway/index.js</code>). Motorix nunca recibe ni guarda datos de tarjeta.</li><li>Comprobación de vida del servicio: <code>GET /api/salud</code> responde <code>{ "estado": "ok", "servicio": "motorix-api" }</code>.</li></ul>
+<h2>2. Capas del backend (<code>server/</code>)</h2>
+<p>El backend no usa carpeta <code>src/</code>: las capas viven directamente en <code>server/</code> (decisión registrada en <code>docs/project-context.md</code> §27).</p>
+<table><thead><tr><th>Capa</th><th>Carpeta</th><th>Responsabilidad</th><th>Archivos reales</th></tr></thead><tbody><tr><td>Arranque</td><td><code>server.js</code>, <code>app.js</code></td><td><code>app.js</code> crea la aplicación Express, monta <code>/api</code> y el manejo centralizado de errores; <code>server.js</code> la pone a escuchar.</td><td>2</td></tr><tr><td>Configuración</td><td><code>config/</code></td><td>Lectura de variables de entorno (<code>env.js</code>) y pool de conexiones MySQL (<code>db.js</code>).</td><td><code>db.js</code>, <code>env.js</code></td></tr><tr><td>Rutas</td><td><code>routes/</code></td><td>Define cada endpoint y le encadena autenticación, rol y validación. <code>index.js</code> agrupa todo bajo <code>/api</code>.</td><td>13 archivos <code>*.routes.js</code> + <code>index.js</code></td></tr><tr><td>Middlewares</td><td><code>middlewares/</code></td><td><code>auth.js</code> (verifica el JWT y la sesión), <code>authorize.js</code> (rol), <code>validate.js</code> (esquema zod), <code>asyncHandler.js</code>, <code>errorHandler.js</code> (respuesta de error sin trazas).</td><td>5</td></tr><tr><td>Validadores</td><td><code>validators/</code></td><td>Esquemas zod con mensajes en español (cliente, vehículo, orden, pago, etc.).</td><td>13</td></tr><tr><td>Controladores</td><td><code>controllers/</code></td><td>Traducen la petición HTTP a una llamada de servicio y arman la respuesta. Sin lógica de negocio.</td><td>14</td></tr><tr><td>Servicios</td><td><code>services/</code></td><td><strong>Toda la lógica de negocio</strong> (principio II de la constitución): transiciones de estado, precio congelado, cobro, avisos. Incluye <code>order-lock.js</code> y la subcarpeta <code>payment_gateway/</code>.</td><td>15 + <code>payment_gateway/</code> (3)</td></tr><tr><td>Modelos</td><td><code>models/</code></td><td>Acceso a datos: consultas SQL parametrizadas con <code>mysql2</code>, sin ORM.</td><td>15</td></tr><tr><td>Utilidades</td><td><code>utils/</code></td><td>Funciones puras compartidas: dinero, fechas locales, totales de orden, transiciones permitidas, almacén de sesiones (<code>sessionStore.js</code>), respuestas y errores.</td><td>14</td></tr><tr><td>Scripts</td><td><code>scripts/</code></td><td><code>create-admin.js</code> para crear el administrador inicial.</td><td>1</td></tr><tr><td>Pruebas</td><td><code>tests/</code></td><td><code>unit/</code>, <code>integration/</code>, <code>contract/</code> y <code>helpers/</code> (preparación única de la base de pruebas y cierre del pool).</td><td>—</td></tr></tbody></table>
+<h2>3. Capas del cliente (<code>client/lib/</code>)</h2>
+<table><thead><tr><th>Capa</th><th>Carpeta</th><th>Responsabilidad</th><th>Archivos reales</th></tr></thead><tbody><tr><td>Entrada</td><td><code>main.dart</code></td><td>Crea el <code>MultiProvider</code>, las rutas protegidas y el cierre de sesión.</td><td>1</td></tr><tr><td>Pantallas</td><td><code>screens/</code></td><td>Una pantalla por caso de uso: login, recepción, clientes, vehículos, citas, órdenes, refacciones, mantenimiento, pago, ticket, dashboard, usuarios, clientes por avisar, cuenta.</td><td>26</td></tr><tr><td>Widgets</td><td><code>widgets/</code></td><td>Componentes reutilizables: <code>app_shell.dart</code> (marco con menú), <code>app_table.dart</code>, <code>notification_bell.dart</code> (campana de avisos), chips de estado, diálogo de confirmación.</td><td>7</td></tr><tr><td>Providers</td><td><code>providers/</code></td><td>Estado de cada módulo con <code>ChangeNotifier</code> (Provider): carga, error, datos y acciones.</td><td>17</td></tr><tr><td>Servicios</td><td><code>services/</code></td><td><code>api_client.dart</code> (HTTP, encabezado <code>Authorization</code>, manejo de 401) y un servicio por módulo de la API.</td><td>15</td></tr><tr><td>Modelos</td><td><code>models/</code></td><td>Clases Dart que convierten el JSON de la API (<code>fromJson</code>).</td><td>17</td></tr><tr><td>Utilidades</td><td><code>utils/</code></td><td>Rutas (<code>app_routes.dart</code>), tema Material 3 (<code>app_theme.dart</code>), formatos, validadores, mensajes e impresión del ticket (<code>print_service_web.dart</code> / <code>print_service_stub.dart</code>).</td><td>9</td></tr></tbody></table>
+<h2>4. Autenticación y permisos por rol</h2>
+<h3>4.1 Flujo de autenticación</h3>
+<div class="diagram"><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  actor U as Usuario
+  participant C as Cliente Flutter
+  participant A as API Express
+  participant DB as MySQL
+
+  U-&gt;&gt;C: Usuario o correo + contraseña
+  C-&gt;&gt;A: POST /api/auth/login
+  A-&gt;&gt;DB: Busca el usuario por username o email
+  A-&gt;&gt;A: bcrypt.compare (costo 10)
+  alt Contraseña incorrecta
+    A-&gt;&gt;DB: Suma un intento fallido (5 intentos = bloqueo de 15 min)
+    A--&gt;&gt;C: 401 con mensaje en español
+  else Contraseña correcta y cuenta activa
+    A-&gt;&gt;A: Firma JWT (8 h) con identificador de sesión (jti)
+    A--&gt;&gt;C: 200 + token + datos del usuario y rol
+    C-&gt;&gt;C: Guarda el token solo en memoria
+  end
+  C-&gt;&gt;A: Petición protegida con Authorization: Bearer token
+  A-&gt;&gt;A: authenticate: firma válida, sesión no inactiva (30 min)
+  A-&gt;&gt;DB: Consulta rol y estado ACTIVE en cada petición
+  A-&gt;&gt;A: authorize(roles): 403 ROL_NO_AUTORIZADO si no corresponde
+  A--&gt;&gt;C: Respuesta o error 401/403
+  C-&gt;&gt;C: Si recibe 401 con sesión abierta, cierra la sesión y vuelve al login
+</pre></div>
+<p><strong>Reglas implementadas</strong> (<code>server/services/auth.service.js</code>, <code>server/middlewares/auth.js</code>, <code>server/config/env.js</code>):</p>
+<ul><li>Inicio de sesión con <strong>usuario o correo</strong> en el mismo campo.</li><li>Contraseñas con <strong>bcryptjs</strong>, costo 10; nunca se guardan en texto plano.</li><li><strong>Bloqueo</strong>: 5 intentos fallidos consecutivos bloquean la cuenta 15 minutos.</li><li><strong>Token JWT</strong> con vigencia de 8 horas (<code>JWT_EXPIRA_EN</code>) e <strong>inactividad</strong> de 30 minutos (<code>SESSION_IDLE_MS</code>), controlada en <code>utils/sessionStore.js</code>.</li><li>El <strong>rol y el estado</strong> se leen de la base en cada petición: si un administrador desactiva una cuenta o cambia un rol, el efecto es inmediato.</li><li>Los permisos se validan <strong>en el backend</strong> (<code>authorize.js</code>); ocultar botones en el cliente no se considera seguridad.</li><li>Los errores llegan al cliente con mensaje y código en español, sin trazas de error (stack traces).</li></ul>
+<h3>4.2 Matriz de permisos por grupo de endpoints</h3>
+<table><thead><tr><th>Grupo</th><th>ADMIN</th><th>RECEPTIONIST</th><th>MECHANIC</th></tr></thead><tbody><tr><td>Autenticación (<code>/auth</code>)</td><td>Sí</td><td>Sí</td><td>Sí</td></tr><tr><td>Usuarios (<code>/users</code>)</td><td>Sí</td><td>Solo lista de mecánicos</td><td>No</td></tr><tr><td>Clientes (<code>/clients</code>)</td><td>Sí</td><td>Sí</td><td>No</td></tr><tr><td>Vehículos (<code>/vehicles</code>)</td><td>Sí</td><td>Sí</td><td>Solo historial</td></tr><tr><td>Citas (<code>/appointments</code>)</td><td>Sí</td><td>Sí</td><td>No</td></tr><tr><td>Órdenes de servicio (<code>/service-orders</code>)</td><td>Sí</td><td>Crear, editar, asignar, refacciones, estado</td><td>Consultar sus órdenes, diagnóstico, servicios, refacciones, recomendaciones, estado</td></tr><tr><td>Mantenimiento (<code>/maintenance</code>)</td><td>Sí</td><td>Consultar</td><td>Consultar, registrar, editar, marcar realizado</td></tr><tr><td>Refacciones (<code>/parts</code>)</td><td>Sí (alta, edición, baja, movimientos)</td><td>Consultar</td><td>Consultar (sin ningún precio, Sprint 5)</td></tr><tr><td>Pagos (<code>/payments</code>)</td><td>Sí (incluye anular)</td><td>Registrar, confirmar, consultar</td><td>No</td></tr><tr><td>Tickets (<code>/tickets</code>)</td><td>Sí</td><td>Sí</td><td>No</td></tr><tr><td>Dashboard (<code>/dashboard</code>)</td><td>Sí (exclusivo)</td><td>No</td><td>No</td></tr><tr><td>Notificaciones (<code>/notifications</code>)</td><td>Sí (las de su rol)</td><td>Sí (las de su rol)</td><td>Sí (solo de sus órdenes)</td></tr><tr><td>Clientes por avisar (<code>/client-notices</code>)</td><td>Sí</td><td>Sí</td><td>No</td></tr></tbody></table>
+<h2>5. Endpoints reales por grupo</h2>
+<p>Todos cuelgan de <code>/api</code> (<code>server/routes/index.js</code>). «Roles» indica el middleware <code>authorize</code> del archivo de rutas.</p>
+<table><thead><tr><th>Grupo</th><th>Método y ruta</th><th>Roles</th></tr></thead><tbody><tr><td>Salud</td><td><code>GET /api/salud</code></td><td>Público</td></tr><tr><td>Auth</td><td><code>POST /auth/login</code></td><td>Público</td></tr><tr><td>Auth</td><td><code>POST /auth/logout</code>, <code>GET /auth/me</code>, <code>POST /auth/change-password</code></td><td>Sesión iniciada</td></tr><tr><td>Usuarios</td><td><code>GET /users/mechanics</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Usuarios</td><td><code>GET /users</code>, <code>POST /users</code>, <code>PATCH /users/:id</code></td><td>ADMIN</td></tr><tr><td>Clientes</td><td><code>GET /clients</code>, <code>POST /clients</code>, <code>GET /clients/:id</code>, <code>PUT /clients/:id</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Vehículos</td><td><code>GET /vehicles</code>, <code>POST /vehicles</code>, <code>GET /vehicles/:id</code>, <code>PUT /vehicles/:id</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Vehículos</td><td><code>GET /vehicles/:id/history</code></td><td>ADMIN, RECEPTIONIST, MECHANIC</td></tr><tr><td>Citas</td><td><code>GET /appointments</code>, <code>POST /appointments</code>, <code>GET /appointments/:id</code>, <code>PUT /appointments/:id</code>, <code>POST /appointments/:id/cancelar</code>, <code>POST /appointments/:id/recibir</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Órdenes</td><td><code>GET /service-orders</code>, <code>GET /service-orders/:id</code></td><td>ADMIN, RECEPTIONIST, MECHANIC</td></tr><tr><td>Órdenes</td><td><code>POST /service-orders</code>, <code>PUT /service-orders/:id</code>, <code>POST /service-orders/:id/asignar</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Órdenes</td><td><code>POST /service-orders/:id/diagnostico</code>, <code>POST /service-orders/:id/servicios</code>, <code>DELETE /service-orders/:id/servicios/:servicioId</code>, <code>POST /service-orders/:id/recomendaciones</code></td><td>ADMIN, MECHANIC</td></tr><tr><td>Órdenes</td><td><code>POST /service-orders/:id/refacciones</code>, <code>DELETE /service-orders/:id/refacciones/:refaccionId</code> (y sus alias <code>/repuestos</code>), <code>POST /service-orders/:id/estado</code></td><td>ADMIN, RECEPTIONIST, MECHANIC</td></tr><tr><td>Mantenimiento</td><td><code>GET /maintenance</code>, <code>GET /maintenance/:id</code></td><td>ADMIN, RECEPTIONIST, MECHANIC</td></tr><tr><td>Mantenimiento</td><td><code>POST /maintenance</code>, <code>PUT /maintenance/:id</code>, <code>POST /maintenance/:id/realizar</code></td><td>ADMIN, MECHANIC</td></tr><tr><td>Refacciones</td><td><code>GET /parts</code>, <code>GET /parts/:id</code>, <code>GET /parts/:id/movements</code></td><td>ADMIN, RECEPTIONIST, MECHANIC</td></tr><tr><td>Refacciones</td><td><code>POST /parts</code>, <code>PUT /parts/:id</code>, <code>POST /parts/:id/desactivar</code>, <code>POST /parts/:id/movements</code></td><td>ADMIN</td></tr><tr><td>Pagos</td><td><code>GET /payments/orden/:ordenId</code>, <code>GET /payments/orden/:ordenId/total</code>, <code>POST /payments</code>, <code>POST /payments/:id/confirmar</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Pagos</td><td><code>POST /payments/:id/anular</code></td><td>ADMIN</td></tr><tr><td>Tickets</td><td><code>POST /tickets</code>, <code>GET /tickets/orden/:ordenId</code>, <code>GET /tickets/:id</code></td><td>ADMIN, RECEPTIONIST</td></tr><tr><td>Dashboard</td><td><code>GET /dashboard</code></td><td>ADMIN (exclusivo)</td></tr><tr><td>Notificaciones</td><td><code>GET /notifications</code>, <code>GET /notifications/count</code>, <code>POST /notifications/read</code></td><td>Sesión iniciada (filtradas por rol)</td></tr><tr><td>Clientes por avisar</td><td><code>GET /client-notices</code>, <code>POST /client-notices</code></td><td>ADMIN, RECEPTIONIST</td></tr></tbody></table>
+<p><strong>Total:</strong> 13 grupos de recursos y 63 rutas, más <code>GET /api/salud</code>.</p>
+<h2>6. Despliegue</h2>
+<p><code>[COMPLETAR: hosting por definir]</code></p>
+<p>Lo que sí está decidido en la constitución (enmienda 1.1.0, 2026-11-13):</p>
+<ul><li>El despliegue en hosting <strong>para la demostración escolar</strong> forma parte del alcance oficial, igual que el <strong>aviso de privacidad visible en la app</strong>.</li><li>Se permite <strong>una instancia en la nube</strong> (backend, frontend web y MySQL 8) <strong>solo para la demostración</strong>; el desarrollo y las pruebas siguen en MySQL local.</li><li>Las credenciales viven únicamente en las variables de entorno del proveedor de hosting, nunca en el repositorio.</li><li>Nunca se ejecutan pruebas contra la base de la nube.</li><li>Dato técnico útil para el despliegue: el cliente lee la dirección de la API de <code>--dart-define=API_BASE_URL</code>; <code>arrancar.ps1</code> ya compila la versión web con <code>API_BASE_URL=/api</code>, lo que permite servir el frontend y la API desde el mismo dominio.</li></ul>
+<p>Pendientes: <code>[COMPLETAR: proveedor de hosting]</code>, <code>[COMPLETAR: proveedor de MySQL 8 en la nube]</code>, <code>[COMPLETAR: dominio o URL pública de la demostración]</code>, <code>[COMPLETAR: fecha del despliegue]</code>.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  if (window.mermaid) {
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'strict', fontFamily: 'Segoe UI, Arial, sans-serif', flowchart: { htmlLabels: true }, er: { useMaxWidth: true } });
+  }
+</script>
+</body>
+</html>
