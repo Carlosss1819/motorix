@@ -85,6 +85,33 @@ abstract final class ShellSections {
     icon: LucideIcons.phone,
     label: 'Clientes por avisar',
   );
+  // Sprint 7 (Entrega A).
+  static const ShellSection settings = ShellSection(
+    route: Routes.settings,
+    icon: LucideIcons.settings,
+    label: 'Configuración',
+  );
+  static const ShellSection serviceTypes = ShellSection(
+    route: Routes.serviceTypes,
+    icon: LucideIcons.listChecks,
+    label: 'Tipos de servicio',
+  );
+  static const ShellSection auditLog = ShellSection(
+    route: Routes.auditLog,
+    icon: LucideIcons.scrollText,
+    label: 'Bitácora',
+  );
+  // Sprint 7 (Entrega B).
+  static const ShellSection reports = ShellSection(
+    route: Routes.reports,
+    icon: LucideIcons.chartBarBig,
+    label: 'Reportes',
+  );
+  static const ShellSection terms = ShellSection(
+    route: Routes.terms,
+    icon: LucideIcons.shieldCheck,
+    label: 'Términos y privacidad',
+  );
 
   /// Secciones visibles para cada rol. Ocultar no es seguridad: el backend
   /// valida cada operación protegida (RN-15).
@@ -98,33 +125,42 @@ abstract final class ShellSections {
   /// backend responde 403 al mecánico (FR-022).
   static List<ShellSection> forRole(String rol) {
     return switch (rol) {
-      Rol.admin =>
-        const <ShellSection>[
-          home,
-          dashboard,
-          clients,
-          vehicles,
-          appointments,
-          orders,
-          maintenance,
-          clientNotices,
-          parts,
-          users,
-          account,
-        ],
-      Rol.receptionist =>
-        const <ShellSection>[
-          home,
-          clients,
-          vehicles,
-          appointments,
-          orders,
-          maintenance,
-          clientNotices,
-          account,
-        ],
-      Rol.mechanic =>
-        const <ShellSection>[home, myOrders, maintenance, account],
+      Rol.admin => const <ShellSection>[
+        home,
+        dashboard,
+        reports,
+        clients,
+        vehicles,
+        appointments,
+        orders,
+        maintenance,
+        clientNotices,
+        parts,
+        serviceTypes,
+        users,
+        auditLog,
+        settings,
+        terms,
+        account,
+      ],
+      Rol.receptionist => const <ShellSection>[
+        home,
+        clients,
+        vehicles,
+        appointments,
+        orders,
+        maintenance,
+        clientNotices,
+        terms,
+        account,
+      ],
+      Rol.mechanic => const <ShellSection>[
+        home,
+        myOrders,
+        maintenance,
+        terms,
+        account,
+      ],
       _ => const <ShellSection>[home, account],
     };
   }
@@ -161,6 +197,11 @@ abstract final class ShellSections {
       Routes.partDetail => 'Detalle de refacción',
       Routes.account => 'Mi cuenta',
       Routes.clientNotices => 'Clientes por avisar',
+      Routes.settings => 'Configuración',
+      Routes.serviceTypes => 'Tipos de servicio',
+      Routes.auditLog => 'Bitácora',
+      Routes.reports => 'Reportes',
+      Routes.terms => 'Términos y privacidad',
       _ => 'Motorix',
     };
   }
@@ -222,10 +263,12 @@ class _AppShellState extends State<AppShell> {
     final ShellProvider shell = context.watch<ShellProvider>();
     final AuthProvider auth = context.watch<AuthProvider>();
     final String? routeName = ModalRoute.of(context)?.settings.name;
-    final List<ShellSection> sections =
-        ShellSections.forRole(auth.user?.rol ?? Rol.mechanic);
-    final int selected =
-        sections.indexWhere((ShellSection section) => section.route == routeName);
+    final List<ShellSection> sections = ShellSections.forRole(
+      auth.user?.rol ?? Rol.mechanic,
+    );
+    final int selected = sections.indexWhere(
+      (ShellSection section) => section.route == routeName,
+    );
 
     return Scaffold(
       body: Row(
@@ -309,7 +352,9 @@ class _Sidebar extends StatelessWidget {
                     highlightColor: colors.sidebarActive,
                   ),
                   icon: Icon(
-                    expanded ? LucideIcons.chevronsLeft : LucideIcons.chevronsRight,
+                    expanded
+                        ? LucideIcons.chevronsLeft
+                        : LucideIcons.chevronsRight,
                     size: AppMetrics.iconSize,
                   ),
                 ),
@@ -328,30 +373,44 @@ class _Sidebar extends StatelessWidget {
               ],
             ),
           ),
+          // Sprint 7: con las secciones nuevas del administrador, el menú se
+          // desplaza en pantallas bajas (1280x720) en lugar de desbordarse.
           Expanded(
-            child: NavigationRail(
-              extended: expanded,
-              minWidth: AppMetrics.sidebarCollapsedWidth,
-              minExtendedWidth: AppMetrics.sidebarExpandedWidth,
-              backgroundColor: colors.sidebar,
-              useIndicator: true,
-              indicatorColor: colors.sidebarActive,
-              selectedIndex: selectedIndex,
-              labelType: NavigationRailLabelType.none,
-              onDestinationSelected: (int index) =>
-                  _goToSection(context, sections[index].route),
-              destinations: <NavigationRailDestination>[
-                for (final ShellSection section in sections)
-                  NavigationRailDestination(
-                    icon: expanded
-                        ? Icon(section.icon)
-                        : Tooltip(
-                            message: section.label,
-                            child: Icon(section.icon),
-                          ),
-                    label: Text(section.label),
+            child: LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) =>
+                  SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: NavigationRail(
+                          extended: expanded,
+                          minWidth: AppMetrics.sidebarCollapsedWidth,
+                          minExtendedWidth: AppMetrics.sidebarExpandedWidth,
+                          backgroundColor: colors.sidebar,
+                          useIndicator: true,
+                          indicatorColor: colors.sidebarActive,
+                          selectedIndex: selectedIndex,
+                          labelType: NavigationRailLabelType.none,
+                          onDestinationSelected: (int index) =>
+                              _goToSection(context, sections[index].route),
+                          destinations: <NavigationRailDestination>[
+                            for (final ShellSection section in sections)
+                              NavigationRailDestination(
+                                icon: expanded
+                                    ? Icon(section.icon)
+                                    : Tooltip(
+                                        message: section.label,
+                                        child: Icon(section.icon),
+                                      ),
+                                label: Text(section.label),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-              ],
             ),
           ),
           _SidebarFooter(expanded: expanded, auth: auth, colors: colors),
@@ -440,10 +499,7 @@ class _SidebarFooter extends StatelessWidget {
                 hoverColor: colors.sidebarActive,
                 highlightColor: colors.sidebarActive,
               ),
-              icon: const Icon(
-                LucideIcons.logOut,
-                size: AppMetrics.iconSize,
-              ),
+              icon: const Icon(LucideIcons.logOut, size: AppMetrics.iconSize),
             ),
           );
 
@@ -535,10 +591,7 @@ class _Header extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(
-                auth.user?.rolLabel ?? '',
-                style: textTheme.bodySmall,
-              ),
+              Text(auth.user?.rolLabel ?? '', style: textTheme.bodySmall),
             ],
           ),
         ],

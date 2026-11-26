@@ -116,6 +116,27 @@ export async function create(
 // Contexto de la orden para el comprobante: cliente y vehículo con sus campos
 // separados (marca, modelo, año, placas) más el kilometraje de entrada, que
 // `findServiceOrderById` trae solo como etiqueta concatenada.
+// Sprint 7 (US8, FR-012): tipos de servicio distintos con intervalo enlazados
+// a las líneas de la orden, en el orden en que se agregaron.
+export async function findOrderServiceTypes(serviceOrderId, connection = null) {
+  const rows = await run(
+    connection,
+    `SELECT st.id, st.name, st.interval_days, st.interval_km, MIN(os.id) AS first_line
+     FROM order_services os
+     JOIN service_types st ON st.id = os.service_type_id
+     WHERE os.service_order_id = ?
+     GROUP BY st.id, st.name, st.interval_days, st.interval_km
+     ORDER BY first_line`,
+    [serviceOrderId],
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    nombre: row.name,
+    intervaloDias: row.interval_days,
+    intervaloKm: row.interval_km,
+  }));
+}
+
 export async function findOrderContext(serviceOrderId, connection = null) {
   const rows = await run(
     connection,

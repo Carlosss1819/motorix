@@ -18,6 +18,10 @@ import {
 } from '../utils/maintenance-status.js';
 import { getConnection } from '../config/db.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
+// Sprint 7 (US2, FR-005): los márgenes de «Próximo» configurados son la
+// antelación por defecto de los mantenimientos NUEVOS; los existentes conservan
+// la suya (H-S7-01).
+import { getMaintenanceDefaults } from './settings.service.js';
 
 // Fecha local del servidor en `YYYY-MM-DD` (la misma convención que MySQL con
 // timezone 'local'; decisión abierta R-11). Desde el Sprint 6 viene del util
@@ -128,6 +132,7 @@ export async function create(data, user) {
     );
   }
 
+  const margenes = await getMaintenanceDefaults();
   const created = await createMaintenance({
     vehicleId: data.vehiculoId,
     serviceType: data.tipoServicio,
@@ -135,8 +140,8 @@ export async function create(data, user) {
     targetMileage: data.kilometrajeObjetivo,
     intervalDays: data.intervaloDias,
     intervalKm: data.intervaloKm,
-    advanceDays: data.antelacionDias,
-    advanceKm: data.antelacionKm,
+    advanceDays: data.antelacionDias ?? margenes.antelacionDias,
+    advanceKm: data.antelacionKm ?? margenes.antelacionKm,
     notes: data.notas,
     createdBy: user.id,
   });

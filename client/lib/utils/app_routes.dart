@@ -70,6 +70,16 @@ abstract final class Routes {
 
   /// Clientes por avisar (Sprint 6, US7): solo ADMIN y RECEPTIONIST.
   static const String clientNotices = '/client-notices';
+
+  /// Sprint 7 (Entrega A): configuración del taller, tipos de servicio y
+  /// bitácora (solo ADMIN); términos y aviso de privacidad (los tres roles).
+  static const String settings = '/settings';
+  static const String serviceTypes = '/service-types';
+  static const String auditLog = '/audit-log';
+  static const String terms = '/terms';
+
+  /// Sprint 7 (Entrega B): reportes y exportación CSV (solo ADMIN).
+  static const String reports = '/reports';
 }
 
 /// Ruta de Material que usa la duración de navegación del sistema de diseño

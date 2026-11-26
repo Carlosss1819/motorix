@@ -103,6 +103,13 @@ export const serviceItemSchema = z.object({
   // Sprint 5 (FR-032): misma regla que los precios del catálogo; sigue
   // siendo opcional y solo acepta números (sin texto).
   precio: priceSchema('El precio de la mano de obra', { coerce: false }).optional(),
+  // Sprint 7 (FR-010): tipo de servicio del catálogo, opcional. El servicio
+  // valida que exista y esté activo (400 TIPO_SERVICIO_INVALIDO).
+  tipoServicioId: z
+    .number({ invalid_type_error: 'El tipo de servicio no es un identificador válido' })
+    .int('El tipo de servicio no es un identificador válido')
+    .positive('El tipo de servicio no es un identificador válido')
+    .optional(),
 });
 
 // Refacción usada en la orden (US7, FR-023/FR-025): el alta sale del

@@ -140,6 +140,7 @@ class ServiceOrdersService {
     required String descripcion,
     required int duracionMinutos,
     num? precio,
+    int? tipoServicioId,
   }) async {
     await _api.post(
       '/service-orders/$id/servicios',
@@ -147,6 +148,8 @@ class ServiceOrdersService {
         'descripcion': descripcion,
         'duracionMinutos': duracionMinutos,
         'precio': ?precio,
+        // Sprint 7 (FR-010): tipo opcional del catálogo.
+        'tipoServicioId': ?tipoServicioId,
       },
     );
   }

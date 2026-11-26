@@ -9,11 +9,12 @@ import { query } from '../config/db.js';
 // conexión de la transacción que ya tiene el candado de la orden (R-07).
 export async function createServiceWithLabor(
   connection,
-  { serviceOrderId, description, durationMinutes, price },
+  { serviceOrderId, description, durationMinutes, price, serviceTypeId = null },
 ) {
+  // Sprint 7 (FR-010): enlace opcional con el catálogo de tipos de servicio.
   const [serviceResult] = await connection.execute(
-    'INSERT INTO order_services (service_order_id, description) VALUES (?, ?)',
-    [serviceOrderId, description],
+    'INSERT INTO order_services (service_order_id, description, service_type_id) VALUES (?, ?, ?)',
+    [serviceOrderId, description, serviceTypeId],
   );
   const [laborResult] = await connection.execute(
     `INSERT INTO order_labor
@@ -24,6 +25,7 @@ export async function createServiceWithLabor(
   return {
     id: serviceResult.insertId,
     description,
+    serviceTypeId,
     labor: {
       id: laborResult.insertId,
       durationMinutes,
@@ -86,9 +88,11 @@ export async function deleteOrderPart(connection, serviceOrderId, rowId) {
 // Servicios de la orden con su partida de mano de obra (agregado del detalle).
 export async function listServicesByOrder(serviceOrderId) {
   const rows = await query(
-    `SELECT s.id, s.description, l.id AS labor_id, l.duration_minutes, l.price
+    `SELECT s.id, s.description, s.service_type_id, st.name AS service_type_name,
+            l.id AS labor_id, l.duration_minutes, l.price
      FROM order_services s
      LEFT JOIN order_labor l ON l.service_id = s.id
+     LEFT JOIN service_types st ON st.id = s.service_type_id
      WHERE s.service_order_id = ?
      ORDER BY s.id`,
     [serviceOrderId],
@@ -96,6 +100,8 @@ export async function listServicesByOrder(serviceOrderId) {
   return rows.map((row) => ({
     id: row.id,
     description: row.description,
+    serviceTypeId: row.service_type_id ?? null,
+    serviceTypeName: row.service_type_name ?? null,
     labor: row.labor_id
       ? { id: row.labor_id, durationMinutes: row.duration_minutes, price: row.price }
       : null,

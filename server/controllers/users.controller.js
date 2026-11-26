@@ -13,13 +13,13 @@ export async function listMechanicsHandler(req, res) {
 
 export async function createUserHandler(req, res) {
   const { username, email, rol, contrasena: password } = req.body;
-  const user = await create({ username, email, rol, contrasena: password });
+  const user = await create({ username, email, rol, contrasena: password }, req.user);
   sendCreated(res, user);
 }
 
 export async function updateUserHandler(req, res) {
   const { id } = req.params;
   const { rol, estado: statusApi } = req.body;
-  const user = await update(Number(id), { rol, estado: statusApi });
+  const user = await update(Number(id), { rol, estado: statusApi }, req.user);
   sendOk(res, user);
 }

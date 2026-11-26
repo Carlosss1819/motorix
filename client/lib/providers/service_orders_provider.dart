@@ -241,12 +241,14 @@ class ServiceOrdersProvider extends ChangeNotifier {
     required String descripcion,
     required int duracionMinutos,
     num? precio,
+    int? tipoServicioId,
   }) async {
     await _service.addService(
       id: id,
       descripcion: descripcion,
       duracionMinutos: duracionMinutos,
       precio: precio,
+      tipoServicioId: tipoServicioId,
     );
     await _refrescarContenido(id);
   }

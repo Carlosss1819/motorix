@@ -2,6 +2,7 @@
 import { login, changePassword } from '../services/auth.service.js';
 import { sendOk } from '../utils/response.js';
 import * as sessionStore from '../utils/sessionStore.js';
+import { hasPendingTerms } from '../services/terms.service.js';
 
 export async function loginHandler(req, res) {
   const { identificador: identifier, contrasena: password } = req.body;
@@ -20,6 +21,8 @@ export async function meHandler(req, res) {
     username: req.user.username,
     email: req.user.email,
     rol: req.user.role,
+    // Sprint 7 (US9, contracts/terms.md).
+    terminosPendientes: await hasPendingTerms(req.user.id),
   });
 }
 

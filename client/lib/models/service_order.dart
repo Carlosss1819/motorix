@@ -42,6 +42,8 @@ class OrderServiceItem {
     required this.id,
     required this.descripcion,
     this.manoDeObra,
+    this.tipoServicioId,
+    this.tipoServicio,
   });
 
   factory OrderServiceItem.fromJson(Map<String, dynamic> json) =>
@@ -51,11 +53,17 @@ class OrderServiceItem {
         manoDeObra: json['manoDeObra'] is Map<String, dynamic>
             ? OrderLabor.fromJson(asMap(json['manoDeObra']))
             : null,
+        tipoServicioId: asIntOrNull(json['tipoServicioId']),
+        tipoServicio: asStringOrNull(json['tipoServicio']),
       );
 
   final int id;
   final String descripcion;
   final OrderLabor? manoDeObra;
+
+  /// Sprint 7 (US3, FR-010): tipo del catálogo; `null` en líneas sin tipo.
+  final int? tipoServicioId;
+  final String? tipoServicio;
 }
 
 /// Refacción usada en la orden (US7, FR-023): la clave del contrato sigue

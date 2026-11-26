@@ -318,6 +318,18 @@ El diálogo debe ser breve, claro y en español. Texto sugerido:
 - Botón «Marcar como avisado» (ícono `phoneCall`) → diálogo de confirmación de la [sección 8.5](#85-confirmaciones-obligatorias) con «¿Ya avisaste a <cliente>? Solo márcalo si de verdad le avisaste.», «Confirmar» y «Cancelar». Al confirmar, el renglón sale y aparece el snackbar «Aviso registrado».
 - Si otra persona ya lo marcó (409) o el hecho ya no aplica (404), snackbar con el mensaje del servidor y la lista se recarga.
 
+### 8.5.3 Configuración, catálogo, términos y bitácora (Sprint 7)
+
+- **Menú** (ícono y rol): «Tipos de servicio» (`listChecks`), «Bitácora» (`scrollText`) y «Configuración» (`settings`) solo para ADMIN; «Términos y privacidad» (`shieldCheck`) para los tres roles. Con estas secciones, la lista del menú lateral se desplaza en pantallas bajas (por ejemplo, 1280×720) en lugar de desbordarse.
+- **Configuración**: dos paneles («Datos del ticket» y «Márgenes de "Próximo" del mantenimiento») con validación en el formulario y un botón «Guardar configuración» (ícono `save`); al guardar, snackbar de éxito.
+- **Tipos de servicio**: tabla con «Tipo de servicio», «Intervalo» (por ejemplo «180 días · 5,000 km»), «Estado» (`StatusChip`) y «Acciones». Alta y edición en diálogo de ancho `formDialogWidth`; desactivar pide confirmación de la [sección 8.5](#85-confirmaciones-obligatorias) con estilo destructivo; no hay borrar.
+- **Formulario de mantenimiento**: selector opcional «Tipo del catálogo» que rellena tipo, intervalos, fecha y kilometraje; todo queda editable. La antelación vacía significa «margen del taller».
+- **Detalle de orden**: selector opcional «Tipo de servicio del catálogo» sobre la descripción; cada línea con tipo muestra «Tipo: …» en texto secundario.
+- **Ticket**: panel «Próximo servicio» entre los servicios y los totales, solo si el ticket trae próximos servicios; con ambos intervalos dice «fecha o km, lo que ocurra primero».
+- **Términos (aceptación)**: pantalla completa sin menú, panel con la nota «Plantilla académica» en color `warning` suave, texto seleccionable, «Rechazar y salir» (contorno) y «Acepto» (relleno).
+- **Bitácora**: panel de filtros (fechas AAAA-MM-DD, id de usuario, acción) con «Filtrar» y «Limpiar», tabla de solo lectura y paginador «Anterior / Página X de Y / Siguiente».
+- **Reportes** (Entrega B, solo ADMIN, ícono `chartBarBig`, debajo de «Panel» en el menú): panel de rango con «Desde» y «Hasta» (AAAA-MM-DD), «Consultar» (relleno, ícono `search`) y los atajos «Hoy», «Semana» y «Mes» (contorno); abre con el mes en curso. Debajo, pestañas desplazables «Ingresos», «Servicios frecuentes», «Productividad», «Margen de refacciones» y «Rotación». Cada pestaña muestra una línea de resumen (por ejemplo, el total cobrado o los totales del margen) con el botón «Exportar CSV» (contorno, ícono `download`) a la derecha, y una o más tablas `FullWidthTable` (Ingresos: «Por método» y «Por día»). Los avisos «Sin costo registrado» y «Sin existencia» van como texto en la celda de costo o rotación; el periodo sin datos usa `EmptyView` («No hay datos en el periodo seleccionado.») y un rango inválido usa `FormErrorBanner`.
+
 ### 8.6 Tarjetas
 
 Usar `Card` solo para agrupar contenido que lo necesite (indicadores del dashboard, resúmenes). **Por defecto, no usar tarjetas:** preferir tablas, listas y divisores.

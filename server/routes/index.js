@@ -13,6 +13,13 @@ import { ticketsRoutes } from './tickets.routes.js';
 import { dashboardRoutes } from './dashboard.routes.js';
 import { notificationsRoutes } from './notifications.routes.js';
 import { clientNoticesRoutes } from './client_notices.routes.js';
+// Sprint 7 (Entrega A): configuración, catálogo, términos y bitácora.
+import { settingsRoutes } from './settings.routes.js';
+import { serviceTypesRoutes } from './service_types.routes.js';
+import { termsRoutes } from './terms.routes.js';
+import { auditLogRoutes } from './audit_log.routes.js';
+// Sprint 7 (Entrega B): reportes.
+import { reportsRoutes } from './reports.routes.js';
 
 export const apiRoutes = Router();
 
@@ -29,3 +36,8 @@ apiRoutes.use('/tickets', ticketsRoutes);
 apiRoutes.use('/dashboard', dashboardRoutes);
 apiRoutes.use('/notifications', notificationsRoutes);
 apiRoutes.use('/client-notices', clientNoticesRoutes);
+apiRoutes.use('/settings', settingsRoutes);
+apiRoutes.use('/service-types', serviceTypesRoutes);
+apiRoutes.use('/terms', termsRoutes);
+apiRoutes.use('/audit-log', auditLogRoutes);
+apiRoutes.use('/reports', reportsRoutes);

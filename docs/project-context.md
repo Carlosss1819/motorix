@@ -495,6 +495,121 @@ una recibe 409 `YA_AVISADO`. Un mantenimiento avisado como próximo no vuelve a
 salir al vencer; si se renueva (objetivo nuevo), sí. El sistema no envía
 mensajes: el aviso al cliente lo hace una persona por teléfono.
 
+## 6.13 Configuración, términos y seguridad (Sprint 7, Entrega A)
+
+Fuente de verdad: `specs/007-reportes-configuracion/` (spec, contratos,
+research y data-model). Esquema en la migración `008` y datos en el seed `007`
+(ids 70001 a 70099).
+
+**Configuración del taller** (solo ADMIN, `/api/settings`; los demás roles
+reciben 403). Tabla clave-valor `settings`:
+
+| Clave | Uso | Respaldo sin fila |
+|---|---|---|
+| `shop.name`, `shop.address`, `shop.phone` | Encabezado de los tickets **nuevos** | `Motorix`, `Av. Ejemplo 123, Col. Centro`, `55-0000-0000` (antigua constante `TALLER`) |
+| `maintenance.advance_days`, `maintenance.advance_km` | Antelación por defecto de los mantenimientos **nuevos** que no traen la suya | 30 días y 500 km (`DEFAULT_ADVANCE_*` de `server/utils/maintenance-status.js`) |
+
+Los valores de respaldo viven en `server/utils/settings-defaults.js`; no hay
+variables de entorno para estos datos. Los tickets ya emitidos conservan los
+datos de su copia y los mantenimientos existentes su propia antelación.
+
+**Catálogo de tipos de servicio** (`/api/service-types`): nombre único (sin
+distinguir mayúsculas) con intervalo en días, en km o ambos (al menos uno).
+Los tres roles leen los activos; solo ADMIN crea, edita, activa y desactiva;
+nunca se borran. Las líneas de servicio de la orden pueden enlazarse a un tipo
+activo (`order_services.service_type_id`, opcional); las anteriores quedan sin
+tipo. Al programar un mantenimiento, elegir un tipo propone intervalo, fecha
+(hoy + días) y kilometraje (actual + km), todo editable (RN-11, RN-12).
+
+**Próximo servicio en el ticket**: la copia v2 de los tickets nuevos agrega
+`proximosServicios`, un elemento por tipo con intervalo de la orden (fecha de
+emisión + días, kilometraje de entrada + km). Los tickets anteriores no lo
+traen y no muestran la sección.
+
+**Términos y aviso de privacidad**: versión vigente en `terms_versions`
+(publicada con seeds; la `1.0` es una plantilla académica para el responsable
+ficticio «Taller Motorix», con los elementos mínimos de la LFPDPPP). Cada
+usuario la acepta una vez por versión (`terms_acceptances`); los existentes
+la aceptan en su siguiente inicio de sesión. Sin aceptarla, el backend
+responde `403 TERMINOS_PENDIENTES` a todo salvo `GET /api/auth/me`,
+`POST /api/auth/logout`, `GET /api/terms/current` y `POST /api/terms/accept`.
+Rechazar cierra la sesión. Los tres roles consultan el texto en «Términos y
+privacidad»; ADMIN además ve las aceptaciones. Para publicar una versión
+nueva: un seed nuevo que inserte la versión con `is_current = 1` y apague las
+anteriores (nunca editar el texto de una versión ya aceptada).
+
+**Bitácora** (`audit_log`, consulta solo ADMIN en `/api/audit-log`, paginada,
+con filtros de fecha, usuario y acción; sin edición, borrado ni exportación):
+`LOGIN_FALLIDO`, `CUENTA_BLOQUEADA`, `USUARIO_CREADO`, `USUARIO_ROL_CAMBIADO`,
+`USUARIO_ACTIVADO`, `USUARIO_DESACTIVADO`, `CONFIG_ACTUALIZADA`,
+`TIPO_SERVICIO_*`, `PRECIO_REFACCION_CAMBIADO`, `PAGO_ANULADO`,
+`PAGO_CANCELADO` (cancelación manual o por importe desfasado) y
+`TERMINOS_ACEPTADOS`. Nunca guarda contraseñas, hashes, tokens ni datos de
+tarjeta; si la escritura falla, la operación principal sigue.
+
+**Seguridad**: se mantienen la política de contraseñas (8 caracteres,
+mayúscula, minúscula y número), el cierre por inactividad de 30 minutos
+(`SESSION_IDLE_MS`) y el token de 8 horas. Se agregó `helmet` para las
+cabeceras de seguridad HTTP.
+
+## 6.14 Reportes y exportación (Sprint 7, Entrega B)
+
+Fuente de verdad: `specs/007-reportes-configuracion/contracts/reports.md`.
+Solo ADMIN (`/api/reports/*`, solo `GET`; recepción y mecánico reciben 403 y
+no ven la sección «Reportes» del menú). Son de solo lectura: se calculan con
+consultas de agregación sobre los datos existentes, sin tablas nuevas.
+
+**Rango**: `desde` y `hasta` (`AAAA-MM-DD`) obligatorios, `desde <= hasta` y
+como máximo 366 días contando ambos extremos; si no, `400 RANGO_INVALIDO`
+(`server/utils/report-range.js`). El rango va de `desde 00:00:00` a antes de
+`hasta + 1 día`, en hora local del servidor (Ciudad de México). En la
+pantalla, los atajos «Hoy», «Semana» (lunes a hoy) y «Mes» (día 1 a hoy) se
+calculan en la hora de Ciudad de México (UTC−6 todo el año), sin depender de
+la zona del equipo. Un rango sin datos devuelve ceros y listas vacías.
+
+| Reporte | Ruta | Periodo | Contenido |
+|---|---|---|---|
+| Ingresos | `ingresos` | Pagos `PAGADO` por fecha de registro | Total, número de pagos, desglose por método y por día |
+| Servicios frecuentes | `servicios` | Órdenes que pasaron a `TERMINADO` en el rango (`order_status_history`) | Por tipo de servicio (o descripción si la línea no tiene tipo): veces y mano de obra; máximo 50 |
+| Productividad | `productividad` | Igual | Por mecánico asignado (o «Sin mecánico asignado»): órdenes terminadas y mano de obra |
+| Margen de refacciones | `refacciones` | Igual | Por refacción del catálogo: cantidad, costo (precio de compra vigente × cantidad), venta (precio congelado de cada línea × cantidad) y margen; sin precio de compra: «sin costo registrado», fuera de los totales |
+| Rotación | `rotacion` | Movimientos `SALIDA` del rango | Por refacción: salidas, existencia actual y rotación = salidas / existencia (dos decimales); existencia 0: «sin existencia» |
+
+Reglas de cálculo:
+
+- Los importes se suman en centavos enteros (`server/utils/money.js`) y se
+  responden como número de dos decimales; coinciden al centavo con los pagos
+  y las órdenes (FR-032, SC-007). Anulados, cancelados, rechazados y
+  pendientes no suman en ingresos.
+- Las líneas de refacción heredadas del Sprint 2 (sin `part_id`) no entran
+  al margen porque no tienen refacción del catálogo. La rotación cuenta las
+  salidas brutas (una devolución al inventario es un movimiento aparte y no
+  se resta).
+- Listas acotadas (FR-039): servicios 50 filas; el resto, 500. Los totales
+  del margen se calculan con todas las filas.
+- Rendimiento (SC-008): con un año de datos de ejemplo (1,500 órdenes, 3,000
+  líneas de servicio y de refacción, 1,500 pagos y 3,000 salidas), cada
+  reporte responde en menos de 3 s en JSON y en CSV
+  (`server/tests/integration/reports-performance.test.js`).
+
+**Exportación CSV** (`formato=csv`, FR-037): mismas filas y cifras que la
+pantalla, UTF-8 con BOM (la hoja de cálculo lee acentos y eñes), separador
+coma, CRLF y comillas dobles duplicadas para escapar
+(`server/utils/csv.js`, sin librerías). Nombre del archivo:
+`<reporte>_<desde>_<hasta>.csv`. Los importes van con punto decimal y dos
+decimales; un texto que empieza con `=`, `+`, `-` o `@` se antepone con un
+apóstrofo para que la hoja de cálculo no lo ejecute como fórmula. El
+reporte de ingresos se exporta en una sola tabla (`seccion`: Total, Por
+método, Por día) y el de margen agrega una fila `TOTAL`. En la web el botón
+«Exportar CSV» descarga el archivo; en la aplicación de escritorio ofrece
+copiar el contenido.
+
+**Datos de ejemplo** (seed `007`, ids 70001 a 70099): un cliente, un
+vehículo, dos refacciones (una sin precio de compra y sin existencia), tres
+órdenes entregadas en el mes en curso, pagos aprobados por cada método más
+uno anulado y sus salidas de inventario. Las cifras esperadas están en el
+comentario del seed (ingresos del mes: 3,630.00 en 3 pagos).
+
 ------------------------------------------------------------------------
 
 # 7. Funcionalidad fuera del MVP actual

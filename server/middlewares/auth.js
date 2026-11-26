@@ -7,6 +7,22 @@ import { config } from '../config/env.js';
 import { findById as findUserById } from '../models/user.js';
 import { sendError } from '../utils/response.js';
 import * as sessionStore from '../utils/sessionStore.js';
+import { hasPendingTerms } from '../services/terms.service.js';
+
+// Sprint 7 (US9, FR-020): con la aceptación de la versión vigente pendiente,
+// solo se permiten estas operaciones; todo lo demás responde
+// 403 TERMINOS_PENDIENTES (contracts/terms.md).
+const TERMS_ALLOWLIST = new Set([
+  'GET /api/auth/me',
+  'POST /api/auth/logout',
+  'GET /api/terms/current',
+  'POST /api/terms/accept',
+]);
+
+function routeKey(req) {
+  const path = (req.originalUrl ?? '').split('?')[0].replace(/\/+$/, '');
+  return `${req.method} ${path}`;
+}
 
 export async function authenticate(req, res, next) {
   try {
@@ -48,6 +64,15 @@ export async function authenticate(req, res, next) {
       sessionId: payload.jti,
     };
     sessionStore.touch(user.id, payload.jti);
+
+    if (!TERMS_ALLOWLIST.has(routeKey(req)) && (await hasPendingTerms(user.id))) {
+      return sendError(
+        res,
+        403,
+        'Debe aceptar los términos y condiciones y el aviso de privacidad para continuar',
+        'TERMINOS_PENDIENTES',
+      );
+    }
     return next();
   } catch (error) {
     return next(error);

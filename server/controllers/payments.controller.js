@@ -21,5 +21,5 @@ export async function annulPaymentHandler(req, res) {
 
 // Confirmación manual de un cobro Mercado Pago pendiente (US3, FR-005).
 export async function confirmPaymentHandler(req, res) {
-  sendOk(res, await service.confirmPayment(Number(req.params.id), req.body));
+  sendOk(res, await service.confirmPayment(Number(req.params.id), req.body, req.user));
 }

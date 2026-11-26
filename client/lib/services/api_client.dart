@@ -74,6 +74,11 @@ class ApiClient {
   Future<dynamic> get(String path, {Map<String, String>? query}) =>
       _send('GET', path, query: query);
 
+  /// GET que devuelve el cuerpo como texto (por ejemplo, un CSV). Los errores
+  /// se tratan igual que en [get].
+  Future<String> getText(String path, {Map<String, String>? query}) async =>
+      (await _send('GET', path, query: query, raw: true)) as String;
+
   Future<dynamic> post(String path, {Object? body}) =>
       _send('POST', path, body: body);
 
@@ -112,6 +117,7 @@ class ApiClient {
     String path, {
     Map<String, String>? query,
     Object? body,
+    bool raw = false,
   }) async {
     onBeforeRequest?.call();
 
@@ -148,11 +154,15 @@ class ApiClient {
       throw ApiException(_connectionError);
     }
 
-    return _handleResponse(response);
+    return _handleResponse(response, raw: raw);
   }
 
-  dynamic _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response, {bool raw = false}) {
     final int status = response.statusCode;
+
+    if (raw && status >= 200 && status < 300) {
+      return utf8.decode(response.bodyBytes);
+    }
 
     dynamic data;
     try {

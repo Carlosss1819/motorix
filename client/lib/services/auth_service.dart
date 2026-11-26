@@ -4,10 +4,18 @@ import 'api_client.dart';
 
 /// Sesión devuelta por el inicio de sesión.
 class AuthSession {
-  const AuthSession({required this.token, required this.user});
+  const AuthSession({
+    required this.token,
+    required this.user,
+    this.terminosPendientes = false,
+  });
 
   final String token;
   final AppUser user;
+
+  /// Sprint 7 (US9, FR-017): el usuario debe aceptar la versión vigente de
+  /// los términos y el aviso de privacidad antes de usar el sistema.
+  final bool terminosPendientes;
 }
 
 /// Operaciones de sesión del contrato `contracts/auth.md`.
@@ -38,6 +46,7 @@ class AuthService {
     return AuthSession(
       token: data['token'] as String,
       user: AppUser.fromJson(asMap(data['usuario'])),
+      terminosPendientes: asBool(data['terminosPendientes']),
     );
   }
 

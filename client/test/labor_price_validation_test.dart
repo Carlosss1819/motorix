@@ -61,6 +61,8 @@ class _OrdenesFake extends ServiceOrdersService {
     required String descripcion,
     required int duracionMinutos,
     num? precio,
+    // Sprint 7 (FR-010): parámetro opcional nuevo del servicio real.
+    int? tipoServicioId,
   }) async {
     preciosEnviados.add(precio);
   }

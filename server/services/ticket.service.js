@@ -19,24 +19,24 @@ import {
   findByPaymentId,
   listByServiceOrder,
   findOrderContext,
+  findOrderServiceTypes,
   nextFolio,
 } from '../models/ticket.js';
+import { proposeNextService } from '../utils/next-service.js';
 import { findServiceOrderById } from '../models/service_order.js';
 import { findChargeContent, findPaymentByStatus } from '../models/payment.js';
 import { calcularTotal } from '../utils/order-total.js';
 import { PAYMENT_STATUSES } from '../utils/payment-transitions.js';
 import { withOrderLock } from './order-lock.js';
 import { conflict, notFound } from '../utils/errors.js';
+// Sprint 7 (US1, FR-002): los datos del taller salen de la configuración
+// vigente al emitir y quedan en la copia; el respaldo de la antigua constante
+// TALLER vive en utils/settings-defaults.js (FR-003).
+import { getShopData } from './settings.service.js';
 
 // Versión del formato de la copia que escribe la aplicación (Sprint 5).
 export const FORMATO_ACTUAL = 2;
 
-// Datos fijos del taller que encabezan el comprobante (contrato del ticket).
-const TALLER = Object.freeze({
-  nombre: 'Motorix',
-  direccion: 'Av. Ejemplo 123, Col. Centro',
-  telefono: '55-0000-0000',
-});
 
 const pad = (number) => String(number).padStart(2, '0');
 
@@ -101,7 +101,7 @@ async function buildContent({ folio, ordenId, pago, emitidoPor, emitidoEn }, con
     pagoId: pago.id,
     emitidoPor,
     emitidoEn,
-    taller: TALLER,
+    taller: await getShopData(),
     cliente: {
       id: contexto?.client_id ?? null,
       nombre: contexto?.client_name ?? '',
@@ -125,7 +125,20 @@ async function buildContent({ folio, ordenId, pago, emitidoPor, emitidoEn }, con
     formatoVersion: FORMATO_ACTUAL,
     desgloseNoCoincide: false,
     nota: null,
+    // Sprint 7 (US8, FR-012/FR-013): próximo servicio por tipo con
+    // intervalo; base = fecha de emisión y kilometraje de entrada. Campo
+    // opcional de la copia v2: los tickets anteriores no lo traen.
+    proximosServicios: await buildNextServices(ordenId, emitidoEn, contexto?.entry_mileage, connection),
   };
+}
+
+async function buildNextServices(ordenId, emitidoEn, kmEntrada, connection) {
+  const tipos = await findOrderServiceTypes(ordenId, connection);
+  const fechaBase = emitidoEn ? emitidoEn.slice(0, 10) : null;
+  return tipos.map((tipo) => ({
+    tipoServicio: tipo.nombre,
+    ...proposeNextService(tipo, fechaBase, kmEntrada ?? null),
+  }));
 }
 
 // Campos calculados al consultar (no se guardan en la copia).

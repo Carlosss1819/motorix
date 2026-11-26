@@ -12,6 +12,11 @@ import {
 } from '../models/user.js';
 import { unauthorized, forbidden, locked, badRequest, notFound } from '../utils/errors.js';
 import * as sessionStore from '../utils/sessionStore.js';
+import { record } from './audit.service.js';
+import { hasPendingTerms } from './terms.service.js';
+
+// Identificador recortado para la bitácora (nunca la contraseña, FR-023).
+const recortar = (valor) => String(valor ?? '').slice(0, 60);
 
 const BCRYPT_ROUNDS = 10;
 const MAX_FAILED_ATTEMPTS = 5;
@@ -35,6 +40,12 @@ export async function login(identifier, password) {
   const user = await findByIdentifier(identifier);
 
   if (!user) {
+    // Sprint 7 (FR-022): login fallido con usuario inexistente.
+    await record({
+      action: 'LOGIN_FALLIDO',
+      entityType: 'user',
+      detail: `Usuario inexistente: ${recortar(identifier)}`,
+    });
     // Mensaje genérico: no revela si faltó el usuario o la contraseña (FR-003).
     throw unauthorized('Credenciales inválidas', 'CREDENCIALES_INVALIDAS');
   }
@@ -56,10 +67,31 @@ export async function login(identifier, password) {
     if (attempts >= MAX_FAILED_ATTEMPTS) {
       const lockedUntil = new Date(Date.now() + LOCK_MINUTES * 60 * 1000);
       await setLoginFailures(user.id, 0, lockedUntil);
+      await record({
+        userId: user.id,
+        action: 'LOGIN_FALLIDO',
+        entityType: 'user',
+        entityId: user.id,
+        detail: `Intento ${attempts} de ${MAX_FAILED_ATTEMPTS}`,
+      });
+      await record({
+        userId: user.id,
+        action: 'CUENTA_BLOQUEADA',
+        entityType: 'user',
+        entityId: user.id,
+        detail: `Bloqueada ${LOCK_MINUTES} minutos tras ${MAX_FAILED_ATTEMPTS} intentos fallidos`,
+      });
       // El quinto intento responde con el mismo mensaje genérico (quickstart V3).
       throw unauthorized('Credenciales inválidas', 'CREDENCIALES_INVALIDAS');
     }
     await setLoginFailures(user.id, attempts, null);
+    await record({
+      userId: user.id,
+      action: 'LOGIN_FALLIDO',
+      entityType: 'user',
+      entityId: user.id,
+      detail: `Intento ${attempts} de ${MAX_FAILED_ATTEMPTS}`,
+    });
     throw unauthorized('Credenciales inválidas', 'CREDENCIALES_INVALIDAS');
   }
 
@@ -73,7 +105,8 @@ export async function login(identifier, password) {
   );
   sessionStore.touch(user.id, sessionId);
 
-  return { token, usuario: toApi(user) };
+  // Sprint 7 (US9, FR-017): la app muestra la aceptación antes de todo.
+  return { token, usuario: toApi(user), terminosPendientes: await hasPendingTerms(user.id) };
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {

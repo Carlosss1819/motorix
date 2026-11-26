@@ -21,6 +21,7 @@ import {
 } from '../models/inventory_movement.js';
 import { getConnection } from '../config/db.js';
 import { badRequest, conflict, notFound } from '../utils/errors.js';
+import { record } from './audit.service.js';
 
 const MOTIVO_STOCK_INICIAL = 'Stock inicial';
 
@@ -260,9 +261,30 @@ export async function create(data, user) {
   }
 }
 
+// Sprint 7 (FR-022): cambio de precio de compra o de venta en la bitácora,
+// con el valor anterior y el nuevo (no son datos reservados para ADMIN).
+async function registrarCambioDePrecio(antes, despues, user) {
+  const cambios = [];
+  const texto = (valor) => (valor === null || valor === undefined ? 'sin precio' : String(valor));
+  if (texto(antes.purchasePrice) !== texto(despues.purchasePrice)) {
+    cambios.push(`Precio de compra: ${texto(antes.purchasePrice)} → ${texto(despues.purchasePrice)}`);
+  }
+  if (texto(antes.salePrice) !== texto(despues.salePrice)) {
+    cambios.push(`Precio de venta: ${texto(antes.salePrice)} → ${texto(despues.salePrice)}`);
+  }
+  if (cambios.length === 0) return;
+  await record({
+    userId: user?.id ?? null,
+    action: 'PRECIO_REFACCION_CAMBIADO',
+    entityType: 'part',
+    entityId: despues.id,
+    detail: `${despues.code}: ${cambios.join('; ')}`,
+  });
+}
+
 // Edicion parcial del catalogo: el codigo es identificador y el stock_actual
 // solo cambia por movimientos, aqui no se tocan (FR-022).
-export async function update(id, data) {
+export async function update(id, data, user = null) {
   const current = await findById(id);
   if (!current) {
     throw notFound('La refacción no existe', 'REFACCION_NO_ENCONTRADA');
@@ -277,6 +299,7 @@ export async function update(id, data) {
       data.precioCompra !== undefined ? data.precioCompra : current.purchasePrice,
     salePrice: data.precioVenta !== undefined ? data.precioVenta : current.salePrice,
   });
+  await registrarCambioDePrecio(current, updated, user);
   return conAdvertencias(toApi(updated, ROL_ESCRITURA), updated);
 }
 

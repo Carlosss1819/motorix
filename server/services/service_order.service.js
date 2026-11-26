@@ -46,6 +46,7 @@ import {
   pagoPendienteError,
 } from './payment.service.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/errors.js';
+import { findActiveOrFail as findActiveServiceType } from './service_type.service.js';
 import { APPOINTMENT_STATUSES, ORDER_STATUSES } from '../utils/status-constants.js';
 import { evaluateTransition } from '../utils/order-transitions.js';
 import {
@@ -155,6 +156,11 @@ async function toApiDetail(order, role) {
     servicios: services.map((service) => ({
       id: service.id,
       descripcion: service.description,
+      // Sprint 7 (FR-010): solo en líneas con tipo; las líneas sin tipo y
+      // las anteriores conservan su forma de siempre.
+      ...(service.serviceTypeId
+        ? { tipoServicioId: service.serviceTypeId, tipoServicio: service.serviceTypeName }
+        : {}),
       manoDeObra: service.labor
         ? {
             id: service.labor.id,
@@ -414,6 +420,8 @@ export async function saveDiagnosis(id, data, user) {
 // por pago (FR-021) y el tope del total (FR-008).
 export async function addService(id, data, user) {
   const order = await assertOrderOpenForContent(id, user);
+  // Sprint 7 (FR-010): solo tipos activos del catálogo.
+  const tipo = data.tipoServicioId ? await findActiveServiceType(data.tipoServicioId) : null;
 
   const created = await withOrderLock(order.id, async (connection, locked) => {
     assertLockedOrderOpen(locked);
@@ -424,11 +432,16 @@ export async function addService(id, data, user) {
       description: data.descripcion,
       durationMinutes: data.duracionMinutos,
       price: data.precio,
+      serviceTypeId: tipo?.id ?? null,
     });
   });
 
   return {
-    servicio: { id: created.id, descripcion: created.description },
+    servicio: {
+      id: created.id,
+      descripcion: created.description,
+      ...(tipo ? { tipoServicioId: tipo.id, tipoServicio: tipo.nombre } : {}),
+    },
     manoDeObra: {
       id: created.labor.id,
       duracionMinutos: created.labor.durationMinutes,

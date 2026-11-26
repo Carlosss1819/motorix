@@ -216,6 +216,26 @@ class _TicketScreenState extends State<TicketScreen> {
           ),
         ),
         const SizedBox(height: AppSpacing.lg),
+        // Sprint 7 (US8, FR-012/FR-013): solo si la orden tiene tipos de
+        // servicio con intervalo; los tickets anteriores no la muestran.
+        if (ticket.proximosServicios.isNotEmpty) ...<Widget>[
+          AppPanel(
+            key: const Key('ticket-proximo-servicio'),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Próximo servicio', style: textTheme.titleMedium),
+                const SizedBox(height: AppSpacing.sm),
+                for (final NextService proximo in ticket.proximosServicios)
+                  DetailRow(
+                    label: proximo.tipoServicio,
+                    value: textoProximoServicio(proximo),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         // FR-020: el desglose no suma lo cobrado; el total mostrado es el
         // importe pagado.
         if (ticket.desgloseNoCoincide) ...<Widget>[
@@ -400,6 +420,15 @@ class _TicketScreenState extends State<TicketScreen> {
       }
     }
 
+    if (ticket.proximosServicios.isNotEmpty) {
+      buffer
+        ..writeln('')
+        ..writeln('Próximo servicio:');
+      for (final NextService proximo in ticket.proximosServicios) {
+        buffer.writeln('  ${proximo.tipoServicio}: ${textoProximoServicio(proximo)}');
+      }
+    }
+
     buffer.writeln('');
     // Sprint 5: las marcas también salen en la versión imprimible.
     if (ticket.desgloseNoCoincide) {
@@ -428,4 +457,17 @@ class _TicketScreenState extends State<TicketScreen> {
     }
     return '$encabezado$buffer';
   }
+}
+
+/// Texto del próximo servicio (Sprint 7, US8): «fecha o kilometraje, lo que
+/// ocurra primero» cuando el tipo tiene ambos intervalos.
+String textoProximoServicio(NextService proximo) {
+  final List<String> partes = <String>[
+    if (proximo.fecha != null) Formatters.date(proximo.fecha),
+    if (proximo.kilometraje != null) Formatters.mileage(proximo.kilometraje!),
+  ];
+  if (partes.length == 2) {
+    return '${partes[0]} o ${partes[1]}, lo que ocurra primero';
+  }
+  return partes.isEmpty ? '—' : partes.first;
 }

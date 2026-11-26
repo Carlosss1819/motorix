@@ -20,6 +20,12 @@ import 'providers/ticket_provider.dart';
 import 'providers/client_notices_provider.dart';
 import 'providers/notifications_provider.dart';
 import 'screens/client_notices_screen.dart';
+import 'screens/audit_log_screen.dart';
+import 'screens/reports_screen.dart';
+import 'screens/service_types_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/terms_acceptance_screen.dart';
+import 'screens/terms_screen.dart';
 import 'screens/account_screen.dart';
 import 'screens/appointment_form_screen.dart';
 import 'screens/appointments_screen.dart';
@@ -97,6 +103,9 @@ class _MotorixAppState extends State<MotorixApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        // Sprint 7: las pantallas nuevas crean su servicio con el mismo
+        // cliente HTTP (token y cierre por inactividad compartidos).
+        Provider<ApiClient>.value(value: _api),
         ChangeNotifierProvider<ShellProvider>(
           create: (_) => ShellProvider(initialWidth: _anchoInicial),
         ),
@@ -176,9 +185,17 @@ class _MotorixAppState extends State<MotorixApp> {
 
     Widget page;
     if (name == Routes.login) {
-      page = auth.isAuthenticated ? const HomeScreen() : const LoginScreen();
+      page = !auth.isAuthenticated
+          ? const LoginScreen()
+          : auth.termsPending
+              ? const TermsAcceptanceScreen()
+              : const HomeScreen();
     } else if (!auth.isAuthenticated) {
       page = const LoginScreen();
+    } else if (auth.termsPending) {
+      // Sprint 7 (US9, FR-017): con la aceptación pendiente, cualquier ruta
+      // muestra la pantalla de términos (el backend también lo exige).
+      page = const TermsAcceptanceScreen();
     } else {
       page = _pageForRoute(
         name,
@@ -280,6 +297,13 @@ class _MotorixAppState extends State<MotorixApp> {
       Routes.dashboard => const DashboardScreen(),
       Routes.users => const UsersScreen(),
       Routes.account => const AccountScreen(),
+      // Sprint 7 (Entrega A).
+      Routes.settings => const SettingsScreen(),
+      Routes.serviceTypes => const ServiceTypesScreen(),
+      Routes.auditLog => const AuditLogScreen(),
+      Routes.terms => const TermsScreen(),
+      // Sprint 7 (Entrega B).
+      Routes.reports => const ReportsScreen(),
       _ => const HomeScreen(),
     };
 
@@ -383,6 +407,16 @@ bool canAccessRoute(String route, String rol) {
       return rol == Rol.admin;
     case Routes.users:
       return rol == Rol.admin;
+    // Sprint 7 (FR-006, FR-009, FR-024): configuración, catálogo y bitácora
+    // solo ADMIN (403 en el backend); términos para los tres roles.
+    case Routes.settings:
+    case Routes.serviceTypes:
+    case Routes.auditLog:
+    // Sprint 7 (Entrega B, FR-038): reportes solo ADMIN.
+    case Routes.reports:
+      return rol == Rol.admin;
+    case Routes.terms:
+      return rol == Rol.admin || rol == Rol.receptionist || rol == Rol.mechanic;
     default:
       return true;
   }

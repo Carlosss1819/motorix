@@ -7,6 +7,7 @@ import '../models/enums.dart';
 import '../models/part.dart';
 import '../models/payment.dart';
 import '../models/service_order.dart';
+import '../models/service_type.dart';
 import '../models/ticket.dart';
 import '../providers/auth_provider.dart';
 import '../providers/load_status.dart';
@@ -15,6 +16,7 @@ import '../providers/payment_provider.dart';
 import '../providers/service_orders_provider.dart';
 import '../providers/ticket_provider.dart';
 import '../services/api_client.dart';
+import '../services/service_types_service.dart';
 import '../services/payments_service.dart';
 import '../utils/app_routes.dart';
 import '../utils/app_theme.dart';
@@ -96,6 +98,11 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
   /// no acepta texto libre.
   int? _refaccionId;
 
+  /// Sprint 7 (US3, FR-010): tipos activos del catálogo y el elegido para la
+  /// línea de servicio (opcional; sin tipo la línea es de texto libre).
+  List<ServiceType> _tiposServicio = const <ServiceType>[];
+  int? _tipoServicioId;
+
   /// Los campos se precargan una sola vez cuando llega la ficha; lo que el
   /// usuario escriba y no guarde se descarta al salir (FR-019).
   bool _camposContenidoCargados = false;
@@ -121,6 +128,7 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         return;
       }
       _orders.loadDetail(widget.orderId);
+      _cargarTiposServicio();
       // El selector de refacciones (US7) muestra el stock vigente del
       // catálogo, que se refresca además después de cada alta o baja.
       _parts.loadCatalog();
@@ -279,6 +287,33 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
     }
   }
 
+  /// Sprint 7: carga los tipos activos; sin cliente HTTP en el árbol (por
+  /// ejemplo, en pruebas antiguas) el alta sigue siendo de texto libre.
+  Future<void> _cargarTiposServicio() async {
+    final ServiceTypesService service;
+    try {
+      service = ServiceTypesService(context.read<ApiClient>());
+    } on ProviderNotFoundException {
+      return;
+    }
+    try {
+      final List<ServiceType> tipos = await service.list();
+      if (mounted) setState(() => _tiposServicio = tipos);
+    } on ApiException {
+      // El catálogo es opcional para registrar servicios.
+    }
+  }
+
+  void _elegirTipoServicio(int? id) {
+    setState(() => _tipoServicioId = id);
+    if (id == null) return;
+    for (final ServiceType tipo in _tiposServicio) {
+      if (tipo.id == id && _servicioController.text.trim().isEmpty) {
+        _servicioController.text = tipo.nombre;
+      }
+    }
+  }
+
   /// Agrega un servicio con su mano de obra (FR-012) tras validar en cliente.
   Future<void> _agregarServicio(ServiceOrder order) async {
     final String descripcion = _servicioController.text.trim();
@@ -311,10 +346,12 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
         descripcion: descripcion,
         duracionMinutos: duracion,
         precio: precio,
+        tipoServicioId: _tipoServicioId,
       );
       if (!mounted) {
         return;
       }
+      _tipoServicioId = null;
       _servicioController.clear();
       _duracionController.clear();
       _precioController.clear();
@@ -738,6 +775,13 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
                             servicio.descripcion,
                             style: textTheme.bodyMedium,
                           ),
+                          if (servicio.tipoServicio != null)
+                            Text(
+                              'Tipo: ${servicio.tipoServicio}',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colors.textSecondary,
+                              ),
+                            ),
                           if (servicio.manoDeObra != null)
                             Text(
                               _etiquetaManoDeObra(servicio.manoDeObra!),
@@ -762,6 +806,29 @@ class _ServiceOrderDetailScreenState extends State<ServiceOrderDetailScreen> {
               ),
           if (editable) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
+            if (_tiposServicio.isNotEmpty) ...<Widget>[
+              DropdownButtonFormField<int?>(
+                key: const Key('campo-tipo-servicio'),
+                initialValue: _tipoServicioId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Tipo de servicio del catálogo (opcional)',
+                ),
+                items: <DropdownMenuItem<int?>>[
+                  const DropdownMenuItem<int?>(
+                    value: null,
+                    child: Text('Sin tipo (texto libre)'),
+                  ),
+                  for (final ServiceType tipo in _tiposServicio)
+                    DropdownMenuItem<int?>(
+                      value: tipo.id,
+                      child: Text(tipo.nombre, overflow: TextOverflow.ellipsis),
+                    ),
+                ],
+                onChanged: _guardandoServicio ? null : _elegirTipoServicio,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
             TextField(
               key: const Key('campo-servicio'),
               controller: _servicioController,

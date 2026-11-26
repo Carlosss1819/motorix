@@ -3,10 +3,12 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:provider/provider.dart';
 
 import '../models/maintenance.dart';
+import '../models/service_type.dart';
 import '../models/vehicle.dart';
 import '../providers/maintenance_provider.dart';
 import '../providers/vehicles_provider.dart';
 import '../services/api_client.dart';
+import '../services/service_types_service.dart';
 import '../utils/app_theme.dart';
 import '../utils/messages.dart';
 import '../utils/validators.dart';
@@ -29,9 +31,22 @@ class MaintenanceFormArgs {
 /// objetivo por fecha y/o kilometraje (SC-004, sin conocimientos técnicos) y
 /// la acción «servicio realizado» con confirmación obligatoria.
 class MaintenanceFormScreen extends StatefulWidget {
-  const MaintenanceFormScreen({super.key, required this.args});
+  const MaintenanceFormScreen({
+    super.key,
+    required this.args,
+    this.serviceTypesService,
+    this.hoy,
+  });
 
   final MaintenanceFormArgs args;
+
+  /// Sprint 7 (US3, FR-011): catálogo de tipos para proponer el próximo
+  /// mantenimiento. Inyectable en pruebas; si no se pasa, se crea con el
+  /// cliente HTTP de la app (sin él, el formulario funciona como antes).
+  final ServiceTypesService? serviceTypesService;
+
+  /// Fecha base de la propuesta (inyectable en pruebas; por defecto hoy).
+  final DateTime? hoy;
 
   @override
   State<MaintenanceFormScreen> createState() => _MaintenanceFormScreenState();
@@ -51,6 +66,10 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
   int? _vehiculoId;
   String? _error;
   bool _saving = false;
+
+  // Sprint 7 (US3): tipos activos del catálogo y el elegido.
+  List<ServiceType> _tipos = const <ServiceType>[];
+  int? _tipoCatalogoId;
 
   bool get _esEdicion => widget.args.mantenimiento != null;
 
@@ -72,12 +91,18 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
     _intervaloKmController = TextEditingController(
       text: actual?.intervaloKm?.toString() ?? '',
     );
-    // Defectos de antelación (clarificación 1): 30 días / 500 km.
+    // Sprint 7 (US2, FR-005): en el alta la antelación queda vacía y el
+    // backend aplica los márgenes configurados por el administrador; en la
+    // edición se muestra la propia del registro.
     _antelacionDiasController =
-        TextEditingController(text: '${actual?.antelacionDias ?? 30}');
+        TextEditingController(text: actual?.antelacionDias.toString() ?? '');
     _antelacionKmController =
-        TextEditingController(text: '${actual?.antelacionKm ?? 500}');
+        TextEditingController(text: actual?.antelacionKm.toString() ?? '');
     _notasController = TextEditingController(text: actual?.notas ?? '');
+
+    if (!_esEdicion) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _cargarTipos());
+    }
 
     // En alta sin vehículo preseleccionado se carga el selector (FR-001).
     if (!_esEdicion && _vehiculoId == null) {
@@ -103,6 +128,80 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
     _antelacionKmController.dispose();
     _notasController.dispose();
     super.dispose();
+  }
+
+  Future<void> _cargarTipos() async {
+    ServiceTypesService? service = widget.serviceTypesService;
+    if (service == null) {
+      try {
+        service = ServiceTypesService(context.read<ApiClient>());
+      } on ProviderNotFoundException {
+        return;
+      }
+    }
+    try {
+      final List<ServiceType> tipos = await service.list();
+      if (mounted) setState(() => _tipos = tipos);
+    } on ApiException {
+      // Sin catálogo el formulario sigue funcionando con captura manual.
+    }
+  }
+
+  /// Kilometraje actual del vehículo elegido, si se conoce.
+  int? _kilometrajeActual() {
+    final int? id = _vehiculoId;
+    if (id == null) return null;
+    try {
+      for (final Vehicle v in context.read<VehiclesProvider>().items) {
+        if (v.id == id) return v.kilometrajeActual;
+      }
+    } on ProviderNotFoundException {
+      return null;
+    }
+    return null;
+  }
+
+  /// FR-011: propone tipo, intervalos, fecha (hoy + días) y kilometraje
+  /// (actual + km); el usuario puede corregir cualquiera antes de guardar.
+  void _elegirTipo(int? id) {
+    setState(() => _tipoCatalogoId = id);
+    if (id == null) return;
+    final ServiceType tipo = _tipos.firstWhere((ServiceType t) => t.id == id);
+    final NextServiceProposal propuesta = NextServiceProposal.from(
+      tipo,
+      hoy: widget.hoy ?? DateTime.now(),
+      kilometrajeActual: _kilometrajeActual(),
+    );
+    _tipoController.text = tipo.nombre;
+    _intervaloDiasController.text = tipo.intervaloDias?.toString() ?? '';
+    _intervaloKmController.text = tipo.intervaloKm?.toString() ?? '';
+    _fechaObjetivoController.text = propuesta.fecha ?? '';
+    _kmObjetivoController.text = propuesta.kilometraje?.toString() ?? '';
+  }
+
+  Widget _buildServiceTypeSelector() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: DropdownButtonFormField<int?>(
+        key: const Key('mantenimiento-tipo-catalogo'),
+        initialValue: _tipoCatalogoId,
+        isExpanded: true,
+        decoration: const InputDecoration(
+          labelText: 'Tipo del catálogo (opcional)',
+          helperText: 'Propone el intervalo, la fecha y el kilometraje; puedes corregirlos.',
+          prefixIcon: Icon(LucideIcons.listChecks, size: AppMetrics.iconSizeSmall),
+        ),
+        items: <DropdownMenuItem<int?>>[
+          const DropdownMenuItem<int?>(value: null, child: Text('Captura manual')),
+          for (final ServiceType tipo in _tipos)
+            DropdownMenuItem<int?>(
+              value: tipo.id,
+              child: Text('${tipo.nombre} · ${tipo.intervaloTexto}', overflow: TextOverflow.ellipsis),
+            ),
+        ],
+        onChanged: _saving ? null : _elegirTipo,
+      ),
+    );
   }
 
   int? _numero(TextEditingController controller) {
@@ -301,6 +400,8 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
                     ],
                     if (!_esEdicion && _vehiculoId == null)
                       _buildVehicleSelector(),
+                    if (!_esEdicion && _tipos.isNotEmpty)
+                      _buildServiceTypeSelector(),
                     TextFormField(
                       controller: _tipoController,
                       enabled: !_saving,
@@ -416,7 +517,7 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Avisar con anticipación (días)',
-                              hintText: '30',
+                              hintText: 'Vacío = margen del taller',
                               prefixIcon: Icon(
                                 LucideIcons.bell,
                                 size: AppMetrics.iconSizeSmall,
@@ -437,7 +538,7 @@ class _MaintenanceFormScreenState extends State<MaintenanceFormScreen> {
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Avisar con anticipación (km)',
-                              hintText: '500',
+                              hintText: 'Vacío = margen del taller',
                               prefixIcon: Icon(
                                 LucideIcons.bellRing,
                                 size: AppMetrics.iconSizeSmall,

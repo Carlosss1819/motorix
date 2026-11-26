@@ -1,0 +1,213 @@
+Resolving dependencies...
+Downloading packages...
+  code_assets 1.2.1 (2.2.0 available)
+  crypto 3.0.7 (3.0.8 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  cupertino_ui 1.1.2 (1.1.7 available)
+  data_table_2 2.6.0 (3.0.0 available)
+  hooks 2.0.2 (2.2.0 available)
+  jni 1.1.0 (1.2.1 available)
+  jni_flutter 1.0.4+1 (1.1.0 available)
+  lucide_icons_flutter 3.1.25 (4.0.3 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  material_ui 1.6.0 (1.11.1 available)
+  meta 1.18.3 (1.19.0 available)
+  objective_c 9.5.0 (9.6.4 available)
+  record_use 0.6.0 (1.1.1 available)
+  test_api 0.7.12 (0.7.15 available)
+  vector_math 2.4.0 (2.4.4 available)
+  vm_service 15.3.0 (15.4.0 available)
+  web 1.1.1 (1.1.2 available)
+Got dependencies!
+18 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart
+00:00 +0: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: (setUpAll)
+00:00 +0: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider arranca sin citas, en estado ocioso y con el filtro de hoy
+00:00 +1: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider carga la página del backend y expone el paginado
+00:00 +2: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider el filtro por estado vuelve a la primera página
+00:00 +3: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider el filtro por fecha consulta el día elegido
+00:00 +4: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider la misma búsqueda no repite la consulta al backend
+00:00 +5: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider muestra el mensaje en español cuando el backend falla
+00:00 +6: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider guarda el conflicto de horario del 409 y lo limpia al confirmar
+00:00 +7: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider cancelar una cita refresca el listado con el motivo enviado
+00:00 +8: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsProvider recibir devuelve la precarga y refresca el listado
+00:00 +9: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsScreen lista las citas con hora, cliente, estado y sus acciones
+00:01 +10: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/appointments_provider_test.dart: AppointmentsScreen lista las citas con hora, cliente, estado y sus acciones
+00:01 +11: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_blocks_test.dart: DashboardScreen — bloques operativos (US6, FR-011) pinta citas, mantenimientos y alertas con sus datos de prueba
+00:01 +12: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_blocks_test.dart: DashboardScreen — bloques operativos (US6, FR-011) pinta citas, mantenimientos y alertas con sus datos de prueba
+00:01 +13: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_blocks_test.dart: DashboardScreen — bloques operativos (US6, FR-011) pinta citas, mantenimientos y alertas con sus datos de prueba
+00:01 +14: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_blocks_test.dart: DashboardScreen — bloques operativos (US6, FR-011) pinta citas, mantenimientos y alertas con sus datos de prueba
+00:01 +15: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_screen_test.dart: DashboardScreen — resumen de órdenes (US5, FR-011) pinta los totales y el desglose por estado con datos reales
+00:01 +16: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_screen_test.dart: DashboardScreen — resumen de órdenes (US5, FR-011) pinta los totales y el desglose por estado con datos reales
+00:02 +17: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_screen_test.dart: DashboardScreen — resumen de órdenes (US5, FR-011) pinta los totales y el desglose por estado con datos reales
+00:02 +18: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/dashboard_screen_test.dart: DashboardScreen — resumen de órdenes (US5, FR-011) pinta los totales y el desglose por estado con datos reales
+00:02 +19: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +20: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +21: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +22: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +23: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +24: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +25: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +26: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:02 +27: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:03 +28: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:03 +29: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/edit_routes_navigation_test.dart: Citas: tocar el lápiz «Editar» abre la ruta de edición
+00:03 +30: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/labor_price_validation_test.dart: rechaza_tres_decimales
+00:03 +31: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/labor_price_validation_test.dart: rechaza_tres_decimales
+00:03 +32: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/labor_price_validation_test.dart: rechaza_tres_decimales
+00:03 +33: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:03 +34: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:04 +35: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:04 +36: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:04 +37: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +38: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +39: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +40: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +41: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +42: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +43: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +44: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +45: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +46: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +47: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +48: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +49: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +50: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/maintenance_form_test.dart: MaintenanceFormScreen — alta (US3/HU3) programar un mantenimiento con objetivo y vehículo
+00:05 +51: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:06 +52: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:06 +53: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:06 +54: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:06 +55: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:06 +56: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:07 +57: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:07 +58: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:07 +59: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_parts_test.dart: ServiceOrderDetailScreen — refacciones de la orden (US7) elige una refacción del catálogo, la envía con su cantidad y limpia el selector
+00:07 +60: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_status_actions_test.dart: ServiceOrderDetailScreen — acciones de estado (US5/FR-022) el mecánico asignado ve el bloque medio y nunca la entrega
+00:07 +61: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_status_actions_test.dart: ServiceOrderDetailScreen — acciones de estado (US5/FR-022) el mecánico asignado ve el bloque medio y nunca la entrega
+00:07 +62: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_status_actions_test.dart: ServiceOrderDetailScreen — acciones de estado (US5/FR-022) el mecánico asignado ve el bloque medio y nunca la entrega
+00:08 +63: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/order_status_actions_test.dart: ServiceOrderDetailScreen — acciones de estado (US5/FR-022) el mecánico asignado ve el bloque medio y nunca la entrega
+00:08 +64: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +65: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +66: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +67: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +68: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +69: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/parts_screen_test.dart: PartsScreen — catálogo de refacciones (US5/HU5) muestra código, nombre, categoría, marca, stock y precios (SC-005)
+00:08 +70: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_detail_test.dart: PartDetailScreen — detalle y movimientos (US6) muestra los datos de la refacción consultada (FR-018)
+00:08 +71: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_detail_test.dart: PartDetailScreen — detalle y movimientos (US6) muestra los datos de la refacción consultada (FR-018)
+00:08 +72: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_detail_test.dart: PartDetailScreen — detalle y movimientos (US6) muestra los datos de la refacción consultada (FR-018)
+00:08 +73: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_detail_test.dart: PartDetailScreen — detalle y movimientos (US6) muestra los datos de la refacción consultada (FR-018)
+00:09 +74: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_detail_test.dart: PartDetailScreen — detalle y movimientos (US6) muestra los datos de la refacción consultada (FR-018)
+00:09 +75: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +76: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +77: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +78: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +79: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +80: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +81: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +82: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +83: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +84: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +85: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +86: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +87: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:09 +88: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +89: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +90: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +91: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +92: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +93: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +94: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/part_form_prices_test.dart: rechaza_un_precio_con_tres_decimales
+00:10 +95: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:10 +96: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +97: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +98: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +99: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +100: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +101: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:11 +102: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) muestra el desglose con precios vigentes y precarga el monto total
+00:12 +103: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:12 +104: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:12 +105: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:12 +106: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:12 +107: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:13 +108: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:13 +109: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:13 +110: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:13 +111: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: PaymentFormScreen — cobro Mercado Pago (US3, FR-005) queda PENDIENTE con referencia, enlace y modo simulado (D1, RN-14)
+00:13 +112: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) el selector ofrece los cuatro métodos con su etiqueta legible
+00:13 +113: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) el selector ofrece los cuatro métodos con su etiqueta legible
+00:13 +114: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/reception_panel_test.dart: ReceptionScreen — panel de recepción (US6, R-09) el fallo de una fuente no oculta la otra (estado de error)
+00:13 +115: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_gateway_test.dart: ServiceOrderDetailScreen — confirmación del cobro (US3, FR-005) un pendiente bloquea el botón de cobro y ofrece confirmarlo
+00:13 +116: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) el 409 «orden ya liquidada» del backend se muestra en el aviso
+00:13 +117: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_flow_test.dart: PaymentFormScreen — desglose y total (US1, FR-015) el 409 «orden ya liquidada» del backend se muestra en el aviso
+00:13 +118: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +119: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +120: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +121: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +122: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +123: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +124: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +125: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +126: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +127: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +128: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +129: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +130: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +131: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +132: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:14 +133: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/payment_methods_test.dart: PaymentFormScreen — métodos de pago (US2, FR-002) cada método se registra con su valor enum y se muestra la etiqueta
+00:15 +134: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_mechanic_test.dart: ServiceOrdersScreen — alcance por rol (US3/FR-010) el mecánico ve Mis órdenes sin alta ni filtro global de estado
+00:15 +135: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_provider_test.dart: ServiceOrdersScreen lista las órdenes con su cliente, estado y contador
+00:15 +136: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_provider_test.dart: ServiceOrdersScreen lista las órdenes con su cliente, estado y contador
+00:15 +137: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_provider_test.dart: ServiceOrdersScreen lista las órdenes con su cliente, estado y contador
+00:15 +138: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_provider_test.dart: ServiceOrdersScreen lista las órdenes con su cliente, estado y contador
+00:16 +139: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) el diagnóstico en borrador se marca y se precarga en el campo (FR-011)
+00:16 +140: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) el diagnóstico en borrador se marca y se precarga en el campo (FR-011)
+00:16 +141: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_orders_mechanic_test.dart: ServiceOrderDetailScreen — asignación de mecánico (US3/FR-009) recepción asigna desde el selector con confirmación previa
+00:16 +142: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/stock_low_test.dart: PartsScreen — alertas de stock bajo (US8) marca con «Stock bajo» solo a la refacción que llegó a su mínimo (SC-008)
+00:17 +143: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/stock_low_test.dart: PartsScreen — alertas de stock bajo (US8) marca con «Stock bajo» solo a la refacción que llegó a su mínimo (SC-008)
+00:17 +144: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/stock_low_test.dart: PartsScreen — alertas de stock bajo (US8) marca con «Stock bajo» solo a la refacción que llegó a su mínimo (SC-008)
+00:17 +145: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/stock_low_test.dart: PartsScreen — alertas de stock bajo (US8) marca con «Stock bajo» solo a la refacción que llegó a su mínimo (SC-008)
+00:17 +146: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/ticket_screen_test.dart: TicketScreen — comprobante (US4, FR-007) muestra el comprobante completo con folio, datos y desglose
+00:17 +147: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/ticket_screen_test.dart: TicketScreen — comprobante (US4, FR-007) muestra el comprobante completo con folio, datos y desglose
+00:17 +148: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +149: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +150: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +151: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +152: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +153: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/vehicle_history_screen_test.dart: VehicleHistoryScreen — historial del vehículo (US1) un vehículo sin servicios terminados muestra el historial vacío (SC-003)
+00:17 +154: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: el tema de Motorix se construye con Material 3 y los tokens del diseño
+00:17 +155: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: el tema de Motorix se construye con Material 3 y los tokens del diseño
+00:17 +156: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega un servicio con duración y precio y limpia los campos
+00:17 +157: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega un servicio con duración y precio y limpia los campos
+00:17 +158: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega un servicio con duración y precio y limpia los campos
+00:18 +159: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega un servicio con duración y precio y limpia los campos
+00:18 +160: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega un servicio con duración y precio y limpia los campos
+00:18 +161: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +162: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +163: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +164: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +165: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +166: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +167: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +168: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: LoginScreen se renderiza dentro de MaterialApp y Provider
+00:18 +169: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) da de baja un servicio con confirmación previa (Principio VIII)
+00:18 +170: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) da de baja un servicio con confirmación previa (Principio VIII)
+00:18 +171: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) da de baja un servicio con confirmación previa (Principio VIII)
+00:18 +172: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/widget_test.dart: el shell muestra las secciones del rol administrador
+00:18 +173: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/ticket_screen_test.dart: ServiceOrderDetailScreen — tickets anteriores (Sprint 5) lista_Tickets_anteriores_con_folio_fecha_y_chip_Pago_anulado
+00:18 +174: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega una refacción del catálogo con su cantidad (US7)
+00:18 +175: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) agrega una refacción del catálogo con su cantidad (US7)
+00:19 +176: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) da de baja una refacción con confirmación obligatoria (FR-026)
+00:19 +177: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) guarda las recomendaciones para la entrega (FR-013)
+00:19 +178: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) el administrador también registra el contenido de la orden
+00:19 +179: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) recepción solo registra refacciones, sin diagnóstico ni servicios
+00:20 +180: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) una orden entregada no ofrece acciones de contenido (FR-016)
+00:20 +181: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — contenido de la orden (US4) el 409 del backend al guardar el diagnóstico se muestra en el aviso
+00:20 +182: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — precios de las refacciones (Sprint 5) ADMIN ve el precio unitario y el importe
+00:20 +183: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — precios de las refacciones (Sprint 5) RECEPTIONIST ve el precio unitario y el importe
+00:20 +184: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — precios de las refacciones (Sprint 5) el mecánico no ve precios aunque el campo viniera
+00:20 +185: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: ServiceOrderDetailScreen — precios de las refacciones (Sprint 5) sin los campos en la respuesta no se dibuja ningún precio
+00:20 +186: C:/Users/kastr/Documents/MotorixVer2/motorix/client/test/service_order_detail_test.dart: (tearDownAll)
+00:20 +186: All tests passed!

@@ -27,7 +27,7 @@ export async function createPartHandler(req, res) {
 }
 
 export async function updatePartHandler(req, res) {
-  sendOk(res, await service.update(Number(req.params.id), req.body));
+  sendOk(res, await service.update(Number(req.params.id), req.body, req.user));
 }
 
 export async function deactivatePartHandler(req, res) {

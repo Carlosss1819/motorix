@@ -127,6 +127,22 @@ class TicketServiceLine {
   final String? avisoManoDeObra;
 }
 
+/// Próximo servicio sugerido por tipo (Sprint 7, US8, FR-012): fecha y/o
+/// kilometraje según el intervalo del tipo de servicio.
+class NextService {
+  const NextService({required this.tipoServicio, this.fecha, this.kilometraje});
+
+  factory NextService.fromJson(Map<String, dynamic> json) => NextService(
+        tipoServicio: asString(json['tipoServicio']),
+        fecha: asStringOrNull(json['fecha']),
+        kilometraje: asIntOrNull(json['kilometraje']),
+      );
+
+  final String tipoServicio;
+  final String? fecha;
+  final int? kilometraje;
+}
+
 /// Ticket de servicio (HU4, FR-007; contrato: contracts/tickets.md).
 ///
 /// Sprint 5 (FR-019): se lee de la copia guardada al emitirse, con su versión
@@ -155,6 +171,7 @@ class Ticket {
     this.nota,
     this.pagoAnulado = false,
     this.vigente = true,
+    this.proximosServicios = const <NextService>[],
   });
 
   factory Ticket.fromJson(Map<String, dynamic> json) => Ticket(
@@ -182,6 +199,10 @@ class Ticket {
         nota: asStringOrNull(json['nota']),
         pagoAnulado: asBool(json['pagoAnulado']),
         vigente: asBool(json['vigente'], true),
+        // Sprint 7 (FR-013): ausente en los tickets anteriores = lista vacía.
+        proximosServicios: asList(json['proximosServicios'])
+            .map(NextService.fromJson)
+            .toList(),
       );
 
   final int id;
@@ -210,6 +231,9 @@ class Ticket {
   final String? nota;
   final bool pagoAnulado;
   final bool vigente;
+
+  /// Sprint 7 (US8): próximo servicio por tipo con intervalo.
+  final List<NextService> proximosServicios;
 }
 
 /// Resumen de un ticket de la orden (Sprint 5, FR-033): folio, fecha y marcas.

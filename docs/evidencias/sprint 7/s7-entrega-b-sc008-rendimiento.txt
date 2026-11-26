@@ -1,0 +1,37 @@
+
+> motorix-server@1.0.0 test
+> node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit tests/integration/reports-performance.test.js --verbose
+
+(node:27788) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+  console.info
+    SC-008 ingresos: JSON 23 ms, CSV 22 ms
+
+      at tests/integration/reports-performance.test.js:163:13
+
+  console.info
+    SC-008 servicios: JSON 131 ms, CSV 135 ms
+
+      at tests/integration/reports-performance.test.js:163:13
+
+  console.info
+    SC-008 productividad: JSON 92 ms, CSV 92 ms
+
+      at tests/integration/reports-performance.test.js:163:13
+
+  console.info
+    SC-008 refacciones: JSON 134 ms, CSV 170 ms
+
+      at tests/integration/reports-performance.test.js:163:13
+
+  console.info
+    SC-008 rotacion: JSON 95 ms, CSV 107 ms
+
+      at tests/integration/reports-performance.test.js:163:13
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        8.651 s
+Ran all test suites matching tests/integration/reports-performance.test.js.
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

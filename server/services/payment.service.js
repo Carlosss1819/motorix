@@ -27,6 +27,7 @@ import {
 import { crearPreferencia, modoPasarela } from './payment_gateway/index.js';
 import { withOrderLock } from './order-lock.js';
 import { conflict, forbidden, notFound } from '../utils/errors.js';
+import { record } from './audit.service.js';
 import { ORDER_STATUSES } from '../utils/status-constants.js';
 
 function formatDateTime(value) {
@@ -249,6 +250,14 @@ export async function annulPayment(id, data, user) {
     );
   });
 
+  // Sprint 7 (FR-022): pago anulado en la bitácora.
+  await record({
+    userId: user.id,
+    action: 'PAGO_ANULADO',
+    entityType: 'payment',
+    entityId: updated.id,
+    detail: `Orden ${updated.serviceOrderId}, importe ${updated.amount}`,
+  });
   return toApiPayment(updated);
 }
 
@@ -280,7 +289,7 @@ function importeDesfasadoError(importeCentavos, totalCentavos) {
 // CANCELADO con el motivo IMPORTE_DESFASADO, se guarda (commit) y se responde
 // 409 con las cifras. Una cancelación manual guarda el motivo MANUAL; un
 // RECHAZADO no compara el importe.
-export async function confirmPayment(id, data) {
+export async function confirmPayment(id, data, user = null) {
   const payment = await findPaymentById(id);
   if (!payment) throw notFound('El pago no existe', 'PAGO_NO_ENCONTRADO');
 
@@ -288,7 +297,31 @@ export async function confirmPayment(id, data) {
     throw conflict('Solo se confirma un cobro Mercado Pago pendiente', 'TRANSICION_INVALIDA');
   }
 
-  const updated = await withOrderLock(payment.serviceOrderId, async (connection) => {
+  // Sprint 7 (FR-022, H-S7-03): un cobro que termina en CANCELADO (manual o
+  // por importe desfasado) queda en la bitácora como PAGO_CANCELADO.
+  const registrarCancelado = (motivo) =>
+    record({
+      userId: user?.id ?? null,
+      action: 'PAGO_CANCELADO',
+      entityType: 'payment',
+      entityId: payment.id,
+      detail: `Orden ${payment.serviceOrderId}, importe ${payment.amount}, motivo ${motivo}`,
+    });
+
+  let updated;
+  try {
+    updated = await confirmUnderLock(payment, data);
+  } catch (error) {
+    if (error?.code === 'IMPORTE_DESFASADO') await registrarCancelado('IMPORTE_DESFASADO');
+    throw error;
+  }
+  if (updated.status === PAYMENT_STATUSES.CANCELADO) await registrarCancelado('MANUAL');
+
+  return toApiPayment(updated);
+}
+
+function confirmUnderLock(payment, data) {
+  return withOrderLock(payment.serviceOrderId, async (connection) => {
     const actual = await findPaymentById(payment.id, connection);
     const transition = evaluatePaymentTransition({
       fromStatus: actual.status,
@@ -320,8 +353,6 @@ export async function confirmPayment(id, data) {
       connection,
     );
   });
-
-  return toApiPayment(updated);
 }
 
 // Consulta interna para la regla de entrega (FR-014, D5): la orden tiene un

@@ -13,6 +13,7 @@ import {
 } from '../models/user.js';
 import { conflict, notFound } from '../utils/errors.js';
 import * as sessionStore from '../utils/sessionStore.js';
+import { record } from './audit.service.js';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -49,7 +50,7 @@ export async function listMechanics() {
   return listActiveMechanics();
 }
 
-export async function create({ username, email, rol: role, contrasena: password }) {
+export async function create({ username, email, rol: role, contrasena: password }, actor = null) {
   const repeatedUsername = await findByUsername(username);
   if (repeatedUsername) {
     throw conflict('El nombre de usuario ya está en uso', 'USERNAME_EN_USO');
@@ -61,10 +62,18 @@ export async function create({ username, email, rol: role, contrasena: password 
 
   const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
   const created = await createUser({ username, email, passwordHash, role });
+  // Sprint 7 (FR-022): alta de usuario; nunca la contraseña ni el hash.
+  await record({
+    userId: actor?.id ?? null,
+    action: 'USUARIO_CREADO',
+    entityType: 'user',
+    entityId: created.id,
+    detail: `${created.username} (${created.role})`,
+  });
   return toApi(created);
 }
 
-export async function update(id, { rol: role, estado: statusApi }) {
+export async function update(id, { rol: role, estado: statusApi }, actor = null) {
   const user = await findById(id);
   if (!user) throw notFound('El usuario no existe', 'USUARIO_NO_ENCONTRADO');
 
@@ -81,5 +90,25 @@ export async function update(id, { rol: role, estado: statusApi }) {
   }
 
   const updated = await updateUser(user.id, fields);
+
+  // Sprint 7 (FR-022): cambio de rol y activación o desactivación.
+  if (role !== undefined && role !== user.role) {
+    await record({
+      userId: actor?.id ?? null,
+      action: 'USUARIO_ROL_CAMBIADO',
+      entityType: 'user',
+      entityId: user.id,
+      detail: `${user.username}: ${user.role} → ${role}`,
+    });
+  }
+  if (fields.status !== undefined && fields.status !== user.status) {
+    await record({
+      userId: actor?.id ?? null,
+      action: fields.status === 'ACTIVE' ? 'USUARIO_ACTIVADO' : 'USUARIO_DESACTIVADO',
+      entityType: 'user',
+      entityId: user.id,
+      detail: user.username,
+    });
+  }
   return toApi(updated);
 }

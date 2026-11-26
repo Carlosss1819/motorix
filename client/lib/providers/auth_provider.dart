@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../models/app_user.dart';
 import '../services/api_client.dart';
 import '../services/auth_service.dart';
+import '../services/terms_service.dart';
 import '../utils/messages.dart';
 
 /// Estados posibles de la sesión.
@@ -13,9 +14,13 @@ enum AuthStatus { initial, loading, authenticated, unauthenticated }
 /// El token JWT se guarda solo en memoria y la sesión se cierra a los
 /// 30 minutos de inactividad.
 class AuthProvider extends ChangeNotifier {
-  AuthProvider({required ApiClient api, AuthService? service})
-      : _api = api,
-        _service = service ?? AuthService(api) {
+  AuthProvider({
+    required ApiClient api,
+    AuthService? service,
+    TermsService? termsService,
+  })  : _api = api,
+        _service = service ?? AuthService(api),
+        _termsService = termsService ?? TermsService(api) {
     _api.onBeforeRequest = _handleBeforeRequest;
     _api.onUnauthorized = _handleUnauthorized;
   }
@@ -25,6 +30,10 @@ class AuthProvider extends ChangeNotifier {
 
   final ApiClient _api;
   final AuthService _service;
+  final TermsService _termsService;
+
+  /// Sprint 7 (US9): aceptación de términos pendiente en esta sesión.
+  bool _termsPending = false;
 
   AuthStatus _status = AuthStatus.unauthenticated;
   AppUser? _user;
@@ -49,6 +58,13 @@ class AuthProvider extends ChangeNotifier {
   String? get sessionMessage => _sessionMessage;
 
   bool get isAuthenticated => _status == AuthStatus.authenticated;
+
+  /// Sprint 7 (US9, FR-017): mientras sea `true`, la app solo muestra la
+  /// pantalla de aceptación (el backend responde 403 TERMINOS_PENDIENTES).
+  bool get termsPending => _termsPending;
+
+  /// Servicio de términos, compartido con las pantallas de términos.
+  TermsService get termsService => _termsService;
   bool get isLoading => _status == AuthStatus.loading;
 
   /// Limpia el mensaje de error mostrado en el formulario de acceso.
@@ -79,6 +95,7 @@ class AuthProvider extends ChangeNotifier {
       _token = session.token;
       _api.setToken(session.token);
       _user = session.user;
+      _termsPending = session.terminosPendientes;
       _lastActivity = DateTime.now();
       _status = AuthStatus.authenticated;
       notifyListeners();
@@ -117,6 +134,17 @@ class AuthProvider extends ChangeNotifier {
     _sessionMessage = null;
     notifyListeners();
   }
+
+  /// Acepta la versión vigente de los términos (Sprint 7, FR-018). Lanza
+  /// [ApiException] si la versión ya no es la vigente.
+  Future<void> acceptTerms(String version) async {
+    await _termsService.accept(version);
+    _termsPending = false;
+    notifyListeners();
+  }
+
+  /// Rechazar los términos cierra la sesión (FR-019).
+  Future<void> rejectTerms() => logout();
 
   /// Cambia la contraseña de la cuenta propia (FR-008). Lanza [ApiException]
   /// con el mensaje del backend si la política no se cumple.
@@ -174,5 +202,6 @@ class AuthProvider extends ChangeNotifier {
     _api.setToken(null);
     _user = null;
     _lastActivity = null;
+    _termsPending = false;
   }
 }
